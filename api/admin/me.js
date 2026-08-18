@@ -1,5 +1,12 @@
-import { requireAdmin, errorMessage } from "../../src/admin_api.js";
+import { requireAdmin } from "../../src/admin_api.js";
 import { json } from "../../src/db.js";
+
+const errorMessage = (e) => {
+  if (typeof e === "string") return e;
+  if (e instanceof Error) return e.message || "Lỗi hệ thống.";
+  if (e && typeof e === "object") return String(e.error || e.message || e.detail || e.reason || e.description || "Lỗi hệ thống.");
+  return String(e || "Lỗi hệ thống.");
+};
 
 export default async function handler(req, res) {
   if (String(req.method || "GET").toUpperCase() !== "GET") {
