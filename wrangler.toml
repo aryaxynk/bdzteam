@@ -10,3 +10,7 @@ binding = "ASSETS"
 [vars]
 SUPABASE_URL = "https://nklukqriopezsoalnghm.supabase.co"
 PUBLIC_ORIGIN = "https://bdzteam.vortexvn.workers.dev"
+LINK4M_BASE_URL = "https://link4m.co/api-shorten/v2"
+TRAFFICVN_BASE_URL = "https://trafficvn.com/apidevelop"
+TURNSTILE_SITE_KEY = "REPLACE_WITH_TURNSTILE_SITE_KEY"
+ADMIN_USERNAME = "admin"
