@@ -35,17 +35,23 @@ async function sessionCheck(request,env){
   return json({ok:true,action:'none'});
 }
 
+function requestPath(req){
+  const raw=String(req.url||'/api');
+  try{
+    const u=new URL(raw.startsWith('http')?raw:`https://${req.headers.host||'localhost'}${raw}`);
+    return (u.pathname.replace(/\/+/g,'/').replace(/\/$/,'')||'/');
+  }catch{return raw.split('?')[0]||'/';}
+}
+
 export default async function handler(req,res){
   const host=String(req.headers.host||'localhost');
   const base=`https://${host}`;
-  const rawUrl=String(req.url||'/api');
-  const fullUrl=new URL(rawUrl.startsWith('http')?rawUrl:`${base}${rawUrl}`);
-  const pathname=fullUrl.pathname.replace(/\/+/g,'/').replace(/\/$/,'')||'/';
-  const path=pathname.startsWith('/api/')?pathname:'/api';
-  const request=toRequest(req,fullUrl.toString());
+  const path=requestPath(req);
+  const u=new URL(String(req.url||'/api'),base);
+  const request=toRequest(req,u.toString());
   const env=process.env;
   try{
-    if(req.method==='OPTIONS') return send(res,new Response(null,{status:204,headers:{'access-control-allow-origin':req.headers.origin||base,'access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'content-type','access-control-allow-credentials':'true'}}));
+    if(req.method==='OPTIONS') return send(res,new Response(null,{status:204,headers:{'access-control-allow-origin':req.headers.origin||base,'access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'content-type,accept','access-control-allow-credentials':'true','cache-control':'no-store'}}));
     if(path==='/api/health') return send(res,json({ok:true,service:'bdzteam-vercel',target:base,storage:'supabase'}));
     if(path==='/api/session-check'&&req.method==='GET') return send(res,await sessionCheck(request,env));
     if(path==='/api/site'&&req.method==='GET') return send(res,json(await siteData(env)));
@@ -60,7 +66,7 @@ export default async function handler(req,res){
     if(path==='/api/admin/logout'&&req.method==='POST') return send(res,json({ok:true},200,clearAuth()));
     if(path.startsWith('/api/admin/')){
       const s=await requireAdmin(request,env);
-      if(!s) return send(res,json({error:'Chưa đăng nhập quản trị.'},401));
+      if(!s) return send(res,json({ok:false,error:'Chưa đăng nhập quản trị.'},401));
       if(path==='/api/admin/me'&&req.method==='GET') return send(res,json({ok:true,user:s.u,role:s.r}));
       if(path==='/api/admin/dashboard'&&req.method==='GET') return send(res,json(await dashboard(env,s)));
       if(path==='/api/admin/action'&&req.method==='POST') return send(res,await adminAction(request,env,s));
