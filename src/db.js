@@ -1,6 +1,6 @@
-export const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
+export const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate, max-age=0"};
 export const json=(data,status=200,extra={})=>new Response(JSON.stringify(data),{status,headers:{...JSON_HEADERS,...extra}});
-export const ipOf=r=>r.headers.get("CF-Connecting-IP")||r.headers.get("X-Forwarded-For")?.split(",")[0]?.trim()||"0.0.0.0";
+export const ipOf=r=>r.headers.get("X-Real-IP")||r.headers.get("X-Forwarded-For")?.split(",")[0]?.trim()||r.headers.get("Forwarded")?.match(/for=([^;]+)/i)?.[1]?.replace(/^"|"$/g,"")||"0.0.0.0";
 export async function sha256(v){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 export async function hmac(secret,value){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);return new Uint8Array(await crypto.subtle.sign("HMAC",k,new TextEncoder().encode(value)))}
 const b64=a=>btoa(String.fromCharCode(...a)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/i,"");
@@ -21,7 +21,6 @@ export async function ensureProducts(env){let rows=await sb(env,"products?select
 export async function securityLog(env,type,ip,detail=""){return sb(env,"security_events",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({event_type:type,ip_address:ip,detail:String(detail).slice(0,1000)})}).catch(()=>{})}
 export async function banned(env,ip){const r=await sb(env,"manual_bans?select=id&ip_address=eq."+encodeURIComponent(ip)+"&limit=1").catch(()=>[]);return !!r?.length}
 export async function autoBanned(env,ip){const r=await sb(env,"auto_bans?select=banned_until&ip_address=eq."+encodeURIComponent(ip)+"&banned_until.gt."+encodeURIComponent(new Date().toISOString())+"&limit=1").catch(()=>[]);return !!r?.length}
-export async function verifyTurnstile(request,env,token){if(!env.TURNSTILE_SECRET_KEY||!token)return false;const f=new FormData();f.append("secret",env.TURNSTILE_SECRET_KEY);f.append("response",token);f.append("remoteip",ipOf(request));try{const r=await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify",{method:"POST",body:f});const d=await r.json();return !!d?.success}catch{return false}}
 export function isBadUserAgent(request){const ua=(request.headers.get("user-agent")||"").toLowerCase();if(!ua)return true;return ["curl/","wget/","python-requests","python-urllib","scrapy","libwww-perl","httpclient","go-http-client"].some(x=>ua.includes(x))}
 export function sameOrigin(request){const origin=request.headers.get("Origin");if(!origin)return true;try{return new URL(origin).host===new URL(request.url).host}catch{return false}}
 export async function consumeRateLimit(env,scope,key,windowSeconds,limit){const bucket=new Date(Math.floor(Date.now()/1000/windowSeconds)*windowSeconds*1000).toISOString();try{const r=await rpc(env,"consume_rate_limit",{p_scope:scope,p_key:String(key),p_bucket_start:bucket,p_limit:limit});const n=Array.isArray(r)?r[0]:r;const value=Number((n?.consume_rate_limit ?? n) || 0);return value<=limit}catch{return true}}
