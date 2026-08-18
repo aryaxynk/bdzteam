@@ -1,14 +1,38 @@
 {
-  "$schema":"https://openapi.vercel.sh/vercel.json",
-  "cleanUrls":false,
-  "trailingSlash":false,
-  "headers":[{"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},{"key":"X-Frame-Options","value":"DENY"},{"key":"Permissions-Policy","value":"camera=(), microphone=(), geolocation=()"}]}],
-  "rewrites":[
-    {"source":"/session-check","destination":"/api/session-check"},
-    {"source":"/health","destination":"/api/health"},
-    {"source":"/key","destination":"/key.html"},
-    {"source":"/check-key","destination":"/check-key.html"},
-    {"source":"/login","destination":"/login.html"},
-    {"source":"/admin","destination":"/admin.html"}
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {"key": "X-Content-Type-Options", "value": "nosniff"},
+        {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"},
+        {"key": "X-Frame-Options", "value": "DENY"},
+        {"key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()"}
+      ]
+    }
+  ],
+  "rewrites": [
+    {"source": "/session-check", "destination": "/api/session-check"},
+    {"source": "/session-check/", "destination": "/api/session-check"},
+    {"source": "/health", "destination": "/api/health"},
+    {"source": "/health/", "destination": "/api/health"},
+    {"source": "/key", "destination": "/key.html"},
+    {"source": "/key/", "destination": "/key.html"},
+    {"source": "/get-key", "destination": "/key.html"},
+    {"source": "/get-key/", "destination": "/key.html"},
+    {"source": "/getkey", "destination": "/key.html"},
+    {"source": "/getkey/", "destination": "/key.html"},
+    {"source": "/check-key", "destination": "/check-key.html"},
+    {"source": "/check-key/", "destination": "/check-key.html"},
+    {"source": "/checkkey", "destination": "/check-key.html"},
+    {"source": "/checkkey/", "destination": "/check-key.html"},
+    {"source": "/verify", "destination": "/check-key.html"},
+    {"source": "/verify/", "destination": "/check-key.html"},
+    {"source": "/login", "destination": "/login.html"},
+    {"source": "/login/", "destination": "/login.html"},
+    {"source": "/admin", "destination": "/admin.html"},
+    {"source": "/admin/", "destination": "/admin.html"}
   ]
 }
