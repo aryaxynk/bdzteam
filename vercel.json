@@ -7,6 +7,8 @@
     {"source":"/session-check","destination":"/api/session-check"},
     {"source":"/health","destination":"/api/health"},
     {"source":"/key","destination":"/key.html"},
-    {"source":"/check-key","destination":"/check-key.html"}
+    {"source":"/check-key","destination":"/check-key.html"},
+    {"source":"/login","destination":"/login.html"},
+    {"source":"/admin","destination":"/admin.html"}
   ]
 }
