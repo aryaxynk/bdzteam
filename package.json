@@ -1,0 +1,11 @@
+{
+  "name": "bdzteam-cloudflare",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "bcryptjs": "^3.0.2"
+  },
+  "devDependencies": {
+    "wrangler": "^4.34.0"
+  }
+}
