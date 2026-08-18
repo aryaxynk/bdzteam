@@ -1,11 +1,7 @@
 {
-  "name": "bdzteam-cloudflare",
+  "name": "bdzteam-vercel",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "bcryptjs": "^3.0.2"
-  },
-  "devDependencies": {
-    "wrangler": "^4.34.0"
-  }
+  "engines": {"node": ">=20"},
+  "dependencies": {"bcryptjs": "^3.0.3"}
 }
