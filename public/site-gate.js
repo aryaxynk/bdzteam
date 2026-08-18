@@ -1,58 +1,36 @@
 (() => {
-  const SITE_KEY = document.getElementById('siteTurnstile')?.dataset.sitekey || '';
+  const SITE_KEY = document.getElementById('siteTurnstile')?.dataset.sitekey || window.BDZ?.turnstileSiteKey || '';
   const gate = document.getElementById('siteGate');
   if (!gate || !SITE_KEY) return;
   const saved = Number(sessionStorage.getItem('bdz_gate_verified_at') || 0);
-  if (saved && Date.now() - saved < 30 * 60 * 1000) {
-    gate.classList.add('gate-hidden');
-    return;
-  }
-  const status = document.getElementById('gateStatus');
-  let token = '';
-  let widget = null;
-  let mounted = false;
-  const setStatus = (text, kind='info') => {
-    if (!status) return;
-    status.textContent = text;
-    status.dataset.kind = kind;
+  if (saved && Date.now() - saved < 30 * 60 * 1000) { gate.classList.add('gate-hidden'); return; }
+  const status = document.getElementById('gateStatus'), box = document.getElementById('siteTurnstile');
+  let token='', widget=null, mounted=false, attempts=0, verifying=false;
+  const setStatus=(text,kind='info')=>{if(status){status.textContent=text;status.dataset.kind=kind}};
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const ensureApi=async()=>{
+    if(window.turnstile)return window.turnstile;
+    let script=document.querySelector('script[data-bdz-turnstile]');
+    if(!script){script=document.createElement('script');script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';script.async=true;script.defer=true;script.dataset.bdzTurnstile='1';document.head.appendChild(script)}
+    for(let i=0;i<300;i++){if(window.turnstile)return window.turnstile;await sleep(50)}
+    throw Error('Turnstile API chưa sẵn sàng');
   };
-  const ready = () => {
-    if (mounted || !window.turnstile) return;
-    mounted = true;
-    widget = window.turnstile.render('#siteTurnstile', {
-      sitekey: SITE_KEY,
-      theme: 'light',
-      callback: t => { token = t; setStatus('Đã xác minh. Đang kiểm tra bảo mật…', 'ok'); verify(); },
-      'expired-callback': () => { token=''; setStatus('Phiên xác minh đã hết hạn. Hãy xác minh lại.', 'warn'); },
-      'timeout-callback': () => { token=''; setStatus('Xác minh mất quá nhiều thời gian. Thử lại nhé.', 'warn'); },
-      'error-callback': () => { token=''; setStatus('Không thể tải Turnstile. Đang thử kết nối lại…', 'warn'); mounted=false; setTimeout(ready, 1200); }
-    });
-    setStatus('Hoàn thành xác minh để vào website.', 'info');
+  const mount=async()=>{
+    if(mounted||!box)return;
+    try{
+      setStatus('Đang tải Cloudflare Turnstile…','info');
+      const api=await ensureApi();
+      if(mounted)return;
+      box.innerHTML='';
+      widget=api.render(box,{sitekey:SITE_KEY,theme:'light',size:'normal',callback:t=>{token=t;setStatus('Đã xác minh. Đang kiểm tra bảo mật…','ok');verify()},'expired-callback':()=>{token='';verifying=false;setStatus('Phiên xác minh đã hết hạn. Hãy xác minh lại.','warn')},'timeout-callback':()=>{token='';verifying=false;setStatus('Xác minh mất quá nhiều thời gian. Hãy thử lại.','warn')},'error-callback':()=>{token='';verifying=false;mounted=false;setStatus('Cloudflare Turnstile tạm thời chưa sẵn sàng. Đang tự thử lại…','warn');setTimeout(mount,1200)}});
+      if(widget===undefined||widget===null)throw Error('render failed');
+      mounted=true;attempts=0;setStatus('Hoàn thành xác minh để vào website.','info');
+    }catch(e){mounted=false;attempts++;setStatus('Cloudflare Turnstile chưa tải xong. Đang tự thử lại…','warn');setTimeout(mount,Math.min(2500,600+attempts*250))}
   };
-  async function verify() {
-    if (!token) return;
-    try {
-      const r = await fetch('/api/site-gate', {
-        method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({turnstile_token:token}), cache:'no-store'
-      });
-      const d = await r.json().catch(()=>({}));
-      if (!r.ok || !d.ok) throw Error(d.error || 'Xác minh thất bại');
-      sessionStorage.setItem('bdz_gate_verified_at', String(Date.now()));
-      gate.classList.add('gate-hidden');
-    } catch (e) {
-      setStatus(e.message || 'Xác minh thất bại. Hãy thử lại.', 'error');
-      if (widget !== null && window.turnstile) window.turnstile.reset(widget);
-      token='';
-    }
+  async function verify(){
+    if(!token||verifying)return;verifying=true;
+    try{const r=await fetch('/api/site-gate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({turnstile_token:token}),cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw Error(d.error||'Xác minh thất bại');sessionStorage.setItem('bdz_gate_verified_at',String(Date.now()));if(d.gate_token)sessionStorage.setItem('bdz_gate_token',d.gate_token);setStatus('Xác minh thành công.','ok');gate.classList.add('gate-hidden');setTimeout(()=>gate.remove(),520)}catch(e){verifying=false;token='';setStatus(e.message||'Xác minh thất bại.','error');if(widget!==null&&window.turnstile)try{window.turnstile.reset(widget)}catch{}}
   }
-  const start = Date.now();
-  const timer = setInterval(() => {
-    if (window.turnstile) { clearInterval(timer); ready(); }
-    else if (Date.now() - start > 10000) {
-      clearInterval(timer);
-      setStatus('Cloudflare đang phản hồi chậm. Đang thử lại…', 'warn');
-      setTimeout(() => location.reload(), 1800);
-    }
-  }, 120);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !gate.classList.contains('gate-hidden')) e.preventDefault(); });
+  mount();
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!mounted)mount()});
 })();
