@@ -1,0 +1,70 @@
+/* BDZTEAM Neo-Brutalism UI polish */
+
+/* 1) Data tables: clean separators, compact actions, strong outer card */
+.admin-panel:has(table){overflow:hidden;background:#fff;border:3px solid #000;border-radius:7px;box-shadow:4px 4px 0 #000}
+.admin-panel table{border-collapse:separate!important;border-spacing:0!important;width:100%;background:#fff}
+.admin-panel thead th{border-bottom:2px solid #000!important;background:#fffdf5}
+.admin-panel tbody td{border-bottom:1px solid #d1d5db!important}
+.admin-panel tbody tr:last-child td{border-bottom:0!important}
+.admin-panel tbody tr:hover{background:#fffdf2}
+.admin-panel table .small-btn,
+.admin-panel table button{min-height:30px!important;padding:4px 8px!important;font-size:10px!important;line-height:1.1!important;border-width:2px!important;box-shadow:2px 2px 0 #000!important;border-radius:5px!important}
+.admin-panel table .small-btn:hover,
+.admin-panel table button:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 #000!important}
+.admin-panel table .small-btn:active,
+.admin-panel table button:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #000!important}
+
+/* 2) Shortener/forms: more breathing room and vertical alignment */
+.admin-action-safe .grid{gap:14px!important;align-items:center!important}
+.admin-action-safe form .grid{row-gap:14px!important;column-gap:14px!important;align-items:center!important}
+.admin-action-safe form input,
+.admin-action-safe form select,
+.admin-action-safe form textarea{margin:0!important}
+.admin-action-safe form button{align-self:center!important}
+
+/* 3) Admin navigation: active tab is the only boxed/yellow item */
+.admin-tabs .admin-tab-chip:not(.active){
+  border-color:transparent!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#000!important;
+}
+.admin-tabs .admin-tab-chip:not(.active):hover{
+  border-color:#000!important;
+  background:#fef3c7!important;
+  box-shadow:2px 2px 0 #000!important;
+  transform:translateY(-1px)!important;
+}
+.admin-tabs .admin-tab-chip.active{
+  border:3px solid #000!important;
+  background:#facc15!important;
+  color:#000!important;
+  box-shadow:4px 4px 0 #000!important;
+  transform:none!important;
+}
+.admin-brand-row .admin-tab-chip[aria-label="Trang chủ"],
+.admin-brand-row .admin-tab-chip[aria-label="Đăng xuất"]{
+  border:3px solid #000!important;
+  background:#fff!important;
+  box-shadow:3px 3px 0 #000!important;
+}
+
+/* 4) Telegram floating button: always centered and above content */
+.telegram-launcher{z-index:2147483000!important}
+.telegram-fab{display:flex!important;align-items:center!important;justify-content:center!important;position:relative;z-index:2147483001!important;line-height:1!important;padding:0!important}
+.telegram-fab i{display:block;line-height:1!important}
+
+/* Keep Telegram child actions above everything too */
+.telegram-actions{position:relative;z-index:2147483002!important}
+
+/* Mobile table remains horizontally scrollable without changing page width */
+@media(max-width:720px){
+  .admin-panel:has(table){overflow:hidden}
+  .admin-panel table{min-width:680px}
+  .admin-panel .overflow-auto,.admin-panel .overflow-x-auto{max-width:100%;overflow-x:auto}
+  .admin-action-safe form .grid{gap:12px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .admin-tabs .admin-tab-chip:not(.active):hover{transform:none!important}
+}
