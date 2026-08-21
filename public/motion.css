@@ -1,1 +1,51 @@
-:root{--motion-ease:cubic-bezier(.22,.61,.36,1)}html{scroll-behavior:smooth}.nb-card,.card,.stat-chip,.product-card,.step-box,.admin-panel,.api-panel{position:relative;isolation:isolate}.reveal:not(.in){opacity:0;transform:translateY(14px) scale(.992)}.reveal.in{opacity:1;transform:none;transition:opacity .48s var(--motion-ease),transform .48s var(--motion-ease)}.reveal-delay-1{transition-delay:.05s}.reveal-delay-2{transition-delay:.10s}.reveal-delay-3{transition-delay:.15s}.reveal-delay-4{transition-delay:.20s}.reveal-delay-5{transition-delay:.25s}.reveal-delay-6{transition-delay:.30s}.nb-btn,.btn,.small-btn,.product-card,.admin-panel,.admin-tab,#adminMenuBtn{transition:transform .16s var(--motion-ease),box-shadow .16s var(--motion-ease),background-color .16s ease,opacity .16s ease}.nb-btn:hover,.btn:hover,.small-btn:hover,.product-card:hover,.admin-panel:hover{transform:translateY(-1px)}.telegram-child,.telegram-fab{transition:transform .18s var(--motion-ease),box-shadow .18s ease,opacity .18s ease}.loader,.gate-spinner{animation-duration:.85s}@media(max-width:600px){.reveal:not(.in){transform:translateY(9px)}.reveal.in{transition-duration:.34s}.reveal-delay-1{transition-delay:.03s}.reveal-delay-2{transition-delay:.06s}.reveal-delay-3{transition-delay:.09s}.reveal-delay-4{transition-delay:.12s}.reveal-delay-5{transition-delay:.15s}.reveal-delay-6{transition-delay:.18s}.nb-btn:hover,.btn:hover,.small-btn:hover,.product-card:hover,.admin-panel:hover{transform:none}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.reveal,.reveal.in{opacity:1!important;transform:none!important;transition:none!important}.nb-btn,.btn,.small-btn,.product-card,.admin-panel,.admin-tab,#adminMenuBtn,.telegram-child,.telegram-fab{transition:none!important}}
+:root{--neo-snap:cubic-bezier(.2,1.4,.3,1);--neo-fast:110ms}
+html{scroll-behavior:smooth}
+
+/* Reveal: short, decisive motion instead of soft/elegant easing */
+.reveal:not(.in){opacity:0;transform:translateY(18px) scale(.985)}
+.reveal.in{opacity:1;transform:none;transition:opacity 220ms steps(4,end),transform 220ms var(--neo-snap)}
+.reveal-delay-1{transition-delay:40ms}.reveal-delay-2{transition-delay:80ms}.reveal-delay-3{transition-delay:120ms}.reveal-delay-4{transition-delay:160ms}.reveal-delay-5{transition-delay:200ms}.reveal-delay-6{transition-delay:240ms}
+
+/* Neo-Brutalist buttons/cards: lift hard, then press flat */
+.nb-btn,.btn,.small-btn,.product-card,.admin-panel,.admin-tab,#adminMenuBtn,.telegram-fab,.telegram-child{transition:transform var(--neo-fast) steps(2,end),box-shadow var(--neo-fast) steps(2,end),background-color var(--neo-fast) linear,opacity var(--neo-fast) linear}
+.nb-btn:hover,.btn:hover,.small-btn:hover,.product-card:hover,.admin-panel:hover,.telegram-child:hover{transform:translate(-3px,-3px)!important;box-shadow:7px 7px 0 #000!important}
+.nb-btn:active,.btn:active,.small-btn:active,.product-card:active,.telegram-child:active{transform:translate(2px,2px)!important;box-shadow:none!important}
+.telegram-fab:hover{transform:translate(-3px,-3px)!important;box-shadow:7px 7px 0 #000!important}
+.telegram-fab:active{transform:translate(2px,2px)!important;box-shadow:none!important}
+
+/* Loading overlay: thick progress bar instead of a soft spinner */
+#bdzPageLoader{gap:20px!important}
+#bdzPageLoader .loader{display:block!important;position:relative;width:min(320px,74vw)!important;height:22px!important;border:3px solid #000!important;border-radius:4px!important;background:#fff!important;box-shadow:4px 4px 0 #000!important;animation:none!important;overflow:hidden}
+#bdzPageLoader .loader::after{content:"";position:absolute;left:0;top:0;bottom:0;width:38%;background:#facc15;border-right:3px solid #000;animation:neoProgress 900ms steps(5,end) infinite}
+#bdzPageLoader .font-extrabold{margin-top:2px!important;box-shadow:3px 3px 0 #000!important}
+@keyframes neoProgress{0%{transform:translateX(-105%)}100%{transform:translateX(285%)}}
+
+/* Security modal: fixed lock icon + pop-in */
+.bdz-gate-card{transform-origin:center center;animation:neoPopIn 180ms var(--neo-snap) both}
+.bdz-security-icon{width:58px;height:58px;margin:0 auto 14px;display:grid;place-items:center;border:3px solid #000;border-radius:6px;background:#facc15;box-shadow:4px 4px 0 #000;font-size:28px;line-height:1;animation:neoLockPop 180ms var(--neo-snap) both}
+.gate-turnstile{padding:8px;border:2px solid #000;border-radius:6px;background:#fffdf5;box-shadow:3px 3px 0 #000;min-height:76px!important;overflow:hidden}
+.gate-turnstile iframe{border-radius:4px!important;max-width:100%!important}
+.bdz-gate-card.turnstile-error .gate-turnstile{background:#fda4af;border-color:#000}
+@keyframes neoPopIn{0%{opacity:0;transform:scale(.9) translateY(8px)}70%{opacity:1;transform:scale(1.03) translateY(-2px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes neoLockPop{0%{transform:scale(.72) rotate(-4deg)}70%{transform:scale(1.08) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
+
+/* FAQ: quick snap-open instead of soft fade */
+#faq details>p{max-height:0;overflow:hidden;margin-top:0!important;transition:max-height 180ms steps(4,end),margin-top 120ms steps(2,end)}
+#faq details[open]>p{max-height:260px;margin-top:12px!important}
+#faq details summary{transition:transform 110ms steps(2,end),background-color 110ms linear}
+#faq details summary:active{transform:translate(2px,2px)}
+
+@media(max-width:600px){
+  .reveal:not(.in){transform:translateY(10px) scale(.99)}
+  .reveal.in{transition-duration:180ms}
+  .reveal-delay-1{transition-delay:25ms}.reveal-delay-2{transition-delay:50ms}.reveal-delay-3{transition-delay:75ms}.reveal-delay-4{transition-delay:100ms}.reveal-delay-5{transition-delay:125ms}.reveal-delay-6{transition-delay:150ms}
+  .nb-btn:hover,.btn:hover,.small-btn:hover,.product-card:hover,.admin-panel:hover,.telegram-child:hover{transform:translate(-2px,-2px)!important;box-shadow:6px 6px 0 #000!important}
+  #bdzPageLoader .loader{width:min(280px,76vw)!important;height:20px!important}
+  .bdz-security-icon{width:52px;height:52px;font-size:24px}
+  .gate-turnstile{padding:6px;min-height:72px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important}
+  .reveal,.reveal.in,.nb-btn,.btn,.small-btn,.product-card,.admin-panel,.admin-tab,#adminMenuBtn,.telegram-child,.telegram-fab,.bdz-gate-card,.bdz-security-icon,#faq details>p,#faq details summary{transition:none!important;animation:none!important;opacity:1!important;transform:none!important}
+  #bdzPageLoader .loader::after{animation:none!important;transform:none!important;width:100%}
+}
