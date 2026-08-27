@@ -1,4 +1,3 @@
-import {Headers,Request,Response} from 'node-fetch';
 function toRequest(req,url,bodyOverride){const headers=new Headers();for(const [k,v] of Object.entries(req.headers||{}))if(v!=null)headers.set(k,Array.isArray(v)?v.join(','):String(v));let body=bodyOverride;if(body===undefined&&!['GET','HEAD'].includes(req.method)){if(typeof req.body==='string')body=req.body;else if(req.body!==undefined)body=JSON.stringify(req.body)}return new Request(url,{method:req.method,headers,body})}
 function send(res,r){res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return r.arrayBuffer().then(b=>res.end(Buffer.from(b)))}
 function jsonError(message,status=400,extra={}){return new Response(JSON.stringify({ok:false,error:String(message||'Yêu cầu không hợp lệ.')}),{status,headers:{'content-type':'application/json; charset=utf-8',...extra}})}
@@ -7,7 +6,7 @@ export default async function handler(req,res){
  const host=String(req.headers.host||'localhost');const base=`https://${host}`;const rawUrl=String(req.url||'/api');const fullUrl=new URL(rawUrl.startsWith('http')?rawUrl:`${base}${rawUrl}`);const pathname=fullUrl.pathname.replace(/\\+/g,'/').replace(/\/$/,'')||'/';const path=pathname.startsWith('/api/')?pathname:'/api';const request=toRequest(req,fullUrl.toString());const env=process.env;
  try{
   const db=await import('../src/db.js');
-  const {json,clearAuth,cookieHeader,ipOf,banned,autoBanned,getSession,sha256,rpc,setting,getSlots,shorten,securityLog,ensureProducts,consumeRateLimit,registerViolation,isBadUserAgent}=db;
+  const {json,clearAuth,cookieHeader,ipOf,banned,autoBanned,getSession,sha256,rpc,setting,getSlots,securityLog,consumeRateLimit,registerViolation,isBadUserAgent}=db;
   if(req.method==='OPTIONS')return send(res,new Response(null,{status:204,headers:{'access-control-allow-origin':req.headers.origin||'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'content-type,accept','access-control-allow-credentials':'true','cache-control':'no-store'}}));
   const allowed=METHODS[path];if(allowed&&!allowed.includes(String(req.method||'GET').toUpperCase()))return send(res,jsonError(`Method Not Allowed. ${allowed.join(' / ')} ${path} est requise.`,405,{'allow':allowed.join(', ')}));
   if(path==='/api/health')return send(res,json({ok:true,service:'bdzteam-vercel',target:base,storage:'supabase'}));
