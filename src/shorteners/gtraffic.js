@@ -1,7 +1,7 @@
 const ENDPOINT = "https://manager.gtraffic.io/api/cong-khai/tao-lien-ket";
 const PUBLIC_BASE = "https://gtraffic.io";
 const SUPABASE_FUNCTION = "https://nklukqriopezsoalnghm.supabase.co/functions/v1/gtraffic-shortener";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJpZWYiOiJubWx1a3FyaW9wZXpzb2FsbmdobSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzg2OTUyMDcxLCJleHAiOjIxMDI1MjgwNzF9.vbXNvGYQUjhOygLCbyJ5gZiKVjKm2e41UYshpbg2j3E";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbHVrcXJpb3BlenNvYWxuZ2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NTIwNzEsImV4cCI6MjEwMjUyODA3MX0.vbXNvGYQUjhOygLCbyJ5gZiKVjKm2e41UYshpbg2j3E";
 function safeUrl(value) {
   try { const u = new URL(String(value || "").trim()); return u.protocol === "http:" || u.protocol === "https:" ? u.href : ""; }
   catch { return ""; }
