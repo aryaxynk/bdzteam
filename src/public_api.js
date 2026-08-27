@@ -1,7 +1,23 @@
 import {json,ipOf,sha256,rpc,setting,getSlots,shorten,banned,autoBanned,securityLog,ensureProducts,sb,consumeRateLimit,registerViolation,isBadUserAgent} from "./db.js";
 
 const TURNSTILE_VERIFY_URL="https://challenges.cloudflare.com/turnstile/v0/siteverify";
-export async function verifyTurnstileToken(token,request,env){const secret=String(env.TURNSTILE_SECRET_KEY||'').trim();if(!secret)return {ok:false,status:503,message:'TURNSTILE_SECRET_KEY chưa được cấu hình trên Vercel.'};if(!token)return {ok:false,status:400,message:'Vui lòng hoàn thành xác minh Cloudflare Turnstile.'};try{const body=new URLSearchParams({secret,response:String(token)});const ip=ipOf(request);if(ip&&ip!=='0.0.0.0')body.set('remoteip',ip);const r=await fetch(TURNSTILE_VERIFY_URL,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body});const d=await r.json().catch(()=>null);if(!r.ok||!d?.success)return {ok:false,status:403,message:'Xác minh Cloudflare Turnstile không hợp lệ. Vui lòng thử lại.'};return {ok:true}}catch(e){console.error('[turnstile]',e);return {ok:false,status:503,message:'Không thể kết nối hệ thống xác minh Cloudflare. Vui lòng thử lại.'}}}
+export async function verifyTurnstileToken(token,request,env){
+  const secret=String(env.TURNSTILE_SECRET_KEY||env.TURNSTILE_SECRET||'').trim();
+  if(!secret)return {ok:false,status:503,message:'TURNSTILE_SECRET_KEY chưa được cấu hình trên Vercel.'};
+  if(!token)return {ok:false,status:400,message:'Vui lòng hoàn thành xác minh Cloudflare Turnstile.'};
+  try{
+    const body=new URLSearchParams({secret,response:String(token)});
+    // remoteip is optional. Do not send a proxy-derived value because an invalid
+    // forwarded IP can make an otherwise valid Turnstile token fail verification.
+    const r=await fetch(TURNSTILE_VERIFY_URL,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body,signal:AbortSignal.timeout(8000)});
+    const d=await r.json().catch(()=>null);
+    if(!r.ok||!d?.success){
+      const codes=Array.isArray(d?.['error-codes'])?d['error-codes'].filter(x=>typeof x==='string').slice(0,3):[];
+      return {ok:false,status:403,message:codes.length?`Xác minh Cloudflare Turnstile thất bại (${codes.join(', ')}). Vui lòng thử lại.`:'Xác minh Cloudflare Turnstile không hợp lệ. Vui lòng thử lại.'};
+    }
+    return {ok:true};
+  }catch(e){console.error('[turnstile]',e);return {ok:false,status:503,message:'Không thể kết nối hệ thống xác minh Cloudflare. Vui lòng thử lại.'}}
+}
 export async function siteData(env){const [name,slogan,contact]=await Promise.all([setting(env,"site_name","BDZTEAM"),setting(env,"site_slogan","Nền tảng quản lý và xác thực Key chạy trên hạ tầng đám mây"),setting(env,"contact_info","")]);return {site_name:name,site_slogan:slogan,contact_info:contact,logo_url:"https://files.catbox.moe/5tw3y4.jpg"}}
 export async function publicStats(env){const now=encodeURIComponent(new Date().toISOString());const [a,b,c,d]=await Promise.all([sb(env,"keys?select=id&limit=10000").catch(()=>[]),sb(env,"keys?select=id&status=eq.ACTIVE&or=(expires_at.gt."+now+",expires_at.is.null)&limit=10000").catch(()=>[]),sb(env,"logs?select=id&limit=10000").catch(()=>[]),sb(env,"products?select=id&limit=10000").catch(()=>[])]);return {total_keys:a.length,active_keys:b.length,verifications:c.length,products:d.length}}
 export async function keyMeta(request,env){const ip=ipOf(request),start=new Date();start.setUTCHours(0,0,0,0);const rows=await sb(env,"logs?select=id&ip_address=eq."+encodeURIComponent(ip)+"&result=eq.VALID&created_at=gte."+encodeURIComponent(start.toISOString())+"&limit=10000").catch(()=>[]);return json({ip,today_gets:rows.length})}
