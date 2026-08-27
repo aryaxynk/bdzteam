@@ -1,3 +1,4 @@
+import {shortenGTraffic} from "./shorteners/gtraffic.js";
 export const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate, max-age=0"};
 export const json=(data,status=200,extra={})=>new Response(JSON.stringify(data),{status,headers:{...JSON_HEADERS,...extra}});
 export const ipOf=r=>r.headers.get("X-Real-IP")||r.headers.get("X-Forwarded-For")?.split(",")[0]?.trim()||r.headers.get("Forwarded")?.match(/for=([^;]+)/i)?.[1]?.replace(/^"|"$/g,"")||"0.0.0.0";
@@ -26,36 +27,5 @@ export function sameOrigin(request){const origin=request.headers.get("Origin");i
 export async function consumeRateLimit(env,scope,key,windowSeconds,limit){const bucket=new Date(Math.floor(Date.now()/1000/windowSeconds)*windowSeconds*1000).toISOString();try{const r=await rpc(env,"consume_rate_limit",{p_scope:scope,p_key:String(key),p_bucket_start:bucket,p_limit:limit});const n=Array.isArray(r)?r[0]:r;const value=Number((n?.consume_rate_limit ?? n) || 0);return value<=limit}catch{return true}}
 export async function registerViolation(env,ip,type,detail=""){try{await rpc(env,"register_violation",{p_ip_address:ip,p_event_type:type,p_detail:String(detail).slice(0,500)})}catch{}}
 export function safeUrl(v){try{const u=new URL(v);return ["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
-function deepFindUrl(value,seen=new Set(),depth=0){if(value==null||depth>6)return "";if(typeof value==="string"){const direct=safeUrl(value.trim());if(direct)return direct;const m=value.match(/https?:\/\/[^\s"'<>]+/i);return m?safeUrl(m[0]):""}if(typeof value!=="object"||seen.has(value))return "";seen.add(value);if(Array.isArray(value)){for(const v of value){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}for(const v of Object.values(value)){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}
-export async function shorten(slot,destination,env){
-  if(slot.provider==="gtraffic"){
-    const endpoint="https://manager.gtraffic.io/api/cong-khai/tao-lien-ket";
-    const token=String(slot.token||"").trim();
-    const target=safeUrl(destination);
-    if(!token)throw Error("GTraffic API token chưa được cấu hình");
-    if(!target)throw Error("URL cần rút gọn không hợp lệ");
-    const u=new URL(endpoint);
-    u.searchParams.set("apikey",token);
-    u.searchParams.set("url",target);
-    const r=await fetch(u.toString(),{method:"GET",redirect:"follow",headers:{accept:"application/json","user-agent":"BDZTEAM/Shortener"}});
-    const raw=await r.text();
-    let x={};try{x=raw?JSON.parse(raw):{}}catch{}
-    if(!r.ok){
-      const msg=typeof x?.message==="string"?x.message:(typeof x?.error==="string"?x.error:"");
-      throw Error("GTraffic HTTP "+r.status+(msg?": "+msg:""));
-    }
-    const id=String(x?.id||"").trim();
-    if(!id)throw Error("GTraffic trả về thành công nhưng thiếu id");
-    const direct=safeUrl(x?.shortenedUrl||x?.short_url||x?.shortUrl||"");
-    if(direct)return direct;
-    return `https://gtraffic.io/${encodeURIComponent(id)}`;
-  }
-  const base=slot.provider==="link4m"?(env.LINK4M_BASE_URL||"https://link4m.co/api-shorten/v2"):(env.TRAFFICVN_BASE_URL||"https://trafficvn.com/apidevelop");
-  const u=base.replace(/[?&]+$/,'')+"?api="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination);
-  const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});
-  let x={};try{x=await r.json()}catch{}
-  const c=[x.shortenedUrl,x.shortened_url,x.short_url,x.shorturl,x.url,x.link,x.data?.shortenedUrl,x.data?.short_url,x.data?.url,x.data?.link,x.result?.shortenedUrl,x.result?.short_url,x.result?.url];
-  const s=c.map(safeUrl).find(Boolean);
-  if(!r.ok||!s)throw Error(slot.provider+" không tạo được link rút gọn");
-  return s;
-}
+async function shortenViaStandardProvider(slot,destination,env){const base=slot.provider==="link4m"?(env.LINK4M_BASE_URL||"https://link4m.co/api-shorten/v2"):(env.TRAFFICVN_BASE_URL||"https://trafficvn.com/apidevelop");const u=base.replace(/[?&]+$/,'')+"?api="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination);const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});let x={};try{x=await r.json()}catch{}const c=[x.shortenedUrl,x.shortened_url,x.short_url,x.shorturl,x.url,x.link,x.data?.shortenedUrl,x.data?.short_url,x.data?.url,x.data?.link,x.result?.shortenedUrl,x.result?.short_url,x.result?.url];const s=c.map(safeUrl).find(Boolean);if(!r.ok||!s)throw Error(slot.provider+" không tạo được link rút gọn");return s}
+export async function shorten(slot,destination,env){if(slot.provider==="gtraffic")return shortenGTraffic(slot.token,destination);return shortenViaStandardProvider(slot,destination,env)}
