@@ -10,6 +10,15 @@ function safeHttpUrl(value) {
   }
 }
 
+function responseDetail(status, contentType, raw, data) {
+  const msg = typeof data?.message === 'string' ? data.message :
+    typeof data?.error === 'string' ? data.error :
+    typeof data?.detail === 'string' ? data.detail : '';
+  const text = typeof raw === 'string' ? raw.replace(/\s+/g, ' ').trim().slice(0, 240) : '';
+  const detail = msg || text;
+  return `HTTP ${status}${contentType ? ` (${contentType})` : ''}${detail ? `: ${detail}` : ''}`;
+}
+
 export async function shortenGTraffic(token, destination) {
   const apiKey = String(token || '').trim();
   const target = safeHttpUrl(destination);
@@ -23,10 +32,11 @@ export async function shortenGTraffic(token, destination) {
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: {
-      accept: 'application/json',
-      'user-agent': 'BDZTEAM-GTraffic-Client/1.0'
+      accept: 'application/json, text/plain, */*',
+      'user-agent': 'Mozilla/5.0 (compatible; BDZTEAM-GTraffic/1.0)'
     },
-    redirect: 'follow'
+    redirect: 'follow',
+    cache: 'no-store'
   });
 
   const raw = await response.text();
@@ -34,13 +44,13 @@ export async function shortenGTraffic(token, destination) {
   try { data = raw ? JSON.parse(raw) : null; } catch {}
 
   if (!response.ok) {
-    const message = typeof data?.message === 'string' ? data.message :
-      typeof data?.error === 'string' ? data.error : '';
-    throw new Error(`GTraffic HTTP ${response.status}${message ? ': ' + message : ''}`);
+    throw new Error(`GTraffic ${responseDetail(response.status, response.headers.get('content-type') || '', raw, data)}`);
   }
 
   const id = String(data?.id || '').trim();
-  if (!id) throw new Error('GTraffic phản hồi thành công nhưng không có id');
+  if (!id) {
+    throw new Error('GTraffic HTTP 200 nhưng response không có id');
+  }
 
   const direct = safeHttpUrl(data?.shortenedUrl || data?.short_url || data?.shortUrl);
   if (direct) return direct;
