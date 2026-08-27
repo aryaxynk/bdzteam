@@ -28,21 +28,26 @@ export async function registerViolation(env,ip,type,detail=""){try{await rpc(env
 export function safeUrl(v){try{const u=new URL(v);return ["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
 export async function shorten(slot,destination,env){
   if(slot.provider==="gtraffic"){
-    const u=new URL(env.GTRAFFIC_BASE_URL||"https://manager.gtraffic.io/api/cong-khai/tao-lien-ket");
+    const endpoint=String(env.GTRAFFIC_BASE_URL||"https://manager.gtraffic.io/api/cong-khai/tao-lien-ket").trim();
+    const u=new URL(endpoint);
     u.searchParams.set("apikey",slot.token);
     u.searchParams.set("url",destination);
-    const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});
-    let x={};try{x=await r.json()}catch{}
-    const id=String(x?.id||"").trim();
-    const base=(env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io").replace(/\/+$/,'');
-    const s=id?safeUrl(base+"/"+encodeURIComponent(id)):"";
-    if(!r.ok||!s)throw Error("GTraffic không tạo được link rút gọn");
+    const r=await fetch(u.toString(),{method:"GET",headers:{accept:"application/json,text/plain,*/*","user-agent":"BDZTEAM-Shortener/2.1"}});
+    const text=await r.text();
+    let x={};try{x=text?JSON.parse(text):{}}catch{}
+    const id=String(x?.id??x?.data?.id??x?.result?.id??"").trim();
+    if(!r.ok||!id){const msg=String(x?.message??x?.error??x?.msg??text??"").replace(/\s+/g," ").slice(0,180);throw Error(`GTraffic không tạo được link rút gọn${msg?`: ${msg}`:""}`)}
+    // GTraffic documents the public short-link host as gtraffic.io/{id}.
+    const base=String(env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io").replace(/\/+$/,'');
+    const s=safeUrl(base+"/"+encodeURIComponent(id));
+    if(!s)throw Error("GTraffic trả về mã rút gọn không hợp lệ");
     return s;
   }
   const base=slot.provider==="link4m"?(env.LINK4M_BASE_URL||"https://link4m.co/api-shorten/v2"):(env.TRAFFICVN_BASE_URL||"https://trafficvn.com/apidevelop");
   const u=base.replace(/[?&]+$/,'')+"?api="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination);
-  const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});
-  let x={};try{x=await r.json()}catch{}
+  const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.1"}});
+  const text=await r.text();
+  let x={};try{x=text?JSON.parse(text):{}}catch{}
   const c=[x.shortenedUrl,x.shortened_url,x.short_url,x.shorturl,x.url,x.link,x.data?.shortenedUrl,x.data?.short_url,x.data?.url,x.data?.link,x.result?.shortenedUrl,x.result?.short_url,x.result?.url];
   const s=c.map(safeUrl).find(Boolean);
   if(!r.ok||!s)throw Error(slot.provider+" không tạo được link rút gọn");
