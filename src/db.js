@@ -37,11 +37,14 @@ export async function shorten(slot,destination,env){
     const base=(env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io").replace(/\/+$/,'');
     const s=id?safeUrl(base+"/"+encodeURIComponent(id)):"";
     if(!r.ok||!s)throw Error("GTraffic không tạo được link rút gọn");
-    return s
-}
-const base=slot.provider==="link4m"?(env.LINK4M_BASE_URL||"https://link4m.co/api-shorten/v2"):(env.TRAFFICVN_BASE_URL||"https://trafficvn.com/apidevelop");
-const u=base.replace(/[?&]+$/,'')+"?api="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination);
-const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});let x={};try{x=await r.json()}catch{}
-const c=[x.shortenedUrl,x.shortened_url,x.short_url,x.shorturl,x.url,x.link,x.data?.shortenedUrl,x.data?.short_url,x.data?.url,x.data?.link,x.result?.shortenedUrl,x.result?.short_url,x.result?.url];
-const s=c.map(safeUrl).find(Boolean);if(!r.ok||!s)throw Error(slot.provider+" không tạo được link rút gọn");return s
+    return s;
+  }
+  const base=slot.provider==="link4m"?(env.LINK4M_BASE_URL||"https://link4m.co/api-shorten/v2"):(env.TRAFFICVN_BASE_URL||"https://trafficvn.com/apidevelop");
+  const u=base.replace(/[?&]+$/,'')+"?api="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination);
+  const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});
+  let x={};try{x=await r.json()}catch{}
+  const c=[x.shortenedUrl,x.shortened_url,x.short_url,x.shorturl,x.url,x.link,x.data?.shortenedUrl,x.data?.short_url,x.data?.url,x.data?.link,x.result?.shortenedUrl,x.result?.short_url,x.result?.url];
+  const s=c.map(safeUrl).find(Boolean);
+  if(!r.ok||!s)throw Error(slot.provider+" không tạo được link rút gọn");
+  return s;
 }
