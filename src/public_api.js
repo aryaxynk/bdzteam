@@ -4,16 +4,18 @@ const TURNSTILE_VERIFY_URL="https://challenges.cloudflare.com/turnstile/v0/sitev
 export async function verifyTurnstileToken(token,request,env){
   const secret=String(env.TURNSTILE_SECRET_KEY||env.TURNSTILE_SECRET||'').trim();
   if(!secret)return {ok:false,status:503,message:'TURNSTILE_SECRET_KEY chưa được cấu hình trên Vercel.'};
-  if(!token)return {ok:false,status:400,message:'Vui lòng hoàn thành xác minh Cloudflare Turnstile.'};
+  const value=String(token||'').trim();
+  if(!value)return {ok:false,status:400,message:'Vui lòng hoàn thành xác minh Cloudflare Turnstile.'};
   try{
-    const body=new URLSearchParams({secret,response:String(token)});
-    // remoteip is optional. Do not send a proxy-derived value because an invalid
-    // forwarded IP can make an otherwise valid Turnstile token fail verification.
-    const r=await fetch(TURNSTILE_VERIFY_URL,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body,signal:AbortSignal.timeout(8000)});
-    const d=await r.json().catch(()=>null);
-    if(!r.ok||!d?.success){
+    const body=new URLSearchParams();
+    body.set('secret',secret);
+    body.set('response',value);
+    const r=await fetch(TURNSTILE_VERIFY_URL,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded','accept':'application/json'},body:body.toString()});
+    const text=await r.text();
+    let d=null;try{d=text?JSON.parse(text):null}catch{}
+    if(!r.ok||d?.success!==true){
       const codes=Array.isArray(d?.['error-codes'])?d['error-codes'].filter(x=>typeof x==='string').slice(0,3):[];
-      return {ok:false,status:403,message:codes.length?`Xác minh Cloudflare Turnstile thất bại (${codes.join(', ')}). Vui lòng thử lại.`:'Xác minh Cloudflare Turnstile không hợp lệ. Vui lòng thử lại.'};
+      return {ok:false,status:r.ok?403:503,message:codes.length?`Xác minh Cloudflare Turnstile thất bại (${codes.join(', ')}). Vui lòng thử lại.`:'Xác minh Cloudflare Turnstile không hợp lệ. Vui lòng thử lại.'};
     }
     return {ok:true};
   }catch(e){console.error('[turnstile]',e);return {ok:false,status:503,message:'Không thể kết nối hệ thống xác minh Cloudflare. Vui lòng thử lại.'}}
