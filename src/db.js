@@ -26,23 +26,23 @@ export function sameOrigin(request){const origin=request.headers.get("Origin");i
 export async function consumeRateLimit(env,scope,key,windowSeconds,limit){const bucket=new Date(Math.floor(Date.now()/1000/windowSeconds)*windowSeconds*1000).toISOString();try{const r=await rpc(env,"consume_rate_limit",{p_scope:scope,p_key:String(key),p_bucket_start:bucket,p_limit:limit});const n=Array.isArray(r)?r[0]:r;const value=Number((n?.consume_rate_limit ?? n) || 0);return value<=limit}catch{return true}}
 export async function registerViolation(env,ip,type,detail=""){try{await rpc(env,"register_violation",{p_ip_address:ip,p_event_type:type,p_detail:String(detail).slice(0,500)})}catch{}}
 export function safeUrl(v){try{const u=new URL(v);return ["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
-function deepFindUrl(value,seen=new Set(),depth=0){if(value==null||depth>6)return "";if(typeof value==="string"){const direct=safeUrl(value);if(direct)return direct;const m=value.match(/https?:\/\/[^\s"'<>]+/i);return m?safeUrl(m[0]):""}if(typeof value!=="object"||seen.has(value))return "";seen.add(value);if(Array.isArray(value)){for(const v of value){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}const preferred=["shortenedUrl","shortened_url","short_url","shorturl","shortUrl","url","link","short","redirect_url","redirectUrl","destination","data","result"];for(const k of preferred){if(k in value){const u=deepFindUrl(value[k],seen,depth+1);if(u)return u}}for(const v of Object.values(value)){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}
-function gtrafficCandidateUrls(env,slot,destination){const custom=String(env.GTRAFFIC_BASE_URL||"").trim();const endpoints=[];if(custom)endpoints.push(custom);endpoints.push("https://manager.gtraffic.io/api/cong-khai/tao-lien-ket","https://gtraffic.io/api/cong-khai/tao-lien-ket");return [...new Set(endpoints.filter(Boolean))].flatMap(base=>{const root=base.replace(/[?&]+$/,'');return ["apikey","api_key"].map(key=>root+"?"+key+"="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination))})}
+function deepFindUrl(value,seen=new Set(),depth=0){if(value==null||depth>7)return "";if(typeof value==="string"){const direct=safeUrl(value.trim());if(direct)return direct;const m=value.match(/https?:\/\/[^\s"'<>]+/i);return m?safeUrl(m[0]):""}if(typeof value!=="object"||seen.has(value))return "";seen.add(value);if(Array.isArray(value)){for(const v of value){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}const preferred=["shortenedUrl","shortened_url","short_url","shorturl","shortUrl","short_link","shortLink","link","short","redirect_url","redirectUrl","destination","data","result"];for(const k of preferred){if(k in value){const u=deepFindUrl(value[k],seen,depth+1);if(u)return u}}for(const v of Object.values(value)){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}
+function gtrafficEndpoint(value){let v=String(value||"").trim();if(!v)return "";try{const u=new URL(v);if(!u.pathname||u.pathname==="/")u.pathname="/api/cong-khai/tao-lien-ket";return u.href}catch{return ""}}
+function gtrafficCandidates(env,destination,token){const endpoints=[];const configured=String(env.GTRAFFIC_BASE_URL||"").trim();if(configured)endpoints.push(gtrafficEndpoint(configured));endpoints.push(gtrafficEndpoint("https://gtraffic.io/api/cong-khai/tao-lien-ket"),gtrafficEndpoint("https://manager.gtraffic.io/api/cong-khai/tao-lien-ket"));const uniq=[...new Set(endpoints.filter(Boolean))];const out=[];for(const endpoint of uniq){const u=new URL(endpoint);for(const auth of ["apikey","api_key"]){for(const target of ["url","link"]){const q=new URLSearchParams(u.search);q.set(auth,token);q.set(target,destination);u.search=q.toString();out.push({kind:"GET",url:u.toString()})}}out.push({kind:"FORM",url:endpoint});out.push({kind:"JSON",url:endpoint})}return out}
+function gtrafficCode(value){const s=String(value??"").trim().replace(/^['"]|['"]$/g,"");if(/^[A-Za-z0-9_-]{3,96}$/.test(s))return s;return ""}
 export async function shorten(slot,destination,env){
   if(slot.provider==="gtraffic"){
-    const basePublic=(env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io").replace(/\/+$/,'');
-    let lastDetail="";
-    for(const endpoint of gtrafficCandidateUrls(env,slot,destination)){
+    const configured=await setting(env,"shortener_gtraffic_base_url",env.GTRAFFIC_BASE_URL||"https://gtraffic.io/api/cong-khai/tao-lien-ket").catch(()=>env.GTRAFFIC_BASE_URL||"https://gtraffic.io/api/cong-khai/tao-lien-ket");
+    const publicBase=(await setting(env,"shortener_gtraffic_public_base_url",env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io").catch(()=>env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io")).replace(/\/+$/,'');
+    const candidates=gtrafficCandidates({GTRAFFIC_BASE_URL:configured},destination,slot.token);let lastDetail="";
+    for(const candidate of candidates){
       try{
-        const r=await fetch(endpoint,{headers:{accept:"application/json, text/plain, */*","user-agent":"BDZTEAM-Shortener/2.1"}});
-        const raw=await r.text();
-        let x=raw;try{x=raw?JSON.parse(raw):{}}catch{}
-        if(!r.ok){lastDetail=`HTTP ${r.status}`;continue}
-        let s=deepFindUrl(x);
-        if(!s&&typeof raw==="string")s=deepFindUrl(raw);
-        if(!s){const id=String(x?.id??x?.data?.id??x?.result?.id??"").trim();if(id)s=safeUrl(basePublic+"/"+encodeURIComponent(id))}
-        if(s&&s!==destination)return s;
-        lastDetail="API trả về dữ liệu nhưng không tìm thấy URL hợp lệ";
+        let r;
+        if(candidate.kind==="GET")r=await fetch(candidate.url,{method:"GET",redirect:"follow",headers:{accept:"application/json, text/plain, */*","user-agent":"BDZTEAM-Shortener/3.0"}});
+        else if(candidate.kind==="FORM")r=await fetch(candidate.url,{method:"POST",redirect:"follow",headers:{accept:"application/json, text/plain, */*","content-type":"application/x-www-form-urlencoded","user-agent":"BDZTEAM-Shortener/3.0"},body:new URLSearchParams({apikey:slot.token,url:destination}).toString()});
+        else r=await fetch(candidate.url,{method:"POST",redirect:"follow",headers:{accept:"application/json, text/plain, */*","content-type":"application/json","user-agent":"BDZTEAM-Shortener/3.0"},body:JSON.stringify({apikey:slot.token,url:destination})});
+        const raw=await r.text();let x=raw;try{x=raw?JSON.parse(raw):{}}catch{}
+        if(r.ok){let s=deepFindUrl(x)||deepFindUrl(raw);if(!s&&r.redirected&&r.url&&r.url!==candidate.url)s=safeUrl(r.url);if(!s&&x&&typeof x==="object"){const id=gtrafficCode(x.id??x.code??x.short_code??x.shortCode??x.data?.id??x.data?.code??x.result?.id??x.result?.code);if(id)s=safeUrl(publicBase+"/"+encodeURIComponent(id))}if(!s&&typeof raw==="string"){const code=gtrafficCode(raw);if(code)s=safeUrl(publicBase+"/"+encodeURIComponent(code))}if(s&&s!==destination)return s;lastDetail="API phản hồi nhưng không tìm thấy link hợp lệ"}else lastDetail=`HTTP ${r.status}`;
       }catch(e){lastDetail=String(e?.message||e).slice(0,180)}
     }
     throw Error(`GTraffic không tạo được link rút gọn${lastDetail?`: ${lastDetail}`:""}`);
