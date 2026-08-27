@@ -1,6 +1,6 @@
 export const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate, max-age=0"};
 export const json=(data,status=200,extra={})=>new Response(JSON.stringify(data),{status,headers:{...JSON_HEADERS,...extra}});
-export const ipOf=r=>{const direct=r.headers.get("X-Real-IP");if(direct)return direct.trim();const forwarded=r.headers.get("X-Forwarded-For");if(forwarded)return forwarded.split(",")[0].trim();const f=r.headers.get("Forwarded");if(f){const part=f.split(";").find(x=>x.trim().toLowerCase().startsWith("for="));if(part)return part.trim().slice(4).split(",")[0].trim()}return "0.0.0.0"};
+export const ipOf=r=>r.headers.get("X-Real-IP")||r.headers.get("X-Forwarded-For")?.split(",")[0]?.trim()||r.headers.get("Forwarded")?.match(/for=([^;]+)/i)?.[1]?.replace(/^\"|\"$/g,"")||"0.0.0.0";
 export async function sha256(v){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 export async function hmac(secret,value){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);return new Uint8Array(await crypto.subtle.sign("HMAC",k,new TextEncoder().encode(value)))}
 const b64=a=>btoa(String.fromCharCode(...a)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/i,"");
