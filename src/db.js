@@ -10,7 +10,7 @@ export async function signSession(env,payload){const body=b64(new TextEncoder().
 export async function verifySession(env,raw){if(!raw)return null;const i=raw.lastIndexOf(".");if(i<1)return null;const body=raw.slice(0,i),sig=raw.slice(i+1),want=b64(await hmac(env.ADMIN_SESSION_SECRET||env.ADMIN_PASSWORD||"bdz-session",body));if(sig!==want)return null;try{const d=JSON.parse(new TextDecoder().decode(unb64(body)));return d.exp>Date.now()?d:null}catch{return null}}
 export async function getSession(request,env,name="bdz_admin"){const c=request.headers.get("Cookie")||"",x=c.split(";").map(v=>v.trim()).find(v=>v.startsWith(name+"="));return verifySession(env,x?x.slice(name.length+1):"")}
 export const clearAuth=()=>({"set-cookie":["bdz_admin=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax","bdz_pending=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax"].join(", ")});
-export async function sb(env,path,init={}){const k=env.SUPABASE_SECRET_KEY;if(!k)throw Error("SUPABASE_SECRET_KEY chưa được cấu hình");const h=new Headers(init.headers);h.set("apikey",k);h.set("Authorization","Bearer "+k);h.set("Accept","application/json");if(init.body!==undefined)h.set("content-type","application/json");const r=await fetch(env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/"+path.replace(/^\/+/,""),{...init,headers:h});const t=await r.text();let d;try{d=t?JSON.parse(t):null}catch{d=t}if(!r.ok)throw Error("Supabase HTTP "+r.status+(d?.message?": "+d.message:""));return d}
+export async function sb(env,path,init={}){const k=env.SUPABASE_SECRET_KEY;if(!k)throw Error("SUPABASE_SECRET_KEY chưa được cấu hình");const h=new Headers(init.headers);h.set("apikey",k);h.set("Authorization","Bearer "+k);h.set("Accept","application/json");if(init.body!==undefined)h.set("content-type","application/json");const r=await fetch(env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/"+path.replace(/^\/+/,""),{...init,headers:h});const t=await r.text();let d;try{d=t?JSON.parse(t):null}catch{d=t}if(!r.ok)throw Error("Supabase HTTP "+r.status+(d?.message?": "+d.message:"));return d}
 export const rpc=(env,name,body={})=>sb(env,"/rpc/"+name,{method:"POST",body:JSON.stringify(body)});
 export async function setting(env,key,fallback=""){const r=await sb(env,"settings?select=setting_value&setting_key=eq."+encodeURIComponent(key)+"&limit=1");return r?.[0]?.setting_value??fallback}
 export async function saveSetting(env,key,value){const q=encodeURIComponent(key),body=JSON.stringify({setting_key:key,setting_value:String(value??"")});const existing=await sb(env,"settings?select=id&setting_key=eq."+q+"&limit=1").catch(()=>[]);if(Array.isArray(existing)&&existing.length){await sb(env,"settings?setting_key=eq."+q,{method:"PATCH",headers:{Prefer:"return=minimal"},body});return true}try{await sb(env,"settings",{method:"POST",headers:{Prefer:"return=minimal"},body});return true}catch(e){const msg=String(e?.message||e);if(msg.includes("409")||msg.includes("duplicate key")||msg.includes("settings_setting_key_key")){await sb(env,"settings?setting_key=eq."+q,{method:"PATCH",headers:{Prefer:"return=minimal"},body});return true}throw e}}
@@ -26,25 +26,26 @@ export function sameOrigin(request){const origin=request.headers.get("Origin");i
 export async function consumeRateLimit(env,scope,key,windowSeconds,limit){const bucket=new Date(Math.floor(Date.now()/1000/windowSeconds)*windowSeconds*1000).toISOString();try{const r=await rpc(env,"consume_rate_limit",{p_scope:scope,p_key:String(key),p_bucket_start:bucket,p_limit:limit});const n=Array.isArray(r)?r[0]:r;const value=Number((n?.consume_rate_limit ?? n) || 0);return value<=limit}catch{return true}}
 export async function registerViolation(env,ip,type,detail=""){try{await rpc(env,"register_violation",{p_ip_address:ip,p_event_type:type,p_detail:String(detail).slice(0,500)})}catch{}}
 export function safeUrl(v){try{const u=new URL(v);return ["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
-function deepFindUrl(value,seen=new Set(),depth=0){if(value==null||depth>7)return "";if(typeof value==="string"){const direct=safeUrl(value.trim());if(direct)return direct;const m=value.match(/https?:\/\/[^\s"'<>]+/i);return m?safeUrl(m[0]):""}if(typeof value!=="object"||seen.has(value))return "";seen.add(value);if(Array.isArray(value)){for(const v of value){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}const preferred=["shortenedUrl","shortened_url","short_url","shorturl","shortUrl","short_link","shortLink","link","short","redirect_url","redirectUrl","destination","data","result"];for(const k of preferred){if(k in value){const u=deepFindUrl(value[k],seen,depth+1);if(u)return u}}for(const v of Object.values(value)){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}
-function gtrafficEndpoint(value){let v=String(value||"").trim();if(!v)return "";try{const u=new URL(v);if(!u.pathname||u.pathname==="/")u.pathname="/api/cong-khai/tao-lien-ket";return u.href}catch{return ""}}
-function gtrafficRequests(endpoint,destination,token){const out=[];const enc=encodeURIComponent(destination);const base=endpoint.replace(/[?&]+$/,'');for(const auth of ["apikey","api_key","key","token"]){out.push({method:"GET",url:`${base}?${auth}=${encodeURIComponent(token)}&url=${enc}`});out.push({method:"GET",url:`${base}?${auth}=${encodeURIComponent(token)}&link=${enc}`})}return out}
-function gtrafficCode(value){const s=String(value??"").trim().replace(/^['"]|['"]$/g,"");if(/^[A-Za-z0-9_-]{3,128}$/.test(s))return s;return ""}
-async function gtrafficResponse(r,raw,publicBase,destination){let x=raw;try{x=raw?JSON.parse(raw):{}}catch{}if(!r.ok)return {url:"",detail:`HTTP ${r.status}`};let s=deepFindUrl(x)||deepFindUrl(raw);if(!s&&r.redirected&&r.url&&r.url!==r.url)s=safeUrl(r.url);if(!s&&x&&typeof x==="object"){const id=gtrafficCode(x.id??x.code??x.key??x.short_code??x.shortCode??x.data?.id??x.data?.code??x.data?.key??x.result?.id??x.result?.code??x.result?.key);if(id)s=safeUrl(publicBase+"/"+encodeURIComponent(id))}if(!s&&typeof raw==="string"){const code=gtrafficCode(raw);if(code)s=safeUrl(publicBase+"/"+encodeURIComponent(code))}return {url:s&&s!==destination?s:"",detail:s?"":"API phản hồi nhưng không tìm thấy link hợp lệ"}}
+function deepFindUrl(value,seen=new Set(),depth=0){if(value==null||depth>6)return "";if(typeof value==="string"){const direct=safeUrl(value.trim());if(direct)return direct;const m=value.match(/https?:\/\/[^\s"'<>]+/i);return m?safeUrl(m[0]):""}if(typeof value!=="object"||seen.has(value))return "";seen.add(value);if(Array.isArray(value)){for(const v of value){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}for(const v of Object.values(value)){const u=deepFindUrl(v,seen,depth+1);if(u)return u}return ""}
 export async function shorten(slot,destination,env){
   if(slot.provider==="gtraffic"){
-    const configured=await setting(env,"shortener_gtraffic_base_url",env.GTRAFFIC_BASE_URL||"https://gtraffic.io/api/cong-khai/tao-lien-ket").catch(()=>env.GTRAFFIC_BASE_URL||"https://gtraffic.io/api/cong-khai/tao-lien-ket");
-    const publicBase=(await setting(env,"shortener_gtraffic_public_base_url",env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io").catch(()=>env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io")).replace(/\/+$/,'');
-    const endpoint=gtrafficEndpoint(configured);if(!endpoint)throw Error("GTraffic Base URL không hợp lệ");
-    let lastDetail="";
-    const common={accept:"application/json, text/plain, */*","user-agent":"Mozilla/5.0 (compatible; BDZTEAM-Shortener/4.0)",origin:"https://gtraffic.io",referer:"https://gtraffic.io/","x-api-key":slot.token,"x-apikey":slot.token,authorization:"Bearer "+slot.token};
-    for(const candidate of gtrafficRequests(endpoint,destination,slot.token)){
-      try{const r=await fetch(candidate.url,{method:candidate.method,redirect:"follow",headers:common});const raw=await r.text();const parsed=await gtrafficResponse(r,raw,publicBase,destination);if(parsed.url)return parsed.url;lastDetail=parsed.detail}catch(e){lastDetail=String(e?.message||e).slice(0,180)}
-    }
-    for(const bodyType of ["FORM","JSON"]){
-      try{const r=await fetch(endpoint,{method:"POST",redirect:"follow",headers:{...common,"content-type":bodyType==="FORM"?"application/x-www-form-urlencoded":"application/json"},body:bodyType==="FORM"?new URLSearchParams({apikey:slot.token,api_key:slot.token,key:slot.token,token:slot.token,url:destination,link:destination}).toString():JSON.stringify({apikey:slot.token,api_key:slot.token,key:slot.token,token:slot.token,url:destination,link:destination})});const raw=await r.text();const parsed=await gtrafficResponse(r,raw,publicBase,destination);if(parsed.url)return parsed.url;lastDetail=parsed.detail}catch(e){lastDetail=String(e?.message||e).slice(0,180)}
-    }
-    throw Error(`GTraffic không tạo được link rút gọn${lastDetail?`: ${lastDetail}`:""}`);
+    const endpoint="https://manager.gtraffic.io/api/cong-khai/tao-lien-ket";
+    const token=String(slot.token||"").trim();
+    const target=safeUrl(destination);
+    if(!token)throw Error("GTraffic API token chưa được cấu hình");
+    if(!target)throw Error("URL cần rút gọn không hợp lệ");
+    const u=new URL(endpoint);
+    u.searchParams.set("apikey",token);
+    u.searchParams.set("url",target);
+    const r=await fetch(u.toString(),{method:"GET",redirect:"follow",headers:{accept:"application/json","user-agent":"BDZTEAM/Shortener"}});
+    const raw=await r.text();
+    let x={};try{x=raw?JSON.parse(raw):{}}catch{}
+    if(!r.ok){const msg=typeof x?.message==="string"?x.message:(typeof x?.error==="string"?x.error:"");throw Error(`GTraffic HTTP ${r.status}${msg?`: ${msg}`:""}`)}
+    const id=String(x?.id||"").trim();
+    if(!id)throw Error("GTraffic trả về thành công nhưng thiếu id");
+    const direct=safeUrl(x?.shortenedUrl||x?.short_url||x?.shortUrl||"");
+    if(direct)return direct;
+    return `https://gtraffic.io/${encodeURIComponent(id)}`;
   }
   const base=slot.provider==="link4m"?(env.LINK4M_BASE_URL||"https://link4m.co/api-shorten/v2"):(env.TRAFFICVN_BASE_URL||"https://trafficvn.com/apidevelop");
   const u=base.replace(/[?&]+$/,'')+"?api="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination);
