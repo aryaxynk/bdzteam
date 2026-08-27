@@ -1,47 +1,29 @@
-import {json,clearAuth,cookieHeader,ipOf,banned,autoBanned,getSession} from '../src/db.js';
-import {products,startGetKey,claimKey,keyMeta,siteData,publicStats,verifyTurnstileToken} from '../src/public_api.js';
-import {verifyKeyByIp} from '../src/ip_verify.js';
-import {adminLogin,adminAuthCode,requireAdmin,dashboard,adminAction} from '../src/admin_api.js';
+import {Headers,Request,Response} from 'node-fetch';
 function toRequest(req,url,bodyOverride){const headers=new Headers();for(const [k,v] of Object.entries(req.headers||{}))if(v!=null)headers.set(k,Array.isArray(v)?v.join(','):String(v));let body=bodyOverride;if(body===undefined&&!['GET','HEAD'].includes(req.method)){if(typeof req.body==='string')body=req.body;else if(req.body!==undefined)body=JSON.stringify(req.body)}return new Request(url,{method:req.method,headers,body})}
 function send(res,r){res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return r.arrayBuffer().then(b=>res.end(Buffer.from(b)))}
-function jsonError(message,status=400,extra={}){return json({ok:false,error:String(message||'Yêu cầu không hợp lệ.')},status,extra)}
-async function sessionCheck(request,env){const ip=ipOf(request);if(await banned(env,ip))return json({ok:false,action:'ip_banned',message:'IP của bạn đã bị Quản trị viên khóa vĩnh viễn khỏi hệ thống.'},403,clearAuth());if(await autoBanned(env,ip))return json({ok:false,action:'ip_banned',message:'IP của bạn đã bị tạm khóa do có hành vi bất thường.'},403,clearAuth());const s=await getSession(request,env);if(!s)return json({ok:true,action:'none'});if(s.r==='sub'){const k=env.SUPABASE_SECRET_KEY;if(!k)return json({ok:false,action:'server_error',message:'SUPABASE_SECRET_KEY chưa được cấu hình.'},503);const r=await fetch(env.SUPABASE_URL+'/rest/v1/sub_admins?select=status&id=eq.'+Number(s.id)+'&limit=1',{headers:{apikey:k,Authorization:'Bearer '+k,Accept:'application/json'}}).catch(()=>null);const rows=r?.ok?await r.json():[];if(!rows?.[0])return json({ok:false,action:'account_deleted',message:'Tài khoản của bạn đã bị Admin chính xóa quyền truy cập.'},401,clearAuth());if(rows[0].status!=='ACTIVE')return json({ok:false,action:'account_locked',message:'Tài khoản của bạn đã bị Admin chính khóa.'},401,clearAuth())}return json({ok:true,action:'none'})}
-const METHODS={
- '/api/health':['GET'],
- '/api/site-gate':['POST'],
- '/api/session-check':['GET'],
- '/api/site':['GET'],
- '/api/stats':['GET'],
- '/api/key-meta':['GET'],
- '/api/products':['GET'],
- '/api/start-get-key':['POST'],
- '/api/v1/verify':['GET','POST','OPTIONS'],
- '/api/check-key':['GET','POST','OPTIONS'],
- '/api/verify':['GET','POST','OPTIONS'],
- '/api/claim-key':['POST'],
- '/api/admin/login':['POST'],
- '/api/admin/auth-code':['POST'],
- '/api/admin/logout':['POST'],
- '/api/admin/me':['GET'],
- '/api/admin/dashboard':['GET'],
- '/api/admin/action':['POST']
-};
-export default async function handler(req,res){const host=String(req.headers.host||'localhost');const base=`https://${host}`;const rawUrl=String(req.url||'/api');const fullUrl=new URL(rawUrl.startsWith('http')?rawUrl:`${base}${rawUrl}`);const pathname=fullUrl.pathname.replace(/\\+/g,'/').replace(/\/$/,'')||'/';const path=pathname.startsWith('/api/')?pathname:'/api';const request=toRequest(req,fullUrl.toString());const env=process.env;try{
- if(req.method==='OPTIONS')return send(res,new Response(null,{status:204,headers:{'access-control-allow-origin':req.headers.origin||'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'content-type,accept','access-control-allow-credentials':'true','cache-control':'no-store'}}));
- const allowed=METHODS[path];if(allowed&&!allowed.includes(String(req.method||'GET').toUpperCase()))return send(res,jsonError(`Method Not Allowed. ${allowed.join(' / ')} ${path} est requise.`,405,{'allow':allowed.join(', ')}));
- if(path==='/api/health')return send(res,json({ok:true,service:'bdzteam-vercel',target:base,storage:'supabase'}));
- if(path==='/api/site-gate'&&req.method==='POST'){const body=await request.json().catch(()=>({}));const ch=await verifyTurnstileToken(String(body.turnstile_token||body.cf_turnstile_token||''),request,env);if(!ch.ok)return send(res,jsonError(ch.message,ch.status));return send(res,json({ok:true,message:'Cloudflare verified.'},200,{'set-cookie':cookieHeader('bdz_gate','1',1800)}))}
- if(path==='/api/session-check'&&req.method==='GET')return send(res,await sessionCheck(request,env));
- if(path==='/api/site'&&req.method==='GET')return send(res,json(await siteData(env)));
- if(path==='/api/stats'&&req.method==='GET')return send(res,json(await publicStats(env)));
- if(path==='/api/key-meta'&&req.method==='GET')return send(res,await keyMeta(request,env));
- if(path==='/api/products'&&req.method==='GET')return send(res,await products(env));
- if(path==='/api/start-get-key'&&req.method==='POST')return send(res,await startGetKey(request,env));
- if(['/api/v1/verify','/api/check-key','/api/verify'].includes(path)&&['GET','POST'].includes(String(req.method).toUpperCase()))return send(res,await verifyKeyByIp(request,env));
- if(path==='/api/claim-key'&&req.method==='POST')return send(res,await claimKey(request,env));
- if(path==='/api/admin/login'&&req.method==='POST'){const raw=await request.text();let body={};try{body=raw?JSON.parse(raw):{}}catch{return send(res,jsonError('Dữ liệu đăng nhập không hợp lệ.',400))}return send(res,await adminLogin(toRequest(req,fullUrl.toString(),JSON.stringify(body)),env));}
- if(path==='/api/admin/auth-code'&&req.method==='POST')return send(res,await adminAuthCode(request,env));
- if(path==='/api/admin/logout'&&req.method==='POST')return send(res,json({ok:true},200,clearAuth()));
- if(path.startsWith('/api/admin/')){const s=await requireAdmin(request,env);if(!s)return send(res,json({ok:false,error:'Chưa đăng nhập quản trị.'},401));if(path==='/api/admin/me'&&req.method==='GET')return send(res,json({ok:true,user:s.u,role:s.r}));if(path==='/api/admin/dashboard'&&req.method==='GET')return send(res,json(await dashboard(env,s)));if(path==='/api/admin/action'&&req.method==='POST')return send(res,await adminAction(request,env,s));}
- return send(res,json({ok:false,error:'Not found',path},404));
-}catch(e){console.error('[vercel]',e);return send(res,json({ok:false,error:'Lỗi máy chủ. Vui lòng thử lại sau.'},500))}}
+function jsonError(message,status=400,extra={}){return new Response(JSON.stringify({ok:false,error:String(message||'Yêu cầu không hợp lệ.')}),{status,headers:{'content-type':'application/json; charset=utf-8',...extra}})}
+const METHODS={'/api/health':['GET'],'/api/site-gate':['POST'],'/api/session-check':['GET'],'/api/site':['GET'],'/api/stats':['GET'],'/api/key-meta':['GET'],'/api/products':['GET'],'/api/start-get-key':['POST'],'/api/v1/verify':['GET','POST','OPTIONS'],'/api/check-key':['GET','POST','OPTIONS'],'/api/verify':['GET','POST','OPTIONS'],'/api/claim-key':['POST'],'/api/admin/login':['POST'],'/api/admin/auth-code':['POST'],'/api/admin/logout':['POST'],'/api/admin/me':['GET'],'/api/admin/dashboard':['GET'],'/api/admin/action':['POST']};
+export default async function handler(req,res){
+ const host=String(req.headers.host||'localhost');const base=`https://${host}`;const rawUrl=String(req.url||'/api');const fullUrl=new URL(rawUrl.startsWith('http')?rawUrl:`${base}${rawUrl}`);const pathname=fullUrl.pathname.replace(/\\+/g,'/').replace(/\/$/,'')||'/';const path=pathname.startsWith('/api/')?pathname:'/api';const request=toRequest(req,fullUrl.toString());const env=process.env;
+ try{
+  const db=await import('../src/db.js');
+  const {json,clearAuth,cookieHeader,ipOf,banned,autoBanned,getSession,sha256,rpc,setting,getSlots,shorten,securityLog,ensureProducts,consumeRateLimit,registerViolation,isBadUserAgent}=db;
+  if(req.method==='OPTIONS')return send(res,new Response(null,{status:204,headers:{'access-control-allow-origin':req.headers.origin||'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'content-type,accept','access-control-allow-credentials':'true','cache-control':'no-store'}}));
+  const allowed=METHODS[path];if(allowed&&!allowed.includes(String(req.method||'GET').toUpperCase()))return send(res,jsonError(`Method Not Allowed. ${allowed.join(' / ')} ${path} est requise.`,405,{'allow':allowed.join(', ')}));
+  if(path==='/api/health')return send(res,json({ok:true,service:'bdzteam-vercel',target:base,storage:'supabase'}));
+  if(path==='/api/site-gate'&&req.method==='POST'){const {verifyTurnstileToken}=await import('../src/public_api.js');const body=await request.json().catch(()=>({}));const ch=await verifyTurnstileToken(String(body.turnstile_token||body.cf_turnstile_token||''),request,env);if(!ch.ok)return send(res,jsonError(ch.message,ch.status));return send(res,json({ok:true,message:'Cloudflare verified.'},200,{'set-cookie':cookieHeader('bdz_gate','1',1800)}))}
+  if(path==='/api/session-check'&&req.method==='GET'){const ip=ipOf(request);if(await banned(env,ip))return send(res,json({ok:false,action:'ip_banned',message:'IP của bạn đã bị Quản trị viên khóa vĩnh viễn khỏi hệ thống.'},403,clearAuth()));if(await autoBanned(env,ip))return send(res,json({ok:false,action:'ip_banned',message:'IP của bạn đã bị tạm khóa do có hành vi bất thường.'},403,clearAuth()));const s=await getSession(request,env);if(!s)return send(res,json({ok:true,action:'none'}));if(s.r==='sub'){const k=env.SUPABASE_SECRET_KEY;if(!k)return send(res,json({ok:false,action:'server_error',message:'SUPABASE_SECRET_KEY chưa được cấu hình.'},503));const r=await fetch(env.SUPABASE_URL+'/rest/v1/sub_admins?select=status&id=eq.'+Number(s.id)+'&limit=1',{headers:{apikey:k,Authorization:'Bearer '+k,Accept:'application/json'}}).catch(()=>null);const rows=r?.ok?await r.json():[];if(!rows?.[0])return send(res,json({ok:false,action:'account_deleted',message:'Tài khoản của bạn đã bị Admin chính xóa quyền truy cập.'},401,clearAuth()));if(rows[0].status!=='ACTIVE')return send(res,json({ok:false,action:'account_locked',message:'Tài khoản của bạn đã bị Admin chính khóa.'},401,clearAuth()))}return send(res,json({ok:true,action:'none'}))}
+  if(path==='/api/site'&&req.method==='GET'){const {siteData}=await import('../src/public_api.js');return send(res,json(await siteData(env)))}
+  if(path==='/api/stats'&&req.method==='GET'){const {publicStats}=await import('../src/public_api.js');return send(res,json(await publicStats(env)))}
+  if(path==='/api/key-meta'&&req.method==='GET'){const {keyMeta}=await import('../src/public_api.js');return send(res,await keyMeta(request,env))}
+  if(path==='/api/products'&&req.method==='GET'){const {products}=await import('../src/public_api.js');return send(res,await products(env))}
+  if(path==='/api/start-get-key'&&req.method==='POST'){const {startGetKey}=await import('../src/public_api.js');return send(res,await startGetKey(request,env))}
+  if(['/api/v1/verify','/api/check-key','/api/verify'].includes(path)&&['GET','POST'].includes(String(req.method).toUpperCase())){const {verifyKeyByIp}=await import('../src/ip_verify.js');return send(res,await verifyKeyByIp(request,env))}
+  if(path==='/api/claim-key'&&req.method==='POST'){const {claimKey}=await import('../src/public_api.js');return send(res,await claimKey(request,env))}
+  if(path==='/api/admin/login'&&req.method==='POST'){const {adminLogin}=await import('../src/admin_api.js');const raw=await request.text();let body={};try{body=raw?JSON.parse(raw):{}}catch{return send(res,jsonError('Dữ liệu đăng nhập không hợp lệ.',400))}return send(res,await adminLogin(toRequest(req,fullUrl.toString(),JSON.stringify(body)),env))}
+  if(path==='/api/admin/auth-code'&&req.method==='POST'){const {adminAuthCode}=await import('../src/admin_api.js');return send(res,await adminAuthCode(request,env))}
+  if(path==='/api/admin/logout'&&req.method==='POST')return send(res,json({ok:true},200,clearAuth()));
+  if(path.startsWith('/api/admin/')){const {requireAdmin,dashboard,adminAction}=await import('../src/admin_api.js');const s=await requireAdmin(request,env);if(!s)return send(res,json({ok:false,error:'Chưa đăng nhập quản trị.'},401));if(path==='/api/admin/me'&&req.method==='GET')return send(res,json({ok:true,user:s.u,role:s.r}));if(path==='/api/admin/dashboard'&&req.method==='GET')return send(res,json(await dashboard(env,s)));if(path==='/api/admin/action'&&req.method==='POST')return send(res,await adminAction(request,env,s))}
+  return send(res,json({ok:false,error:'Not found',path},404));
+ }catch(e){console.error('[vercel]',e);try{const db=await import('../src/db.js');return send(res,db.json({ok:false,error:String(e?.message||e).slice(0,500)},500))}catch{return send(res,new Response(JSON.stringify({ok:false,error:String(e?.message||e).slice(0,500)}),{status:500,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}}))}}
+}
