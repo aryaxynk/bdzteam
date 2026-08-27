@@ -1,6 +1,6 @@
 export const JSON_HEADERS={"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate, max-age=0"};
 export const json=(data,status=200,extra={})=>new Response(JSON.stringify(data),{status,headers:{...JSON_HEADERS,...extra}});
-export const ipOf=r=>r.headers.get("X-Real-IP")||r.headers.get("X-Forwarded-For")?.split(",")[0]?.trim()||r.headers.get("Forwarded")?.match(/for=([^;]+)/i)?.[1]?.replace(/^\"|\"$/g,"")||"0.0.0.0";
+export const ipOf=r=>r.headers.get("X-Real-IP")||r.headers.get("X-Forwarded-For")?.split(",")[0]?.trim()||r.headers.get("Forwarded")?.match(/for=([^;]+)/i)?.[1]?.replace(/^"|"$/g,"")||"0.0.0.0";
 export async function sha256(v){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 export async function hmac(secret,value){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);return new Uint8Array(await crypto.subtle.sign("HMAC",k,new TextEncoder().encode(value)))}
 const b64=a=>btoa(String.fromCharCode(...a)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/i,"");
@@ -10,13 +10,13 @@ export async function signSession(env,payload){const body=b64(new TextEncoder().
 export async function verifySession(env,raw){if(!raw)return null;const i=raw.lastIndexOf(".");if(i<1)return null;const body=raw.slice(0,i),sig=raw.slice(i+1),want=b64(await hmac(env.ADMIN_SESSION_SECRET||env.ADMIN_PASSWORD||"bdz-session",body));if(sig!==want)return null;try{const d=JSON.parse(new TextDecoder().decode(unb64(body)));return d.exp>Date.now()?d:null}catch{return null}}
 export async function getSession(request,env,name="bdz_admin"){const c=request.headers.get("Cookie")||"",x=c.split(";").map(v=>v.trim()).find(v=>v.startsWith(name+"="));return verifySession(env,x?x.slice(name.length+1):"")}
 export const clearAuth=()=>({"set-cookie":["bdz_admin=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax","bdz_pending=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax"].join(", ")});
-export async function sb(env,path,init={}){const k=env.SUPABASE_SECRET_KEY;if(!k)throw Error("SUPABASE_SECRET_KEY chưa được cấu hình");const h=new Headers(init.headers);h.set("apikey",k);h.set("Authorization","Bearer "+k);h.set("Accept","application/json");if(init.body!==undefined)h.set("content-type","application/json");const r=await fetch(env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/"+path.replace(/^\/+/,""),{...init,headers:h});const t=await r.text();let d;try{d=t?JSON.parse(t):null}catch{d=t}if(!r.ok)throw Error("Supabase HTTP "+r.status+(d?.message?": "+d.message:"));return d}
+export async function sb(env,path,init={}){const k=env.SUPABASE_SECRET_KEY;if(!k)throw Error("SUPABASE_SECRET_KEY chưa được cấu hình");const h=new Headers(init.headers);h.set("apikey",k);h.set("Authorization","Bearer "+k);h.set("Accept","application/json");if(init.body!==undefined)h.set("content-type","application/json");const r=await fetch(env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/"+path.replace(/^\/+/,""),{...init,headers:h});const t=await r.text();let d;try{d=t?JSON.parse(t):null}catch{d=t}if(!r.ok)throw Error("Supabase HTTP "+r.status+(d?.message?": "+d.message:""));return d}
 export const rpc=(env,name,body={})=>sb(env,"/rpc/"+name,{method:"POST",body:JSON.stringify(body)});
 export async function setting(env,key,fallback=""){const r=await sb(env,"settings?select=setting_value&setting_key=eq."+encodeURIComponent(key)+"&limit=1");return r?.[0]?.setting_value??fallback}
 export async function saveSetting(env,key,value){const q=encodeURIComponent(key),body=JSON.stringify({setting_key:key,setting_value:String(value??"")});const existing=await sb(env,"settings?select=id&setting_key=eq."+q+"&limit=1").catch(()=>[]);if(Array.isArray(existing)&&existing.length){await sb(env,"settings?setting_key=eq."+q,{method:"PATCH",headers:{Prefer:"return=minimal"},body});return true}try{await sb(env,"settings",{method:"POST",headers:{Prefer:"return=minimal"},body});return true}catch(e){const msg=String(e?.message||e);if(msg.includes("409")||msg.includes("duplicate key")||msg.includes("settings_setting_key_key")){await sb(env,"settings?setting_key=eq."+q,{method:"PATCH",headers:{Prefer:"return=minimal"},body});return true}throw e}}
-export function normalizeSlots(raw){let d={};try{d=JSON.parse(raw||"{}")}catch{}const out={};for(let p=1;p<=4;p++){const x=d[p]||d[String(p)]||{};const provider=String(x.provider||"").toLowerCase(),token=String(x.token||"").trim();out[p]={position:p,provider:["link4m","trafficvn","gtraffic"].includes(provider)?provider:"",token,quota:Math.max(1,Math.min(100000,parseInt(x.quota||5)||5)),enabled:!!provider&&!!token}}return out}
+export function normalizeSlots(raw){let d={};try{d=JSON.parse(raw||"{}")}catch{}const out={};for(let p=1;p<=4;p++){const x=d[p]||d[String(p)]||{};const provider=String(x.provider||"").toLowerCase(),token=String(x.token||"").trim();out[p]={position:p,provider:["link4m","trafficvn"].includes(provider)?provider:"",token,quota:Math.max(1,Math.min(100000,parseInt(x.quota||5)||5)),enabled:!!provider&&!!token}}return out}
 export async function getSlots(env){return normalizeSlots(await setting(env,"shortener_slots","{}"))}
-export async function saveSlots(env,value){const d={};for(let p=1;p<=4;p++){const x=value?.[p]||value?.[String(p)]||{};const provider=["link4m","trafficvn","gtraffic"].includes(String(x.provider||"").toLowerCase())?String(x.provider).toLowerCase():"";const token=String(x.token||"").trim();d[p]={position:p,provider,token,quota:Math.max(1,Math.min(100000,parseInt(x.quota||5)||5)),enabled:!!provider&&!!token}}await saveSetting(env,"shortener_slots",JSON.stringify(d));return d}
+export async function saveSlots(env,value){const d={};for(let p=1;p<=4;p++){const x=value?.[p]||value?.[String(p)]||{};const provider=["link4m","trafficvn"].includes(String(x.provider||"").toLowerCase())?String(x.provider).toLowerCase():"";const token=String(x.token||"").trim();d[p]={position:p,provider,token,quota:Math.max(1,Math.min(100000,parseInt(x.quota||5)||5)),enabled:!!provider&&!!token}}await saveSetting(env,"shortener_slots",JSON.stringify(d));return d}
 export async function ensureProducts(env){let rows=await sb(env,"products?select=id,name,slug&order=id.desc");if(rows?.length)return rows;for(const p of [{name:"Free Fire VIP Menu 24H",slug:"free-fire-vip-24h"},{name:"Pubg Mobile Pro",slug:"pubg-mobile-pro"},{name:"Mobile Legends Elite",slug:"ml-elite"}])await sb(env,"products",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(p)}).catch(()=>{});return sb(env,"products?select=id,name,slug&order=id.desc")}
 export async function securityLog(env,type,ip,detail=""){return sb(env,"security_events",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify({event_type:type,ip_address:ip,detail:String(detail).slice(0,1000)})}).catch(()=>{})}
 export async function banned(env,ip){const r=await sb(env,"manual_bans?select=id&ip_address=eq."+encodeURIComponent(ip)+"&limit=1").catch(()=>[]);return !!r?.length}
@@ -26,25 +26,4 @@ export function sameOrigin(request){const origin=request.headers.get("Origin");i
 export async function consumeRateLimit(env,scope,key,windowSeconds,limit){const bucket=new Date(Math.floor(Date.now()/1000/windowSeconds)*windowSeconds*1000).toISOString();try{const r=await rpc(env,"consume_rate_limit",{p_scope:scope,p_key:String(key),p_bucket_start:bucket,p_limit:limit});const n=Array.isArray(r)?r[0]:r;const value=Number((n?.consume_rate_limit ?? n) || 0);return value<=limit}catch{return true}}
 export async function registerViolation(env,ip,type,detail=""){try{await rpc(env,"register_violation",{p_ip_address:ip,p_event_type:type,p_detail:String(detail).slice(0,500)})}catch{}}
 export function safeUrl(v){try{const u=new URL(v);return ["http:","https:"].includes(u.protocol)?u.href:""}catch{return ""}}
-export async function shorten(slot,destination,env){
-  if(slot.provider==="gtraffic"){
-    const u=new URL(env.GTRAFFIC_BASE_URL||"https://manager.gtraffic.io/api/cong-khai/tao-lien-ket");
-    u.searchParams.set("apikey",slot.token);
-    u.searchParams.set("url",destination);
-    const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});
-    let x={};try{x=await r.json()}catch{}
-    const id=String(x?.id||"").trim();
-    const base=(env.GTRAFFIC_PUBLIC_BASE_URL||"https://gtraffic.io").replace(/\/+$/,'');
-    const s=id?safeUrl(base+"/"+encodeURIComponent(id)):"";
-    if(!r.ok||!s)throw Error("GTraffic không tạo được link rút gọn");
-    return s;
-  }
-  const base=slot.provider==="link4m"?(env.LINK4M_BASE_URL||"https://link4m.co/api-shorten/v2"):(env.TRAFFICVN_BASE_URL||"https://trafficvn.com/apidevelop");
-  const u=base.replace(/[?&]+$/,'')+"?api="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination);
-  const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});
-  let x={};try{x=await r.json()}catch{}
-  const c=[x.shortenedUrl,x.shortened_url,x.short_url,x.shorturl,x.url,x.link,x.data?.shortenedUrl,x.data?.short_url,x.data?.url,x.data?.link,x.result?.shortenedUrl,x.result?.short_url,x.result?.url];
-  const s=c.map(safeUrl).find(Boolean);
-  if(!r.ok||!s)throw Error(slot.provider+" không tạo được link rút gọn");
-  return s;
-}
+export async function shorten(slot,destination,env){const base=slot.provider==="link4m"?(env.LINK4M_BASE_URL||"https://link4m.co/api-shorten/v2"):(env.TRAFFICVN_BASE_URL||"https://trafficvn.com/apidevelop");const u=base.replace(/[?&]+$/,'')+"?api="+encodeURIComponent(slot.token)+"&url="+encodeURIComponent(destination);const r=await fetch(u,{headers:{accept:"application/json","user-agent":"BDZTEAM-Shortener/2.0"}});let x={};try{x=await r.json()}catch{}const c=[x.shortenedUrl,x.shortened_url,x.short_url,x.shorturl,x.url,x.link,x.data?.shortenedUrl,x.data?.short_url,x.data?.url,x.data?.link,x.result?.shortenedUrl,x.result?.short_url,x.result?.url];const s=c.map(safeUrl).find(Boolean);if(!r.ok||!s)throw Error(slot.provider+" không tạo được link rút gọn");return s}
