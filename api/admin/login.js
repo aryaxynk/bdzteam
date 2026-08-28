@@ -2,23 +2,14 @@ import bcrypt from "bcryptjs";
 import { json, ipOf, signSession, cookieHeader, sb, securityLog, consumeRateLimit, sameOrigin, isBadUserAgent } from "../../src/db.js";
 
 function jsonError(message,status=400){return new Response(JSON.stringify({ok:false,error:String(message||"Yêu cầu không hợp lệ.")}),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate, max-age=0"}})}
-async function verifyRecaptcha(request,env,token){
-  const secret=String(env.RECAPTCHA_SECRET_KEY||'').trim();
-  if(!secret)return {ok:false,error:'RECAPTCHA_SECRET_KEY chưa được cấu hình trên Vercel.'};
-  if(!token)return {ok:false,error:'Vui lòng hoàn tất xác minh reCAPTCHA.'};
-  try{
-    const form=new URLSearchParams({secret,response:String(token)}),r=await fetch('https://www.google.com/recaptcha/api/siteverify',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:form.toString(),signal:AbortSignal.timeout(8000)}),d=await r.json().catch(()=>({}));
-    const minScore=Math.max(0,Math.min(1,Number(env.RECAPTCHA_MIN_SCORE||0.5))),host=String(d.hostname||''),allowed=String(env.RECAPTCHA_ALLOWED_HOSTNAME||'').trim();
-    if(!r.ok||d.success!==true||Number(d.score||0)<minScore||String(d.action||'')!=='admin_login'||(allowed&&host!==allowed))return {ok:false,error:'Xác minh reCAPTCHA không hợp lệ. Vui lòng thử lại.'};
-    return {ok:true,data:d};
-  }catch{return {ok:false,error:'Không thể kết nối tới Google reCAPTCHA.'}}
+async function verifyRecaptcha(request,env,token){const secret=String(env.RECAPTCHA_SECRET_KEY||'').trim();if(!secret)return {ok:false,error:'RECAPTCHA_SECRET_KEY chưa được cấu hình trên Vercel.'};if(!token)return {ok:false,error:'Vui lòng hoàn tất xác minh reCAPTCHA.'};try{const form=new URLSearchParams({secret,response:String(token)}),r=await fetch('https://www.google.com/recaptcha/api/siteverify',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:form.toString(),signal:AbortSignal.timeout(8000)}),d=await r.json().catch(()=>({}));const minScore=Math.max(0,Math.min(1,Number(env.RECAPTCHA_MIN_SCORE||0.5))),host=String(d.hostname||''),allowed=String(env.RECAPTCHA_ALLOWED_HOSTNAME||'').trim();if(!r.ok||d.success!==true||Number(d.score||0)<minScore||String(d.action||'')!=='admin_login'||(allowed&&host!==allowed))return {ok:false,error:'Xác minh reCAPTCHA không hợp lệ. Vui lòng thử lại.'};return {ok:true,data:d}}catch{return {ok:false,error:'Không thể kết nối tới Google reCAPTCHA.'}}
 }
 function toRequest(req){const origin=`${req.headers['x-forwarded-proto']||'https'}://${req.headers.host||'localhost'}`,url=new URL(req.url||'/api/admin/login',origin).toString(),headers=new Headers();for(const [k,v] of Object.entries(req.headers||{}))if(v!=null)headers.set(k,Array.isArray(v)?v.join(','):String(v));let body;if(!['GET','HEAD'].includes(String(req.method||'GET').toUpperCase())){if(typeof req.body==='string')body=req.body;else if(Buffer.isBuffer(req.body))body=req.body.toString('utf8');else if(req.body!=null)body=JSON.stringify(req.body)}return new Request(url,{method:req.method||'GET',headers,body})}
 export default async function handler(req,res){
   if(String(req.method||'GET').toUpperCase()!=='POST'){const r=jsonError('Method Not Allowed. POST /api/admin/login is required.',405);r.headers.set('allow','POST');res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return r.arrayBuffer().then(b=>res.end(Buffer.from(b)))}
   try{
     const request=toRequest(req),b=await request.clone().json().catch(()=>({})),u=String(b.username||'').trim(),p=String(b.password||''),token=String(b.recaptcha_token||'').trim(),ip=ipOf(request);
-    if(!sameOrigin(request)||isBadUserAgent(request))return res.end();
+    if(!sameOrigin(request)||isBadUserAgent(request)){await securityLog(process.env,'admin_login_invalid_request',ip,u).catch(()=>{});const r=jsonError('Yêu cầu đăng nhập không hợp lệ.',403);res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return r.arrayBuffer().then(x=>res.end(Buffer.from(x)))}
     const cap=await verifyRecaptcha(request,process.env,token);if(!cap.ok){await securityLog(process.env,'recaptcha_failed',ip,u).catch(()=>{});const r=jsonError(cap.error,403);res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return r.arrayBuffer().then(x=>res.end(Buffer.from(x)))}
     if(!(await consumeRateLimit(process.env,'admin-login',u+'|'+ip,300,5))){await securityLog(process.env,'admin_login_rate_limited',ip,u);const r=jsonError('Bạn đã đăng nhập sai quá 5 lần. Vui lòng thử lại sau 5 phút.',429);res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return r.arrayBuffer().then(x=>res.end(Buffer.from(x)))}
     const env=process.env;if(!env.ADMIN_PASSWORD){const r=jsonError('ADMIN_PASSWORD chưa được cấu hình trên Vercel.',503);res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return r.arrayBuffer().then(x=>res.end(Buffer.from(x)))}
