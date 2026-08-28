@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#07111f">
+  <meta name="theme-color" content="#050b18">
   <title>BDZTEAM - Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -11,13 +11,13 @@
   <link rel="stylesheet" href="/admin-layout.css">
 </head>
 <body class="min-h-screen">
-  <div id="bdzPageLoader"><span class="loader"></span><span class="font-extrabold text-xs tracking-widest bg-[#FFCC00] border-2 border-[#111827] rounded-lg px-3 py-1.5 shadow-[3px 3px 0 #111827]">ĐANG TẢI...</span></div>
+  <div id="bdzPageLoader"><span class="loader"></span><span class="font-extrabold text-xs tracking-widest">ĐANG TẢI...</span></div>
   <div class="admin-shell">
     <div id="adminBackdrop" class="admin-backdrop" aria-hidden="true"></div>
     <aside id="adminSidebar" class="admin-sidebar" aria-label="Điều hướng Admin">
       <div class="admin-sidebar-brand">
         <a href="/" class="admin-brand">
-          <img src="https://files.catbox.moe/5tw3y4.jpg" alt="BDZTEAM">
+          <img src="https://files.catbox.moe/xpaekr.jpg" alt="BDZTEAM">
           <span class="min-w-0"><span class="admin-brand-title block truncate">BDZTEAM</span><span id="roleLabel" class="admin-brand-role block truncate">ADMIN</span></span>
         </a>
         <button id="adminCloseBtn" class="admin-mobile-close" type="button" aria-label="Đóng menu"><i class="fa-solid fa-xmark"></i></button>
@@ -37,7 +37,7 @@
       <header class="admin-topbar">
         <div class="admin-topbar-inner">
           <div class="admin-topbar-left"><button id="adminMenuBtn" class="admin-menu-btn" type="button" aria-label="Thu gọn hoặc mở menu"><i class="fa-solid fa-bars"></i></button><div class="min-w-0"><div class="admin-mobile-kicker">BDZTEAM ADMIN</div><h1 id="tabTitle" class="admin-top-title">Dashboard</h1><p id="tabSub" class="admin-top-sub">Tổng quan hệ thống</p></div></div>
-          <div class="admin-topbar-right"><div class="admin-status-chip"><span class="admin-status-dot"></span> Hệ thống hoạt động</div><div class="admin-head-badge">Supabase · Vercel</div></div>
+          <div class="admin-topbar-right"><div class="admin-status-chip"><span class="admin-status-dot"></span> Hệ thống hoạt động</div><button class="admin-top-user" type="button" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button></div>
         </div>
       </header>
       <main class="admin-main admin-content-safe admin-main-wrap"><div id="flash" class="hidden"></div><div id="tabContent" class="admin-action-safe"></div></main>
@@ -59,6 +59,6 @@
       window.addEventListener('resize',()=>{if(!isMobile())closeMobile()});
     })();
   </script>
-  <script src="/common.js"></script><script src="/admin-fixed.js"></script><script src="/api-guide.js"></script><script src="/admin-session.js"></script>
+  <script src="/common.js"></script><script src="/admin-fixed.js"></script><script src="/admin-reference-ui.js"></script><script src="/api-guide.js"></script><script src="/admin-session.js"></script>
 </body>
 </html>
