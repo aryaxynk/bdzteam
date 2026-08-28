@@ -50,9 +50,14 @@ export async function shortenGTraffic(token, destination) {
       cache: "no-store",
       headers: {
         Accept: "application/json, text/plain, */*",
+        "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
         Referer: "https://gtraffic.io/",
         Origin: "https://gtraffic.io",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
+        "X-Requested-With": "XMLHttpRequest",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
       },
       signal: AbortSignal.timeout(15000)
     });
@@ -65,10 +70,12 @@ export async function shortenGTraffic(token, destination) {
 
   const raw = await response.text();
   let data = null;
-  try { data = raw ? JSON.parse(raw) : null; } catch {}
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {}
 
   if (data && data.block === true) {
-    throw new Error("GTraffic từ chối request (block=true). Endpoint vẫn đang chặn server-side request.");
+    throw new Error("GTraffic từ chối request (block=true); request đã bị GTraffic chặn");
   }
 
   if (!response.ok) {
