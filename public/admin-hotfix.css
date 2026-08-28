@@ -1,0 +1,21 @@
+/* Admin runtime hotfix: do not change product/admin capabilities. */
+html,body,.admin-shell{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif!important}
+.admin-shell.is-collapsed .admin-sidebar{width:74px!important}
+.admin-shell.is-collapsed .admin-workspace{margin-left:74px!important}
+.admin-shell.is-collapsed .admin-brand>span,.admin-shell.is-collapsed .admin-nav-label,.admin-shell.is-collapsed .admin-side-item span,.admin-shell.is-collapsed .admin-account-card .min-w-0,.admin-shell.is-collapsed .admin-footer-btn span{display:none!important}
+.admin-shell.is-collapsed .admin-sidebar-brand{justify-content:center!important;padding-left:9px!important;padding-right:9px!important}
+.admin-shell.is-collapsed .admin-side-item{justify-content:center!important;padding-left:0!important;padding-right:0!important}
+.admin-shell.is-collapsed .admin-side-item i{width:auto!important;flex-basis:auto!important}
+.admin-shell.is-collapsed .admin-sidebar-footer{padding:9px!important}
+.admin-shell.is-collapsed .admin-account-card{justify-content:center!important;padding:8px!important}
+.admin-shell.is-collapsed .admin-footer-actions{grid-template-columns:1fr!important}
+.admin-shell.is-collapsed .admin-footer-btn{width:100%!important}
+@media(max-width:900px){
+ .admin-shell.is-collapsed .admin-sidebar{width:min(286px,88vw)!important;transform:translateX(-102%)!important}
+ .admin-shell.is-collapsed .admin-workspace{margin-left:0!important}
+ .admin-shell.is-collapsed .admin-brand>span,.admin-shell.is-collapsed .admin-nav-label,.admin-shell.is-collapsed .admin-side-item span,.admin-shell.is-collapsed .admin-account-card .min-w-0,.admin-shell.is-collapsed .admin-footer-btn span{display:block!important}
+ .admin-shell.is-collapsed .admin-side-item{justify-content:flex-start!important;padding-left:13px!important;padding-right:13px!important}
+ .admin-shell.is-collapsed .admin-side-item i{width:18px!important;flex-basis:18px!important}
+}
+.admin-side-item,.admin-menu-btn,.admin-mobile-close,.admin-footer-btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.admin-top-title,.admin-top-sub,.admin-side-item,.admin-nav-label,.admin-account-name,.admin-account-meta,.admin-stat-card,.ref-dashboard-head,.ref-stat-copy,.ref-panel{font-synthesis:none}
