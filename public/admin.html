@@ -1,1 +1,51 @@
-<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111827"><title>BDZTEAM - Admin</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/admin-layout.css"></head><body class="min-h-screen"><div id="bdzPageLoader"><span class="loader"></span><span class="font-extrabold text-xs tracking-widest bg-[#FFCC00] border-2 border-[#111827] rounded-lg px-3 py-1.5 shadow-[3px 3px 0 #111827]">ĐANG TẢI...</span></div><header class="admin-topbar"><div class="admin-topbar-inner"><div class="admin-brand-row"><a href="/" class="admin-brand"><img src="https://files.catbox.moe/5tw3y4.jpg" alt="BDZTEAM"><span class="min-w-0"><span class="admin-brand-title block truncate">BDZTEAM ADMIN</span><span id="roleLabel" class="admin-brand-role block truncate">ADMIN</span></span></a><div class="flex gap-2 shrink-0"><a href="/" class="admin-tab-chip" aria-label="Trang chủ"><i class="fa-solid fa-house"></i></a><button id="logoutBtn" class="admin-tab-chip" type="button" aria-label="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i></button></div></div><nav id="adminNav" class="admin-tabs" aria-label="Admin tabs"><button class="admin-tab-chip active" data-tab="dashboard" type="button"><i class="fa-solid fa-gauge"></i> Dashboard</button><button class="admin-tab-chip" data-tab="keys" type="button"><i class="fa-solid fa-key"></i> Quản Lý Key</button><button class="admin-tab-chip" data-tab="shortener" type="button"><i class="fa-solid fa-link"></i> Shortener</button><button class="admin-tab-chip" data-tab="products" type="button"><i class="fa-solid fa-box"></i> Sản Phẩm</button><button class="admin-tab-chip" data-tab="logs" type="button"><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký</button><button class="admin-tab-chip" data-tab="integration" type="button"><i class="fa-solid fa-code"></i> Tích Hợp API</button><button class="admin-tab-chip" data-tab="security" type="button"><i class="fa-solid fa-shield-halved"></i> Bảo Mật</button><button class="admin-tab-chip" data-tab="subadmins" type="button"><i class="fa-solid fa-user-shield"></i> Admin Phụ</button></nav></div></header><main class="admin-main admin-content-safe admin-main-wrap p-3 sm:p-4 md:p-6 lg:p-8"><div class="admin-head-row flex flex-wrap items-start justify-between gap-3 mb-5"><div class="min-w-0"><h1 id="tabTitle" class="admin-top-title text-2xl md:text-3xl font-black break-words">Dashboard</h1><p id="tabSub" class="text-xs text-[#6B7280] break-words">Tổng quan hệ thống</p></div><div class="admin-head-badge text-xs font-bold bg-white border-2 border-[#111827] rounded-lg px-3 py-2 shadow-[3px 3px 0 #111827]">Supabase · Vercel</div></div><div id="flash" class="hidden"></div><div id="tabContent" class="admin-action-safe"></div></main><script src="/common.js"></script><script src="/admin-fixed.js"></script><script src="/api-guide.js"></script><script src="/admin-session.js"></script></body></html>
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <title>BDZTEAM - Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin-layout.css">
+</head>
+<body class="min-h-screen">
+  <div id="bdzPageLoader"><span class="loader"></span><span class="font-extrabold text-xs tracking-widest bg-[#FFCC00] border-2 border-[#111827] rounded-lg px-3 py-1.5 shadow-[3px 3px 0 #111827]">ĐANG TẢI...</span></div>
+  <div class="admin-shell">
+    <div id="adminBackdrop" class="admin-backdrop" aria-hidden="true"></div>
+    <aside id="adminSidebar" class="admin-sidebar" aria-label="Điều hướng Admin">
+      <div class="admin-sidebar-brand">
+        <a href="/" class="admin-brand">
+          <img src="https://files.catbox.moe/5tw3y4.jpg" alt="BDZTEAM">
+          <span class="min-w-0"><span class="admin-brand-title block truncate">BDZTEAM</span><span id="roleLabel" class="admin-brand-role block truncate">ADMIN</span></span>
+        </a>
+        <button id="adminCloseBtn" class="admin-mobile-close" type="button" aria-label="Đóng menu"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="admin-side-scroll">
+        <div class="admin-nav-group"><div class="admin-nav-label">TỔNG QUAN</div><button class="admin-side-item active" data-tab="dashboard" type="button"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></button></div>
+        <div class="admin-nav-group"><div class="admin-nav-label">QUẢN LÝ</div><button class="admin-side-item" data-tab="keys" type="button"><i class="fa-solid fa-key"></i><span>Quản Lý Key</span></button><button class="admin-side-item" data-tab="shortener" type="button"><i class="fa-solid fa-link"></i><span>Shortener</span></button><button class="admin-side-item" data-tab="products" type="button"><i class="fa-solid fa-box-open"></i><span>Sản Phẩm</span></button></div>
+        <div class="admin-nav-group"><div class="admin-nav-label">HỆ THỐNG</div><button class="admin-side-item" data-tab="logs" type="button"><i class="fa-solid fa-clock-rotate-left"></i><span>Nhật Ký</span></button><button class="admin-side-item" data-tab="integration" type="button"><i class="fa-solid fa-code"></i><span>Tích Hợp API</span></button><button class="admin-side-item" data-tab="security" type="button"><i class="fa-solid fa-shield-halved"></i><span>Bảo Mật</span></button><button class="admin-side-item" data-tab="settings" type="button"><i class="fa-solid fa-sliders"></i><span>Cấu Hình</span></button></div>
+        <div class="admin-nav-group"><div class="admin-nav-label">QUẢN TRỊ</div><button class="admin-side-item" data-tab="subadmins" type="button"><i class="fa-solid fa-user-shield"></i><span>Admin Phụ</span></button></div>
+      </div>
+      <div class="admin-sidebar-footer">
+        <div class="admin-account-card"><div class="admin-account-avatar">A</div><div class="min-w-0 flex-1"><div class="admin-account-name truncate">Admin Panel</div><div class="admin-account-meta truncate">BDZTEAM</div></div></div>
+        <div class="admin-footer-actions"><a href="/" class="admin-footer-btn"><i class="fa-solid fa-house"></i><span>Trang chủ</span></a><button id="logoutBtn" class="admin-footer-btn danger" type="button"><i class="fa-solid fa-right-from-bracket"></i><span>Đăng xuất</span></button></div>
+      </div>
+    </aside>
+    <section class="admin-workspace">
+      <header class="admin-topbar">
+        <div class="admin-topbar-inner">
+          <div class="admin-topbar-left"><button id="adminMenuBtn" class="admin-menu-btn" type="button" aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button><div class="min-w-0"><div class="admin-mobile-kicker">BDZTEAM ADMIN</div><h1 id="tabTitle" class="admin-top-title">Dashboard</h1><p id="tabSub" class="admin-top-sub">Tổng quan hệ thống</p></div></div>
+          <div class="admin-topbar-right"><div class="admin-status-chip"><span class="admin-status-dot"></span> Hệ thống hoạt động</div><div class="admin-head-badge">Supabase · Vercel</div></div>
+        </div>
+      </header>
+      <main class="admin-main admin-content-safe admin-main-wrap"><div id="flash" class="hidden"></div><div id="tabContent" class="admin-action-safe"></div></main>
+    </section>
+  </div>
+  <script>
+    (()=>{const sidebar=document.getElementById('adminSidebar'),backdrop=document.getElementById('adminBackdrop');const open=()=>{sidebar?.classList.add('is-open');backdrop?.classList.add('is-visible');document.body.classList.add('admin-menu-open')};const close=()=>{sidebar?.classList.remove('is-open');backdrop?.classList.remove('is-visible');document.body.classList.remove('admin-menu-open')};document.getElementById('adminMenuBtn')?.addEventListener('click',open);document.getElementById('adminCloseBtn')?.addEventListener('click',close);backdrop?.addEventListener('click',close);document.addEventListener('click',e=>{if(e.target.closest('.admin-side-item')&&window.matchMedia('(max-width: 900px)').matches)close()})})();
+  </script>
+  <script src="/common.js"></script><script src="/admin-fixed.js"></script><script src="/api-guide.js"></script><script src="/admin-session.js"></script>
+</body>
+</html>
