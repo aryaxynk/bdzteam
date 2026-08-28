@@ -1,0 +1,14 @@
+/* Minimal admin polish */
+#bdzPageLoader{gap:0!important;background:#eef2f5!important}
+#bdzPageLoader>span:not(.loader){display:none!important}
+#bdzPageLoader .loader{width:30px!important;height:30px!important;border:3px solid #d6dde5!important;border-top-color:#172231!important;border-right-color:#d6dde5!important;border-radius:50%!important;box-shadow:none!important;animation:adminSimpleSpin .72s linear infinite!important}
+@keyframes adminSimpleSpin{to{transform:rotate(360deg)}}
+.ref-chart{display:block;width:100%;height:auto;max-width:720px;margin:0 auto;overflow:visible}
+.ref-chart-grid{stroke:#e4e9ef;stroke-width:1;shape-rendering:crispEdges}
+.ref-chart-axis{stroke:#aeb9c6;stroke-width:1.2;shape-rendering:crispEdges}
+.ref-chart-y-label,.ref-chart-value,.ref-x-label{font-family:Roboto,Arial,sans-serif;fill:#657386;font-size:11px;font-weight:600}
+.ref-chart-value{fill:#182536;font-size:12px;font-weight:800}
+.ref-x-label{fill:#4f5d6e;font-size:10px;font-weight:700}
+.ref-chart-bar{fill:#26384e}
+@media(max-width:560px){.ref-chart-y-label{font-size:9px}.ref-chart-value{font-size:10px}.ref-x-label{font-size:8px}}
+@media(prefers-reduced-motion:reduce){#bdzPageLoader .loader{animation:none!important}}
