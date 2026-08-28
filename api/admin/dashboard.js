@@ -1,43 +1,33 @@
+import bcrypt from "bcryptjs";
 import { requireAdmin, dashboard } from "../../src/admin_api.js";
-import { json } from "../../src/db.js";
-
-function toRequest(req) {
-  const origin = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host || "localhost"}`;
-  return new Request(new URL(req.url || "/api/admin/dashboard", origin), {
-    method: "GET",
-    headers: new Headers(Object.entries(req.headers || {}).reduce((out, [k, v]) => {
-      if (v != null) out[k] = Array.isArray(v) ? v.join(",") : String(v);
-      return out;
-    }, {}))
-  });
-}
-
-export default async function handler(req, res) {
-  if (String(req.method || "GET").toUpperCase() !== "GET") {
-    const r = json({ ok: false, error: "Method Not Allowed. GET /api/admin/dashboard is required." }, 405, { allow: "GET" });
-    res.statusCode = r.status;
-    r.headers.forEach((v, k) => res.setHeader(k, v));
-    return r.arrayBuffer().then(buf => res.end(Buffer.from(buf)));
-  }
-  try {
-    const request = toRequest(req);
-    const session = await requireAdmin(request, process.env);
-    if (!session) {
-      const r = json({ ok: false, error: "Chưa đăng nhập quản trị." }, 401);
-      res.statusCode = r.status;
-      r.headers.forEach((v, k) => res.setHeader(k, v));
-      return r.arrayBuffer().then(buf => res.end(Buffer.from(buf)));
+import { json, sb } from "../../src/db.js";
+function headers(req){return new Headers(Object.entries(req.headers||{}).reduce((o,[k,v])=>{if(v!=null)o[k]=Array.isArray(v)?v.join(","):String(v);return o},{}))}
+function toRequest(req,body){const origin=`${req.headers["x-forwarded-proto"]||"https"}://${req.headers.host||"localhost"}`;return new Request(new URL(req.url||"/api/admin/dashboard",origin),{method:req.method||"GET",headers:headers(req),body:['GET','HEAD'].includes(String(req.method||"GET").toUpperCase())?undefined:(body!==undefined?body:(typeof req.body==='string'?req.body:JSON.stringify(req.body||{})))})}
+function send(res,r){res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return r.arrayBuffer().then(buf=>res.end(Buffer.from(buf)))}
+function q(req,key){try{return new URL(req.url||"/api/admin/dashboard","https://localhost").searchParams.get(key)||''}catch{return ''}}
+export default async function handler(req,res){
+  try{
+    const request=toRequest(req),session=await requireAdmin(request,process.env);if(!session)return send(res,json({ok:false,error:'Chưa đăng nhập quản trị.'},401));
+    const resource=q(req,'resource');
+    if(resource==='profile'){
+      const username=String(session.u||'');
+      let rows=await sb(process.env,'admin_profiles?select=username,role,display_name,created_at,updated_at&username=eq.'+encodeURIComponent(username)+'&limit=1').catch(()=>[]);
+      if(!rows?.length){await sb(process.env,'admin_profiles',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({username,role:session.r==='sub'?'sub':'main',display_name:username,password_hash:null})}).catch(()=>{});rows=await sb(process.env,'admin_profiles?select=username,role,display_name,created_at,updated_at&username=eq.'+encodeURIComponent(username)+'&limit=1').catch(()=>[])}
+      if(req.method==='GET')return send(res,json({ok:true,profile:rows?.[0]||{username,role:session.r,display_name:username}}));
+      if(!['POST','PATCH'].includes(String(req.method).toUpperCase()))return send(res,json({ok:false,error:'Method Not Allowed.'},405,{allow:'GET,POST,PATCH'}));
+      const b=await request.json().catch(()=>({})),displayName=String(b.display_name??'').trim();if(displayName.length>40)return send(res,json({ok:false,error:'Tên hiển thị tối đa 40 ký tự.'},400));
+      const next={display_name:displayName||username,updated_at:new Date().toISOString()};
+      if(b.new_password!==undefined){const pass=String(b.new_password||'');if(pass.length<8)return send(res,json({ok:false,error:'Mật khẩu mới phải có ít nhất 8 ký tự.'},400));next.password_hash=await bcrypt.hash(pass,12)}
+      await sb(process.env,'admin_profiles?username=eq.'+encodeURIComponent(username),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(next)});
+      if(session.r==='sub'&&next.password_hash)await sb(process.env,'sub_admins?username=eq.'+encodeURIComponent(username),{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({password_hash:next.password_hash})}).catch(()=>{});
+      return send(res,json({ok:true,profile:{username,role:session.r,display_name:next.display_name}}));
     }
-    const data = await dashboard(process.env, session);
-    const r = json({ ok: true, ...data });
-    res.statusCode = r.status;
-    r.headers.forEach((v, k) => res.setHeader(k, v));
-    return r.arrayBuffer().then(buf => res.end(Buffer.from(buf)));
-  } catch (e) {
-    console.error("[admin/dashboard]", e);
-    const r = json({ ok: false, error: String(e?.message || e || "Lỗi máy chủ.") }, 500);
-    res.statusCode = r.status;
-    r.headers.forEach((v, k) => res.setHeader(k, v));
-    return r.arrayBuffer().then(buf => res.end(Buffer.from(buf)));
-  }
+    if(resource==='notifications'){
+      if(req.method==='GET'){const rows=await sb(process.env,'admin_notifications?select=id,title,message,level,created_by,created_role,is_published,created_at&is_published=eq.true&order=created_at.desc&limit=50');return send(res,json({ok:true,notifications:rows||[]}))}
+      if(req.method==='POST'){const b=await request.json().catch(()=>({}));if(b.archive_id){const id=Number(b.archive_id);if(!Number.isInteger(id)||id<=0)return send(res,json({ok:false,error:'ID thông báo không hợp lệ.'},400));await sb(process.env,'admin_notifications?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({is_published:false})});return send(res,json({ok:true}))}const title=String(b.title||'').trim(),message=String(b.message||'').trim(),level=['info','success','warning','danger'].includes(String(b.level))?String(b.level):'info';if(!title||!message)return send(res,json({ok:false,error:'Tiêu đề và nội dung không được để trống.'},400));if(title.length>120||message.length>2000)return send(res,json({ok:false,error:'Nội dung thông báo quá dài.'},400));await sb(process.env,'admin_notifications',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({title,message,level,created_by:String(session.u),created_role:String(session.r),is_published:true})});return send(res,json({ok:true}))}
+      return send(res,json({ok:false,error:'Method Not Allowed.'},405,{allow:'GET,POST'}));
+    }
+    if(req.method!=='GET')return send(res,json({ok:false,error:'Method Not Allowed. GET /api/admin/dashboard is required.'},405,{allow:'GET'}));
+    const data=await dashboard(process.env,session);return send(res,json({ok:true,...data}));
+  }catch(e){console.error('[admin/dashboard]',e);return send(res,json({ok:false,error:String(e?.message||e||'Lỗi máy chủ.')},500))}
 }
