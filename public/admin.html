@@ -10,12 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/styles.css?v=admin-fix-5">
-  <link rel="stylesheet" href="/admin-layout.css?v=admin-fix-5">
-  <link rel="stylesheet" href="/admin-reference-ui.css?v=admin-fix-5">
-  <link rel="stylesheet" href="/admin-hotfix.css?v=admin-fix-5">
-  <link rel="stylesheet" href="/admin-ui-runtime.css?v=admin-fix-5">
-  <link rel="stylesheet" href="/admin-theme.css?v=admin-fix-5">
+  <link rel="stylesheet" href="/styles.css?v=admin-ui-v8">
+  <link rel="stylesheet" href="/admin-layout.css?v=admin-ui-v8">
+  <link rel="stylesheet" href="/admin-reference-ui.css?v=admin-ui-v8">
+  <link rel="stylesheet" href="/admin-hotfix.css?v=admin-ui-v8">
+  <link rel="stylesheet" href="/admin-ui-runtime.css?v=admin-ui-v8">
+  <link rel="stylesheet" href="/admin-theme.css?v=admin-ui-v8">
 </head>
 <body class="min-h-screen">
   <div id="bdzPageLoader"><span class="loader"></span><span class="font-extrabold text-xs tracking-widest">ĐANG TẢI...</span></div>
@@ -39,14 +39,12 @@
       <main class="admin-main admin-content-safe admin-main-wrap"><div id="flash" class="hidden"></div><div id="tabContent" class="admin-action-safe"></div></main>
     </section>
   </div>
-  <script>
-    (()=>{const shell=document.querySelector('.admin-shell'),sidebar=document.getElementById('adminSidebar'),backdrop=document.getElementById('adminBackdrop'),isMobile=()=>window.matchMedia('(max-width:900px)').matches,openMobile=()=>{sidebar?.classList.add('is-open');backdrop?.classList.add('is-visible');document.body.classList.add('admin-menu-open')},closeMobile=()=>{sidebar?.classList.remove('is-open');backdrop?.classList.remove('is-visible');document.body.classList.remove('admin-menu-open')},toggle=()=>isMobile()?openMobile():shell?.classList.toggle('is-collapsed');document.getElementById('adminMenuBtn')?.addEventListener('click',toggle);document.getElementById('adminCloseBtn')?.addEventListener('click',closeMobile);backdrop?.addEventListener('click',closeMobile);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobile()});window.addEventListener('resize',()=>{if(!isMobile())closeMobile()})})();
-  </script>
-  <script src="/common.js?v=admin-fix-5"></script>
-  <script src="/admin-fixed.js?v=admin-fix-5"></script>
-  <script src="/api-guide.js?v=admin-fix-5"></script>
-  <script src="/admin-session.js?v=admin-fix-5"></script>
-  <script src="/admin-runtime.js?v=admin-fix-5"></script>
-  <script src="/admin-ui-runtime.js?v=admin-fix-5"></script>
+  <script src="/common.js?v=admin-ui-v8"></script>
+  <script src="/admin-fixed.js?v=admin-ui-v8"></script>
+  <script src="/api-guide.js?v=admin-ui-v8"></script>
+  <script src="/admin-session.js?v=admin-ui-v8"></script>
+  <script src="/admin-runtime.js?v=admin-ui-v8"></script>
+  <script src="/admin-ui-runtime.js?v=admin-ui-v8"></script>
+  <script src="/admin-reference-ui.js?v=admin-ui-v8"></script>
 </body>
 </html>
