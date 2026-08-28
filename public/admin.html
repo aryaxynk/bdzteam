@@ -36,7 +36,7 @@
     <section class="admin-workspace">
       <header class="admin-topbar">
         <div class="admin-topbar-inner">
-          <div class="admin-topbar-left"><button id="adminMenuBtn" class="admin-menu-btn" type="button" aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button><div class="min-w-0"><div class="admin-mobile-kicker">BDZTEAM ADMIN</div><h1 id="tabTitle" class="admin-top-title">Dashboard</h1><p id="tabSub" class="admin-top-sub">Tổng quan hệ thống</p></div></div>
+          <div class="admin-topbar-left"><button id="adminMenuBtn" class="admin-menu-btn" type="button" aria-label="Thu gọn hoặc mở menu"><i class="fa-solid fa-bars"></i></button><div class="min-w-0"><div class="admin-mobile-kicker">BDZTEAM ADMIN</div><h1 id="tabTitle" class="admin-top-title">Dashboard</h1><p id="tabSub" class="admin-top-sub">Tổng quan hệ thống</p></div></div>
           <div class="admin-topbar-right"><div class="admin-status-chip"><span class="admin-status-dot"></span> Hệ thống hoạt động</div><div class="admin-head-badge">Supabase · Vercel</div></div>
         </div>
       </header>
@@ -44,7 +44,20 @@
     </section>
   </div>
   <script>
-    (()=>{const sidebar=document.getElementById('adminSidebar'),backdrop=document.getElementById('adminBackdrop');const open=()=>{sidebar?.classList.add('is-open');backdrop?.classList.add('is-visible');document.body.classList.add('admin-menu-open')};const close=()=>{sidebar?.classList.remove('is-open');backdrop?.classList.remove('is-visible');document.body.classList.remove('admin-menu-open')};document.getElementById('adminMenuBtn')?.addEventListener('click',open);document.getElementById('adminCloseBtn')?.addEventListener('click',close);backdrop?.addEventListener('click',close);document.addEventListener('click',e=>{if(e.target.closest('.admin-side-item')&&window.matchMedia('(max-width: 900px)').matches)close()})})();
+    (()=>{
+      const shell=document.querySelector('.admin-shell');
+      const sidebar=document.getElementById('adminSidebar');
+      const backdrop=document.getElementById('adminBackdrop');
+      const isMobile=()=>window.matchMedia('(max-width: 900px)').matches;
+      const openMobile=()=>{sidebar?.classList.add('is-open');backdrop?.classList.add('is-visible');document.body.classList.add('admin-menu-open')};
+      const closeMobile=()=>{sidebar?.classList.remove('is-open');backdrop?.classList.remove('is-visible');document.body.classList.remove('admin-menu-open')};
+      const toggle=()=>{if(isMobile()){openMobile();return}shell?.classList.toggle('is-collapsed')};
+      document.getElementById('adminMenuBtn')?.addEventListener('click',toggle);
+      document.getElementById('adminCloseBtn')?.addEventListener('click',closeMobile);
+      backdrop?.addEventListener('click',closeMobile);
+      document.addEventListener('click',e=>{if(e.target.closest('.admin-side-item')&&isMobile())closeMobile()});
+      window.addEventListener('resize',()=>{if(!isMobile())closeMobile()});
+    })();
   </script>
   <script src="/common.js"></script><script src="/admin-fixed.js"></script><script src="/api-guide.js"></script><script src="/admin-session.js"></script>
 </body>
