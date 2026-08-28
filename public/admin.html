@@ -6,10 +6,13 @@
   <meta name="theme-color" content="#050b18">
   <title>BDZTEAM - Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-  <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/admin-layout.css">
-  <link rel="stylesheet" href="/admin-reference-ui.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles.css?v=admin-fix-2">
+  <link rel="stylesheet" href="/admin-layout.css?v=admin-fix-2">
+  <link rel="stylesheet" href="/admin-reference-ui.css?v=admin-fix-2">
 </head>
 <body class="min-h-screen">
   <div id="bdzPageLoader"><span class="loader"></span><span class="font-extrabold text-xs tracking-widest">ĐANG TẢI...</span></div>
@@ -37,7 +40,8 @@
     <section class="admin-workspace">
       <header class="admin-topbar">
         <div class="admin-topbar-inner">
-          <div class="admin-topbar-left"><button id="adminMenuBtn" class="admin-menu-btn" type="button" aria-label="Thu gọn hoặc mở menu"><i class="fa-solid fa-bars"></i></button><div class="min-w-0"><div class="admin-mobile-kicker">BDZTEAM ADMIN</div><h1 id="tabTitle" class="admin-top-title">Dashboard</h1><p id="tabSub" class="admin-top-sub">Tổng quan hệ thống</p></div></div>
+          <button id="adminMenuBtn" class="admin-menu-btn" type="button" aria-label="Thu gọn hoặc mở menu"><i class="fa-solid fa-bars"></i></button>
+          <div class="admin-topbar-hidden-copy"><h1 id="tabTitle">Dashboard</h1><p id="tabSub">Tổng quan hệ thống</p></div>
           <div class="admin-topbar-right"><div class="admin-status-chip"><span class="admin-status-dot"></span> Hệ thống hoạt động</div><button class="admin-top-user" type="button" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button></div>
         </div>
       </header>
@@ -60,6 +64,6 @@
       window.addEventListener('resize',()=>{if(!isMobile())closeMobile()});
     })();
   </script>
-  <script src="/common.js"></script><script src="/admin-fixed.js"></script><script src="/admin-reference-ui.js"></script><script src="/api-guide.js"></script><script src="/admin-session.js"></script>
+  <script src="/common.js?v=admin-fix-2"></script><script src="/admin-fixed.js?v=admin-fix-2"></script><script src="/admin-reference-ui.js?v=admin-fix-2"></script><script src="/api-guide.js"></script><script src="/admin-session.js"></script>
 </body>
 </html>
