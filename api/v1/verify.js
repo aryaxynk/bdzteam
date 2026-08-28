@@ -1,4 +1,5 @@
 import { verifyKeyByIp } from '../../src/ip_verify.js';
+import { setting, json } from '../../src/db.js';
 
 function toRequest(req) {
   const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
@@ -16,12 +17,13 @@ function toRequest(req) {
 }
 
 export default async function handler(req, res) {
-  if (!['GET','POST','OPTIONS'].includes(String(req.method || 'GET').toUpperCase())) {
+  const method = String(req.method || 'GET').toUpperCase();
+  if (!['GET','POST','OPTIONS'].includes(method)) {
     res.statusCode = 405;
     res.setHeader('Allow', 'GET, POST, OPTIONS');
     return res.end(JSON.stringify({ ok:false, status:'INVALID', code:'METHOD_NOT_ALLOWED', message:'Method Not Allowed.' }));
   }
-  if (String(req.method || '').toUpperCase() === 'OPTIONS') {
+  if (method === 'OPTIONS') {
     res.statusCode = 204;
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -29,6 +31,11 @@ export default async function handler(req, res) {
     return res.end();
   }
   try {
+    if ((await setting(process.env,'maintenance_enabled','false')) === 'true') {
+      const message = await setting(process.env,'maintenance_message','Website đang bảo trì. Vui lòng quay lại sau.');
+      const r = json({ ok:false, status:'MAINTENANCE', code:'SITE_MAINTENANCE', message }, 503, {'cache-control':'no-store'});
+      res.statusCode=r.status;r.headers.forEach((v,k)=>res.setHeader(k,v));return res.end(Buffer.from(await r.arrayBuffer()));
+    }
     const r = await verifyKeyByIp(toRequest(req), process.env);
     res.statusCode = r.status;
     r.headers.forEach((v,k)=>res.setHeader(k,v));
