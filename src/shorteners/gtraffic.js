@@ -4,7 +4,8 @@ const PUBLIC_BASE = "https://gtraffic.io";
 function validUrl(value) {
   try {
     const u = new URL(String(value || "").trim());
-    return u.protocol === "http:" || u.protocol === "https:" ? u.href : "";
+    if (u.protocol !== "http:" && u.protocol !== "https:") return "";
+    return u.href;
   } catch {
     return "";
   }
@@ -50,7 +51,7 @@ export async function shortenGTraffic(token, destination) {
       cache: "no-store",
       headers: {
         Accept: "application/json, text/plain, text/html, */*",
-        "User-Agent": "BDZTEAM-Shortener/4.0"
+        "User-Agent": "Mozilla/5.0 (compatible; BDZTEAM/5.0; +https://bdzteam.vercel.app/)"
       },
       signal: AbortSignal.timeout(15000)
     });
@@ -65,6 +66,10 @@ export async function shortenGTraffic(token, destination) {
   let data = null;
   try { data = raw ? JSON.parse(raw) : null; } catch {}
 
+  if (data && data.block === true) {
+    throw new Error("GTraffic /st trả về block=true; endpoint này đang chặn request máy chủ");
+  }
+
   if (!response.ok) {
     let detail = "";
     if (data && typeof data === "object") detail = data.message || data.error || data.detail || "";
@@ -77,7 +82,7 @@ export async function shortenGTraffic(token, destination) {
 
   if (data && typeof data === "object") {
     const id = String(data.id || data.code || data.short_code || "").trim();
-    if (id) return PUBLIC_BASE + "/" + encodeURIComponent(id);
+    if (/^[A-Za-z0-9_-]{2,100}$/.test(id)) return PUBLIC_BASE + "/" + encodeURIComponent(id);
   }
 
   const idMatch = raw.match(/(?:id|code|short[_-]?code)\s*[=:]\s*["']?([A-Za-z0-9_-]{3,96})/i);
