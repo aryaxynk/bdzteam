@@ -1,28 +1,10 @@
 /* BDZTEAM Admin UI transition layer */
-#tabContent{opacity:1;transform:translateY(0);transition:opacity .18s ease,transform .18s ease}
-#tabContent.is-switching{opacity:.38;transform:translateY(5px);pointer-events:none}
-.admin-tab-loader{display:flex;align-items:center;justify-content:center;gap:10px;min-height:110px;color:#6b7789;font-size:11px;font-weight:700;letter-spacing:.04em}
-.admin-tab-loader .spin{width:22px;height:22px;border:2px solid #d6dee8;border-top-color:#173b73;border-radius:50%;animation:adminSpin .65s linear infinite}
+#tabContent{position:relative;opacity:1;transform:translateY(0);transition:opacity .18s ease,transform .18s ease;min-height:120px}
+#tabContent.is-switching{opacity:.32;transform:translateY(6px);pointer-events:none}
+#tabContent.is-switching:before{content:'ĐANG TẢI';position:absolute;top:18px;left:50%;z-index:5;transform:translateX(-50%);padding:7px 12px;border:1px solid #ccd6e2;background:rgba(255,255,255,.94);color:#526175;font:700 9px/1 Roboto,Arial,sans-serif;letter-spacing:.12em;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+#tabContent.is-switching:after{content:'';position:absolute;top:52px;left:50%;z-index:5;width:22px;height:22px;transform:translateX(-50%);border:2px solid #d6dee8;border-top-color:#173b73;border-radius:50%;animation:adminSpin .65s linear infinite;box-sizing:border-box}
+.admin-tab-loader{display:flex;align-items:center;justify-content:center;gap:10px;min-height:110px;color:#6b7789;font-size:11px;font-weight:700;letter-spacing:.04em}.admin-tab-loader .spin{width:22px;height:22px;border:2px solid #d6dee8;border-top-color:#173b73;border-radius:50%;animation:adminSpin .65s linear infinite}
 @keyframes adminSpin{to{transform:rotate(360deg)}}
-.integration-ref{display:grid;gap:16px}
-.integration-ref-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:16px}
-.integration-ref-card{background:#fff;border:1px solid #cbd6e2;min-width:0;border-radius:0;overflow:hidden}
-.integration-ref-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;border-bottom:1px solid #e4e9ef}
-.integration-ref-title{font-size:13px;font-weight:800;color:#0b1628;margin:0}
-.integration-ref-sub{font-size:9px;color:#7b899a;font-weight:600;margin:4px 0 0}
-.integration-ref-status{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid #d8e0e8;background:#f8fafc;color:#617086;font-size:8px;font-weight:800;white-space:nowrap}
-.integration-ref-dot{width:6px;height:6px;border-radius:50%;background:#22a35a}
-.integration-ref-body{padding:16px}
-.integration-ref-code{margin:0;background:#f7f9fc;border:1px solid #d4dde7;padding:14px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:10px/1.65 "Roboto Mono",Consolas,monospace;color:#213047}
-.integration-ref-row{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid #edf1f5;font-size:10px}
-.integration-ref-row:last-child{border-bottom:0;padding-bottom:0}
-.integration-ref-row b{color:#6f7d90;font-size:9px;text-transform:uppercase;letter-spacing:.06em}
-.integration-ref-row span{color:#17243a;overflow-wrap:anywhere}
-.integration-ref-copy{margin-top:10px;display:flex;justify-content:flex-end}
-.integration-ref-copy button{border:1px solid #c8d3df;background:#fff;color:#26364c;border-radius:3px;padding:7px 10px;font-size:10px;font-weight:700;cursor:pointer}
-.integration-ref-copy button:hover{background:#f6f8fb}
-.integration-ref-note{background:#f8fafc;border:1px solid #d3dce6;padding:12px;font-size:10px;line-height:1.6;color:#64748b}
-.integration-ref-note strong{color:#152238}
-.integration-ref-list{margin:0;padding-left:17px;color:#68788d;font-size:10px;line-height:1.8}
-.integration-ref-list li{margin:2px 0}
-@media(max-width:800px){.integration-ref-grid{grid-template-columns:1fr}.integration-ref-row{grid-template-columns:1fr;gap:4px}.integration-ref-head{align-items:flex-start;flex-direction:column}.integration-ref-status{align-self:flex-start}}
+.integration-ref{display:grid;gap:16px;max-width:100%}.integration-ref-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:16px}.integration-ref-card{background:#fff;border:1px solid #cbd6e2;min-width:0;border-radius:0;overflow:hidden}.integration-ref-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;border-bottom:1px solid #e4e9ef}.integration-ref-title{font-size:13px;font-weight:800;color:#0b1628;margin:0}.integration-ref-sub{font-size:9px;color:#7b899a;font-weight:600;margin:4px 0 0}.integration-ref-status{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid #d8e0e8;background:#f8fafc;color:#617086;font-size:8px;font-weight:800;white-space:nowrap}.integration-ref-dot{width:6px;height:6px;border-radius:50%;background:#22a35a}.integration-ref-body{padding:16px}.integration-ref-code{margin:0;background:#f7f9fc;border:1px solid #d4dde7;padding:14px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:10px/1.65 "Roboto Mono",Consolas,monospace;color:#213047}.integration-ref-row{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid #edf1f5;font-size:10px}.integration-ref-row:last-child{border-bottom:0;padding-bottom:0}.integration-ref-row b{color:#6f7d90;font-size:9px;text-transform:uppercase;letter-spacing:.06em}.integration-ref-row span{color:#17243a;overflow-wrap:anywhere}.integration-ref-copy{margin-top:10px;display:flex;justify-content:flex-end;gap:8px}.integration-ref-copy button{border:1px solid #c8d3df;background:#fff;color:#26364c;border-radius:3px;padding:7px 10px;font-size:10px;font-weight:700;cursor:pointer}.integration-ref-copy button:hover{background:#f6f8fb}.integration-ref-note{background:#f8fafc;border:1px solid #d3dce6;padding:12px;font-size:10px;line-height:1.6;color:#64748b}.integration-ref-note strong{color:#152238}.integration-ref-list{margin:0;padding-left:17px;color:#68788d;font-size:10px;line-height:1.8}.integration-ref-list li{margin:2px 0}
+@media(max-width:800px){.integration-ref-grid{grid-template-columns:1fr}.integration-ref-row{grid-template-columns:1fr;gap:4px}.integration-ref-head{align-items:flex-start;flex-direction:column}.integration-ref-status{align-self:flex-start}.integration-ref-body{padding:14px}.integration-ref-code{font-size:9px}}
+@media(prefers-reduced-motion:reduce){#tabContent,.admin-tab-loader .spin{transition:none;animation:none!important}#tabContent.is-switching:after{animation:none!important}}
