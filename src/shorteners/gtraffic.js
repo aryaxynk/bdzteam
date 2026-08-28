@@ -22,8 +22,9 @@ export async function shortenGTraffic(token, destination, env = {}) {
   if (!apiKey) throw new Error("GTraffic API token chưa được cấu hình");
   if (!target) throw new Error("URL cần rút gọn không hợp lệ");
 
-  const supabaseUrl = String(env.SUPABASE_URL || "").replace(/\/$/, "");
-  const gatewayKey = String(env.SUPABASE_SECRET_KEY || env.SUPABASE_ANON_KEY || "").trim();
+  const runtimeEnv = env && Object.keys(env).length ? env : (typeof process !== "undefined" && process.env ? process.env : {});
+  const supabaseUrl = String(runtimeEnv.SUPABASE_URL || "").replace(/\/$/, "");
+  const gatewayKey = String(runtimeEnv.SUPABASE_SECRET_KEY || runtimeEnv.SUPABASE_ANON_KEY || "").trim();
   if (!supabaseUrl || !gatewayKey) throw new Error("Thiếu cấu hình Supabase gateway cho GTraffic");
 
   const proxyUrl = supabaseUrl + "/functions/v1/gtraffic-shortener";
