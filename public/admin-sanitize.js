@@ -1,1 +1,1 @@
-(()=>{'use strict';const s=document.createElement('script');s.src='/admin-v14-hotfix.js?v=14';s.async=false;(document.head||document.documentElement).appendChild(s);})();
+(()=>{'use strict';function boot(){const s=document.createElement('script');s.src='/admin-v14-hotfix.js?v=14.1';s.async=false;s.onload=()=>setTimeout(()=>document.querySelector('.admin-side-item[data-tab="dashboard"]')?.click(),80);(document.head||document.documentElement).appendChild(s)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot()})();
