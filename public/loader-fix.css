@@ -1,5 +1,0 @@
-#bdzPageLoader .loader{all:unset!important;display:block!important;width:34px!important;height:34px!important;box-sizing:border-box!important;border:3px solid rgba(0,0,0,.16)!important;border-top-color:#000!important;border-radius:50%!important;animation:bdzSpinner .7s linear infinite!important;transform:none!important;box-shadow:none!important;background:transparent!important;position:relative!important}
-#bdzPageLoader .loader::before,#bdzPageLoader .loader::after{content:none!important;display:none!important}
-@keyframes bdzSpinner{to{transform:rotate(360deg)}}
-#bdzPageLoader{gap:0!important}
-@media(prefers-reduced-motion:reduce){#bdzPageLoader .loader{animation-duration:1.4s!important}}
