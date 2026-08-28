@@ -9,13 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/styles.css?v=admin-ui-v10">
-  <link rel="stylesheet" href="/admin-layout.css?v=admin-ui-v10">
-  <link rel="stylesheet" href="/admin-reference-ui.css?v=admin-ui-v10">
-  <link rel="stylesheet" href="/admin-hotfix.css?v=admin-ui-v10">
-  <link rel="stylesheet" href="/admin-ui-runtime.css?v=admin-ui-v10">
-  <link rel="stylesheet" href="/admin-theme.css?v=admin-ui-v10">
-  <link rel="stylesheet" href="/admin-ui-polish.css?v=admin-ui-v10">
+  <link rel="stylesheet" href="/styles.css?v=admin-ui-v11">
+  <link rel="stylesheet" href="/admin-layout.css?v=admin-ui-v11">
+  <link rel="stylesheet" href="/admin-reference-ui.css?v=admin-ui-v11">
+  <link rel="stylesheet" href="/admin-hotfix.css?v=admin-ui-v11">
+  <link rel="stylesheet" href="/admin-ui-runtime.css?v=admin-ui-v11">
+  <link rel="stylesheet" href="/admin-theme.css?v=admin-ui-v11">
+  <link rel="stylesheet" href="/admin-ui-polish.css?v=admin-ui-v11">
 </head>
 <body class="min-h-screen">
   <div id="bdzPageLoader" aria-hidden="true"><span class="loader"></span></div>
@@ -29,22 +29,23 @@
       <div class="admin-side-scroll">
         <div class="admin-nav-group"><div class="admin-nav-label">TỔNG QUAN</div><button class="admin-side-item active" data-tab="dashboard" type="button"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></button></div>
         <div class="admin-nav-group"><div class="admin-nav-label">QUẢN LÝ</div><button class="admin-side-item" data-tab="keys" type="button"><i class="fa-solid fa-key"></i><span>Quản Lý Key</span></button><button class="admin-side-item" data-tab="shortener" type="button"><i class="fa-solid fa-link"></i><span>Shortener</span></button><button class="admin-side-item" data-tab="products" type="button"><i class="fa-solid fa-box-open"></i><span>Sản Phẩm</span></button></div>
-        <div class="admin-nav-group"><div class="admin-nav-label">HỆ THỐNG</div><button class="admin-side-item" data-tab="logs" type="button"><i class="fa-solid fa-clock-rotate-left"></i><span>Nhật Ký</span></button><button class="admin-side-item" data-tab="integration" type="button"><i class="fa-solid fa-code"></i><span>Tích Hợp API</span></button><button class="admin-side-item" data-tab="security" type="button"><i class="fa-solid fa-shield-halved"></i><span>Bảo Mật</span></button><button class="admin-side-item" data-tab="settings" type="button"><i class="fa-solid fa-sliders"></i><span>Cấu Hình</span></button></div>
+        <div class="admin-nav-group"><div class="admin-nav-label">HỆ THỐNG</div><button class="admin-side-item" data-tab="logs" type="button"><i class="fa-solid fa-clock-rotate-left"></i><span>Nhật Ký</span></button><button class="admin-side-item" data-tab="integration" type="button"><i class="fa-solid fa-code"></i><span>Tích Hợp API</span></button><button class="admin-side-item" data-tab="security" type="button"><i class="fa-solid fa-shield-halved"></i><span>Bảo Mật</span></button><button class="admin-side-item" data-tab="settings" type="button"><i class="fa-solid fa-user"></i><span>Hồ Sơ</span></button><button class="admin-side-item" data-tab="notifications" type="button"><i class="fa-regular fa-bell"></i><span>Thông Báo</span></button></div>
         <div class="admin-nav-group"><div class="admin-nav-label">QUẢN TRỊ</div><button class="admin-side-item" data-tab="subadmins" type="button"><i class="fa-solid fa-user-shield"></i><span>Admin Phụ</span></button></div>
       </div>
       <div class="admin-sidebar-footer"><div class="admin-account-card"><div class="admin-account-avatar">A</div><div class="min-w-0 flex-1"><div class="admin-account-name truncate">Admin Panel</div><div class="admin-account-meta truncate">BDZTEAM</div></div></div><div class="admin-footer-actions"><a href="/" class="admin-footer-btn"><i class="fa-solid fa-house"></i><span>Trang chủ</span></a><button id="logoutBtn" class="admin-footer-btn danger" type="button"><i class="fa-solid fa-right-from-bracket"></i><span>Đăng xuất</span></button></div></div>
     </aside>
     <section class="admin-workspace">
-      <header class="admin-topbar"><div class="admin-topbar-inner"><button id="adminMenuBtn" class="admin-menu-btn" type="button" aria-label="Thu gọn hoặc mở menu"><i class="fa-solid fa-bars"></i></button><div class="admin-topbar-hidden-copy"><h1 id="tabTitle">Dashboard</h1><p id="tabSub">Tổng quan hệ thống</p></div><div class="admin-topbar-right"><div class="admin-status-chip"><span class="admin-status-dot"></span> Hệ thống hoạt động</div><button class="admin-top-user" type="button" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button></div></div></header>
+      <header class="admin-topbar"><div class="admin-topbar-inner"><button id="adminMenuBtn" class="admin-menu-btn" type="button" aria-label="Thu gọn hoặc mở menu"><i class="fa-solid fa-bars"></i></button><div class="admin-topbar-hidden-copy"><h1 id="tabTitle">Dashboard</h1><p id="tabSub">Tổng quan hệ thống</p></div><div class="admin-topbar-right"><div class="bdz-top-tools"></div><div class="admin-status-chip"><span class="admin-status-dot"></span> Hệ thống hoạt động</div><button class="admin-top-user" type="button" aria-label="Tài khoản"><i class="fa-regular fa-user"></i></button></div></div></header>
       <main class="admin-main admin-content-safe admin-main-wrap"><div id="flash" class="hidden"></div><div id="tabContent" class="admin-action-safe"></div></main>
     </section>
   </div>
-  <script src="/common.js?v=admin-ui-v10"></script>
-  <script src="/admin-fixed.js?v=admin-ui-v10"></script>
-  <script src="/api-guide.js?v=admin-ui-v10"></script>
-  <script src="/admin-session.js?v=admin-ui-v10"></script>
-  <script src="/admin-runtime.js?v=admin-ui-v10"></script>
-  <script src="/admin-ui-runtime.js?v=admin-ui-v10"></script>
-  <script src="/admin-reference-ui.js?v=admin-ui-v10"></script>
+  <script src="/common.js?v=admin-ui-v11"></script>
+  <script src="/admin-fixed.js?v=admin-ui-v11"></script>
+  <script src="/api-guide.js?v=admin-ui-v11"></script>
+  <script src="/admin-session.js?v=admin-ui-v11"></script>
+  <script src="/admin-runtime.js?v=admin-ui-v11"></script>
+  <script src="/admin-ui-runtime.js?v=admin-ui-v11"></script>
+  <script src="/admin-reference-ui.js?v=admin-ui-v11"></script>
+  <script src="/admin-extra.js?v=admin-ui-v11"></script>
 </body>
 </html>
