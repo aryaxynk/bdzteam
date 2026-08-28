@@ -1,0 +1,31 @@
+name: cleanup-legacy-shortener
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove GTraffic references
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('src/db.js'); s=p.read_text(); s=s.replace('const PROVIDERS = ["link4m", "trafficvn", "gtraffic"];','const PROVIDERS = ["link4m", "trafficvn"];'); p.write_text(s)
+          p=Path('src/public_api.js'); s=p.read_text(); s=s.replace('if(slot.provider==="gtraffic"){const m=await import("./shorteners/gtraffic.js");return m.shortenGTraffic(slot.token,destination,env);}',''); p.write_text(s)
+          p=Path('src/admin_api.js'); s=p.read_text(); s=s.replace("'link4m','trafficvn','gtraffic'","'link4m','trafficvn'"); p.write_text(s)
+          p=Path('public/admin-fixed.js'); s=p.read_text(); s=s.replace('<option value="gtraffic" ${s.provider===\'gtraffic\'?\'selected\':\'\'}>GTraffic</option>',''); s=s.replace('GTraffic',''); s=s.replace('Bốn vị trí API','Hai vị trí API'); p.write_text(s)
+          gp=Path('src/shorteners/gtraffic.js')
+          if gp.exists(): gp.unlink()
+      - name: Remove this one-time workflow
+        run: rm .github/workflows/cleanup-legacy-shortener.yml
+      - name: Commit
+        run: |
+          git config user.name cleanup-bot
+          git config user.email cleanup-bot@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: remove legacy GTraffic integration"
+          git push
