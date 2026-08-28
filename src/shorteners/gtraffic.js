@@ -1,11 +1,10 @@
-const ENDPOINT = "https://gtraffic.io/st";
+const ENDPOINT = "https://manager.gtraffic.io/api/cong-khai/tao-lien-ket";
 const PUBLIC_BASE = "https://gtraffic.io";
 
 function validUrl(value) {
   try {
     const u = new URL(String(value || "").trim());
-    if (u.protocol !== "http:" && u.protocol !== "https:") return "";
-    return u.href;
+    return u.protocol === "http:" || u.protocol === "https:" ? u.href : "";
   } catch {
     return "";
   }
@@ -50,8 +49,10 @@ export async function shortenGTraffic(token, destination) {
       redirect: "manual",
       cache: "no-store",
       headers: {
-        Accept: "application/json, text/plain, text/html, */*",
-        "User-Agent": "Mozilla/5.0 (compatible; BDZTEAM/5.0; +https://bdzteam.vercel.app/)"
+        Accept: "application/json, text/plain, */*",
+        Referer: "https://gtraffic.io/",
+        Origin: "https://gtraffic.io",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
       },
       signal: AbortSignal.timeout(15000)
     });
@@ -67,7 +68,7 @@ export async function shortenGTraffic(token, destination) {
   try { data = raw ? JSON.parse(raw) : null; } catch {}
 
   if (data && data.block === true) {
-    throw new Error("GTraffic /st trả về block=true; endpoint này đang chặn request máy chủ");
+    throw new Error("GTraffic từ chối request (block=true). Endpoint vẫn đang chặn server-side request.");
   }
 
   if (!response.ok) {
@@ -88,5 +89,5 @@ export async function shortenGTraffic(token, destination) {
   const idMatch = raw.match(/(?:id|code|short[_-]?code)\s*[=:]\s*["']?([A-Za-z0-9_-]{3,96})/i);
   if (idMatch) return PUBLIC_BASE + "/" + encodeURIComponent(idMatch[1]);
 
-  throw new Error("GTraffic /st không trả về liên kết rút gọn hợp lệ");
+  throw new Error("GTraffic không trả về liên kết rút gọn hợp lệ");
 }
