@@ -1,3 +1,4 @@
+const ENDPOINT = "https://gtraffic.io/st";
 const PUBLIC_BASE = "https://gtraffic.io";
 
 function validUrl(value) {
@@ -9,54 +10,78 @@ function validUrl(value) {
   }
 }
 
-async function readBody(response) {
-  const text = await response.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch {}
-  return { text, data };
+function cleanText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-export async function shortenGTraffic(token, destination, env = {}) {
+function extractUrl(value) {
+  if (!value) return "";
+  if (typeof value === "string") {
+    const direct = validUrl(value);
+    if (direct) return direct;
+    const match = value.match(/https?:\/\/[^\s"'<>]+/i);
+    return match ? validUrl(match[0]) : "";
+  }
+  if (typeof value === "object") {
+    const keys = ["url", "link", "short_url", "shortened_url", "shortenedUrl", "shortUrl", "redirect", "location", "href"];
+    for (const key of keys) {
+      const found = extractUrl(value[key]);
+      if (found) return found;
+    }
+  }
+  return "";
+}
+
+export async function shortenGTraffic(token, destination) {
   const apiKey = String(token || "").trim();
   const target = validUrl(destination);
   if (!apiKey) throw new Error("GTraffic API token chưa được cấu hình");
   if (!target) throw new Error("URL cần rút gọn không hợp lệ");
 
-  const runtimeEnv = env && Object.keys(env).length ? env : (typeof process !== "undefined" && process.env ? process.env : {});
-  const supabaseUrl = String(runtimeEnv.SUPABASE_URL || "").replace(/\/$/, "");
-  const gatewayKey = String(runtimeEnv.SUPABASE_SECRET_KEY || runtimeEnv.SUPABASE_ANON_KEY || "").trim();
-  if (!supabaseUrl || !gatewayKey) throw new Error("Thiếu cấu hình Supabase gateway cho GTraffic");
+  const requestUrl = new URL(ENDPOINT);
+  requestUrl.searchParams.set("apikey", apiKey);
+  requestUrl.searchParams.set("url", target);
 
-  const proxyUrl = supabaseUrl + "/functions/v1/gtraffic-shortener";
   let response;
   try {
-    response = await fetch(proxyUrl, {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + gatewayKey,
-        apikey: gatewayKey,
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ token: apiKey, url: target }),
+    response = await fetch(requestUrl.toString(), {
+      method: "GET",
+      redirect: "manual",
       cache: "no-store",
-      signal: AbortSignal.timeout(12000)
+      headers: {
+        Accept: "application/json, text/plain, text/html, */*",
+        "User-Agent": "BDZTEAM-Shortener/4.0"
+      },
+      signal: AbortSignal.timeout(15000)
     });
   } catch (e) {
-    throw new Error("Không thể kết nối GTraffic proxy: " + String(e && e.message ? e.message : e));
+    throw new Error("Không thể kết nối GTraffic: " + String(e?.message || e));
   }
 
-  const body = await readBody(response);
-  const data = body.data || {};
-  if (!response.ok || data.ok !== true) {
-    const detail = typeof data.error === "string" ? data.error : body.text.replace(/\s+/g, " ").trim().slice(0, 300);
-    if (data.blocked === true || data.upstream_status === 403) {
-      throw new Error("GTraffic từ chối request (HTTP 403/block). Kiểm tra API token hoặc trạng thái tài khoản GTraffic.");
-    }
-    throw new Error("GTraffic proxy HTTP " + response.status + (detail ? ": " + detail : ""));
+  const location = validUrl(response.headers.get("location") || "");
+  if (location && location !== target) return location;
+
+  const raw = await response.text();
+  let data = null;
+  try { data = raw ? JSON.parse(raw) : null; } catch {}
+
+  if (!response.ok) {
+    let detail = "";
+    if (data && typeof data === "object") detail = data.message || data.error || data.detail || "";
+    if (!detail) detail = cleanText(raw).slice(0, 220);
+    throw new Error("GTraffic HTTP " + response.status + (detail ? ": " + detail : ""));
   }
 
-  const shortUrl = validUrl(data.url) || (data.id ? PUBLIC_BASE + "/" + encodeURIComponent(String(data.id).trim()) : "");
-  if (!shortUrl) throw new Error("GTraffic response không có liên kết rút gọn hợp lệ");
-  return shortUrl;
+  const returnedUrl = extractUrl(data) || extractUrl(raw);
+  if (returnedUrl && returnedUrl !== target) return returnedUrl;
+
+  if (data && typeof data === "object") {
+    const id = String(data.id || data.code || data.short_code || "").trim();
+    if (id) return PUBLIC_BASE + "/" + encodeURIComponent(id);
+  }
+
+  const idMatch = raw.match(/(?:id|code|short[_-]?code)\s*[=:]\s*["']?([A-Za-z0-9_-]{3,96})/i);
+  if (idMatch) return PUBLIC_BASE + "/" + encodeURIComponent(idMatch[1]);
+
+  throw new Error("GTraffic /st không trả về liên kết rút gọn hợp lệ");
 }
