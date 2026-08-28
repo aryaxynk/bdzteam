@@ -1,63 +1,61 @@
-const ENDPOINT = "https://manager.gtraffic.io/api/cong-khai/tao-lien-ket";
 const PUBLIC_BASE = "https://gtraffic.io";
 
 function validUrl(value) {
   try {
-    var u = new URL(String(value || "").trim());
-    if (u.protocol !== "http:" && u.protocol !== "https:") return "";
-    return u.href;
-  } catch (e) {
+    const u = new URL(String(value || "").trim());
+    return u.protocol === "http:" || u.protocol === "https:" ? u.href : "";
+  } catch {
     return "";
   }
 }
 
 async function readBody(response) {
-  var text = await response.text();
-  var data = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch (e) {
-    data = null;
-  }
-  return { text: text, data: data };
+  const text = await response.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch {}
+  return { text, data };
 }
 
-export async function shortenGTraffic(token, destination) {
-  var apiKey = String(token || "").trim();
-  var target = validUrl(destination);
-
+export async function shortenGTraffic(token, destination, env = {}) {
+  const apiKey = String(token || "").trim();
+  const target = validUrl(destination);
   if (!apiKey) throw new Error("GTraffic API token chưa được cấu hình");
   if (!target) throw new Error("URL cần rút gọn không hợp lệ");
 
-  var url = new URL(ENDPOINT);
-  url.searchParams.set("apikey", apiKey);
-  url.searchParams.set("url", target);
+  const supabaseUrl = String(env.SUPABASE_URL || "").replace(/\/$/, "");
+  const gatewayKey = String(env.SUPABASE_SECRET_KEY || env.SUPABASE_ANON_KEY || "").trim();
+  if (!supabaseUrl || !gatewayKey) throw new Error("Thiếu cấu hình Supabase gateway cho GTraffic");
 
-  var response;
+  const proxyUrl = supabaseUrl + "/functions/v1/gtraffic-shortener";
+  let response;
   try {
-    response = await fetch(url.toString(), {
-      method: "GET",
-      headers: { Accept: "application/json, text/plain, */*" },
-      redirect: "follow",
-      cache: "no-store"
+    response = await fetch(proxyUrl, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + gatewayKey,
+        apikey: gatewayKey,
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ token: apiKey, url: target }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(12000)
     });
   } catch (e) {
-    throw new Error("Không thể kết nối GTraffic: " + String(e && e.message ? e.message : e));
+    throw new Error("Không thể kết nối GTraffic proxy: " + String(e && e.message ? e.message : e));
   }
 
-  var body = await readBody(response);
-  var data = body.data || {};
-
-  if (!response.ok) {
-    var detail = "";
-    if (typeof data.message === "string") detail = data.message;
-    else if (typeof data.error === "string") detail = data.error;
-    else if (body.text) detail = body.text.replace(/\s+/g, " ").trim().slice(0, 300);
-    throw new Error("GTraffic HTTP " + response.status + (detail ? ": " + detail : ""));
+  const body = await readBody(response);
+  const data = body.data || {};
+  if (!response.ok || data.ok !== true) {
+    const detail = typeof data.error === "string" ? data.error : body.text.replace(/\s+/g, " ").trim().slice(0, 300);
+    if (data.blocked === true || data.upstream_status === 403) {
+      throw new Error("GTraffic từ chối request (HTTP 403/block). Kiểm tra API token hoặc trạng thái tài khoản GTraffic.");
+    }
+    throw new Error("GTraffic proxy HTTP " + response.status + (detail ? ": " + detail : ""));
   }
 
-  var id = String(data.id || "").trim();
-  if (!id) throw new Error("GTraffic trả về HTTP 200 nhưng không có id");
-
-  return PUBLIC_BASE + "/" + encodeURIComponent(id);
+  const shortUrl = validUrl(data.url) || (data.id ? PUBLIC_BASE + "/" + encodeURIComponent(String(data.id).trim()) : "");
+  if (!shortUrl) throw new Error("GTraffic response không có liên kết rút gọn hợp lệ");
+  return shortUrl;
 }
