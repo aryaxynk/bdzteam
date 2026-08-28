@@ -1,0 +1,16 @@
+/* BDZTEAM public notice theme: matches the reference UI */
+.bdz-telegram-notice{background:rgba(5,11,24,.50)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:bdzNoticeFade .16s ease-out both}
+.bdz-telegram-notice-card{background:#fff!important;color:#081326!important;border:1px solid #cbd6e2!important;border-top:4px solid #050b18!important;border-radius:4px!important;box-shadow:0 12px 32px rgba(15,23,42,.16)!important;padding:20px!important;transform:translateY(0)!important}
+.bdz-telegram-notice-icon{width:50px!important;height:50px!important;margin:0 auto 12px!important;border:1px solid #cbd6e2!important;border-radius:50%!important;background:#eef4ff!important;color:#173b73!important;box-shadow:none!important;font-size:22px!important}
+.bdz-telegram-notice-title{font-size:clamp(19px,5vw,23px)!important;line-height:1.2!important;font-weight:900!important;color:#081326!important;margin:0 0 8px!important}
+.bdz-telegram-notice-text{max-width:370px!important;margin:0 auto 17px!important;color:#718096!important;font-size:11px!important;line-height:1.65!important}
+.bdz-telegram-notice-actions{gap:9px!important}
+.bdz-telegram-notice-link{min-height:42px!important;padding:9px 12px!important;border:1px solid #173b73!important;border-radius:3px!important;background:#173b73!important;color:#fff!important;box-shadow:none!important;font-size:10px!important;font-weight:900!important;transition:background .12s ease,color .12s ease,border-color .12s ease!important}
+.bdz-telegram-notice-link.secondary{background:#fff!important;color:#173b73!important;border-color:#c5d0dd!important}
+.bdz-telegram-notice-link:hover{filter:none!important;background:#102d5a!important;color:#fff!important}
+.bdz-telegram-notice-link.secondary:hover{background:#f6f8fb!important;color:#173b73!important}
+.bdz-telegram-notice-close{right:8px!important;top:8px!important;width:32px!important;height:32px!important;border:1px solid #cbd6e2!important;border-radius:3px!important;background:#fff!important;color:#4f6075!important;box-shadow:none!important;font-size:20px!important;line-height:1!important}
+.bdz-telegram-notice-close:hover{background:#f6f8fb!important}
+@keyframes bdzNoticeFade{from{opacity:0}to{opacity:1}}
+@media(max-width:480px){.bdz-telegram-notice-card{padding:18px 14px!important}.bdz-telegram-notice-actions{grid-template-columns:1fr!important}.bdz-telegram-notice-link{min-height:40px!important}}
+@media(prefers-reduced-motion:reduce){.bdz-telegram-notice{animation:none!important}.bdz-telegram-notice-link{transition:none!important}}
