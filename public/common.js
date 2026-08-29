@@ -1,5 +1,4 @@
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const hideLoader=()=>document.getElementById('bdzPageLoader')?.classList.add('hide');
 function mountMotionStyles(){if(document.querySelector('link[data-bdz-motion]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='/motion.css';l.dataset.bdzMotion='1';document.head.appendChild(l)}
 function mountUIPolish(){if(document.querySelector('link[data-bdz-ui-polish]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='/ui-polish.css';l.dataset.bdzUiPolish='1';document.head.appendChild(l)}
 function bdzToMessage(v,seen=new WeakSet()){
@@ -45,5 +44,18 @@ function mountTelegramNotice(){
   wrap.addEventListener('click',e=>{if(e.target===wrap)close()});
   document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',esc)}});
 }
-document.addEventListener('DOMContentLoaded',()=>{mountMotionStyles();mountUIPolish();setTimeout(hideLoader,420);mountTelegramNotice();mountPublicRecaptcha();const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;const items=[...document.querySelectorAll('.reveal:not(.in)')];if(reduce||!('IntersectionObserver' in window)){items.forEach(e=>e.classList.add('in'))}else{const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target)}}),{root:null,rootMargin:'0px 0px -8% 0px',threshold:.04});items.forEach(e=>obs.observe(e))}document.querySelectorAll('a:not([target])').forEach(a=>{if(!a.href.startsWith(location.origin)||a.href.includes('#'))return;a.addEventListener('click',()=>{if(a.dataset.noLoader!==undefined)return;document.getElementById('bdzPageLoader')?.classList.remove('hide')})});const ip=document.getElementById('userIp'),gets=document.getElementById('todayGets');if(ip||gets)fetch('/api/key-meta',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(!d)return;if(ip)ip.textContent=d.ip||'Vercel';if(gets)gets.textContent=(d.today_gets??0)+' Lượt'}).catch(()=>{});const adminPaths=new Set(['/admin','/admin/','/admin.html','/admin.html/','/dashboard','/dashboard/','/dashboard.html','/dashboard.html/']);if(adminPaths.has(location.pathname)){const poll=async()=>{try{const r=await fetch('/api/session-check',{cache:'no-store'});const d=await r.json();if(!d.ok){alert(bdzToMessage(d)||'Phiên quản trị đã bị vô hiệu hóa.');location.href='/login'}}catch{}};poll();setInterval(poll,30000)}});
+document.addEventListener('DOMContentLoaded',()=>{
+  mountMotionStyles();
+  mountUIPolish();
+  mountTelegramNotice();
+  mountPublicRecaptcha();
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const items=[...document.querySelectorAll('.reveal:not(.in)')];
+  if(reduce||!('IntersectionObserver' in window))items.forEach(e=>e.classList.add('in'));
+  else{const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target)}}),{root:null,rootMargin:'0px 0px -8% 0px',threshold:.04});items.forEach(e=>obs.observe(e))}
+  const ip=document.getElementById('userIp'),gets=document.getElementById('todayGets');
+  if(ip||gets)fetch('/api/key-meta',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(!d)return;if(ip)ip.textContent=d.ip||'—';if(gets)gets.textContent=(d.today_gets??0)+' Lượt'}).catch(()=>{});
+  const adminPaths=new Set(['/admin','/admin/','/admin.html','/admin.html/','/dashboard','/dashboard/','/dashboard.html','/dashboard.html/']);
+  if(adminPaths.has(location.pathname)){const poll=async()=>{try{const r=await fetch('/api/session-check',{cache:'no-store'});const d=await r.json();if(!d.ok){alert(bdzToMessage(d)||'Phiên quản trị đã bị vô hiệu hóa.');location.href='/login'}}catch{}};poll();setInterval(poll,30000)}
+});
 window.bdzCopy=async text=>{try{await navigator.clipboard.writeText(text);return true}catch{return false}};
