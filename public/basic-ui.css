@@ -1,0 +1,122 @@
+/* BDZTEAM unified basic UI - visual layer only. Existing JS/API behavior stays untouched. */
+:root{--ui-bg:#f5f7fa;--ui-surface:#fff;--ui-border:#d9e0e7;--ui-border-strong:#c8d1dc;--ui-text:#17212b;--ui-muted:#667383;--ui-primary:#19b65b;--ui-primary-hover:#12984a;--ui-soft:#edf2f6;--ui-danger:#dc4c64;--ui-radius:10px;--ui-shadow:0 8px 24px rgba(23,33,43,.06)}
+html{background:var(--ui-bg)}body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:Inter,Roboto,"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;font-weight:400!important;line-height:1.5;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.max-w-6xl,.max-w-3xl{max-width:1120px!important}
+/* Shared cards / buttons / fields */
+.nb-card,.card,.admin-panel{background:var(--ui-surface)!important;border:1px solid var(--ui-border)!important;border-radius:var(--ui-radius)!important;box-shadow:var(--ui-shadow)!important}
+.nb-card-active{background:#fff!important}
+.nb-btn,.btn,.small-btn{border:1px solid var(--ui-border-strong)!important;border-radius:8px!important;box-shadow:none!important;background:#fff!important;color:var(--ui-text)!important;text-transform:none!important;font-weight:600!important;transition:background .15s ease,border-color .15s ease,transform .15s ease,box-shadow .15s ease!important}
+.nb-btn:hover,.btn:hover,.small-btn:hover{transform:none!important;box-shadow:0 3px 10px rgba(23,33,43,.08)!important;border-color:#b8c3ce!important}
+.nb-btn:active,.btn:active,.small-btn:active{transform:none!important;box-shadow:none!important}
+.nb-btn-yellow,.btn.yellow{background:var(--ui-primary)!important;border-color:var(--ui-primary)!important;color:#fff!important}
+.nb-btn-yellow:hover,.btn.yellow:hover{background:var(--ui-primary-hover)!important;border-color:var(--ui-primary-hover)!important}
+.input{min-height:44px!important;padding:10px 12px!important;border:1px solid var(--ui-border-strong)!important;border-radius:8px!important;background:#fff!important;box-shadow:none!important;color:var(--ui-text)!important;outline:0!important}
+.input:focus{border-color:#8da3b8!important;box-shadow:0 0 0 3px rgba(25,182,91,.10)!important}
+.input::placeholder{color:#9aa6b2!important}
+.error-box{border:1px solid #f0b9c3!important;border-radius:8px!important;background:#fff2f4!important;color:#a92d43!important;box-shadow:none!important}
+.keybox{border:1px dashed var(--ui-border-strong)!important;background:#f8fafc!important;border-radius:8px!important;box-shadow:none!important}
+.step-box{border:1px solid var(--ui-border)!important;border-radius:8px!important;box-shadow:none!important;background:#fff!important}
+.step-box.active{background:#eaf8ef!important;border-color:#9ed7b4!important}
+.stat-chip{border:1px solid var(--ui-border)!important;border-radius:8px!important;box-shadow:none!important;background:#fff!important}
+.product-card{min-height:72px!important;padding:13px 14px!important;border:1px solid var(--ui-border)!important;border-radius:8px!important;background:#fff!important;box-shadow:none!important}
+.product-card:hover{transform:none!important;box-shadow:0 3px 10px rgba(23,33,43,.06)!important}
+.product-card.selected{background:#eefaf2!important;border-color:#8fd0a7!important}
+.badge-success,.status-pill,.scope-badge{border:1px solid var(--ui-border)!important;border-radius:999px!important;box-shadow:none!important;font-weight:600!important}
+.status-pill.success,.scope-admin{background:#eaf8ef!important;border-color:#b9e4c7!important}
+.status-pill.warn{background:#fff7df!important;border-color:#ecd38b!important}
+.status-pill.error{background:#fff0f2!important;border-color:#efb4bf!important}
+.status-pill.info,.scope-get{background:#edf5ff!important;border-color:#bfd7f3!important}
+/* Public header / home */
+header.max-w-6xl{padding-top:22px!important;padding-bottom:22px!important}
+header.max-w-6xl .bdz-logo{width:38px!important;height:38px!important;border:1px solid var(--ui-border-strong)!important;border-radius:8px!important;box-shadow:none!important}
+header.max-w-6xl nav a{color:var(--ui-muted)!important;font-weight:500!important}
+header.max-w-6xl nav a:hover{color:var(--ui-text)!important}
+header.max-w-6xl .nb-btn{min-height:38px!important}
+/* Keep public landing simple and less oversized */
+body.public-contrast>section:first-of-type{padding-top:55px!important;padding-bottom:55px!important}
+body.public-contrast h1{font-size:clamp(30px,5vw,48px)!important;letter-spacing:-.02em}
+body.public-contrast h1 span{background:#eef2f5!important;border:1px solid var(--ui-border)!important;border-radius:7px!important}
+body.public-contrast .stat-chip{min-height:118px!important}
+body.public-contrast .cta{background:#fff!important;color:var(--ui-text)!important;border-top:1px solid var(--ui-border)!important}
+body.public-contrast .cta h1,body.public-contrast .cta h2,body.public-contrast .cta h3,body.public-contrast .cta p,body.public-contrast .cta b{color:var(--ui-text)!important}
+body.public-contrast .cta .text-\[\#b9c2d0\],body.public-contrast .cta .text-\[\#8a93a6\]{color:var(--ui-muted)!important}
+body.public-contrast .cta .border-\[\#253148\]{border-color:var(--ui-border)!important}
+/* Key page */
+body.key-page{padding:18px!important}
+body.key-page .bdz-logo-lg{width:58px!important;height:58px!important;border:1px solid var(--ui-border-strong)!important;border-radius:10px!important;box-shadow:none!important}
+body.key-page .text-center.space-y-2 h1{font-size:27px!important}
+body.key-page .key-meta-ip{color:var(--ui-text)!important}
+body.key-page .key-today-badge{color:var(--ui-text)!important}
+body.key-page .key-choice-card{border-color:var(--ui-border)!important}
+/* Login */
+body:has(#loginForm){background:var(--ui-bg)!important}
+body:has(#loginForm)>div{max-width:390px!important}
+body:has(#loginForm) .bdz-logo-lg{width:60px!important;height:60px!important;border:1px solid var(--ui-border-strong)!important;border-radius:10px!important;box-shadow:none!important}
+body:has(#loginForm) h1{font-size:24px!important;letter-spacing:-.02em}
+body:has(#loginForm) section{padding:22px!important}
+body:has(#loginForm) #togglePassword{border:1px solid var(--ui-border)!important;border-radius:7px!important;box-shadow:none!important}
+body:has(#loginForm) a.text-\[\#173b73\]{color:#3f617e!important}
+/* Admin shell */
+.admin-shell{background:var(--ui-bg)!important}
+.admin-sidebar{background:#fff!important;color:var(--ui-text)!important;border-right:1px solid var(--ui-border)!important;box-shadow:2px 0 12px rgba(23,33,43,.03)!important}
+.admin-sidebar-brand{border-bottom:1px solid var(--ui-border)!important}
+.admin-brand{color:var(--ui-text)!important}
+.admin-brand img{width:38px!important;height:38px!important;border:1px solid var(--ui-border-strong)!important;border-radius:9px!important;box-shadow:none!important}
+.admin-brand-title{font-weight:700!important}
+.admin-brand-role{color:var(--ui-muted)!important;font-weight:500!important}
+.admin-nav-label{color:#8996a4!important;font-size:10px!important;letter-spacing:.06em!important;font-weight:700!important}
+.admin-side-item{color:#4a5968!important;background:transparent!important;border:1px solid transparent!important;border-radius:8px!important;box-shadow:none!important;font-weight:500!important}
+.admin-side-item.active,.admin-side-item:hover{background:#eef8f1!important;color:#118947!important;border-color:#c5e7d1!important;box-shadow:none!important;transform:none!important}
+.admin-account-card{background:#f7f9fb!important;border:1px solid var(--ui-border)!important;border-radius:9px!important}
+.admin-account-avatar{background:#eaf8ef!important;color:#118947!important;border:1px solid #c5e7d1!important}
+.admin-footer-btn{border:1px solid var(--ui-border)!important;border-radius:8px!important;background:#fff!important;color:#556574!important;box-shadow:none!important}
+.admin-footer-btn.danger{color:#b53048!important;background:#fff5f6!important;border-color:#f0ccd3!important}
+.admin-topbar{background:rgba(255,255,255,.92)!important;border-bottom:1px solid var(--ui-border)!important;box-shadow:0 2px 12px rgba(23,33,43,.03)!important}
+.admin-topbar-inner{max-width:1400px!important}
+.admin-status-chip{background:#eef8f1!important;border:1px solid #c5e7d1!important;color:#118947!important;border-radius:999px!important}
+.admin-status-dot{background:#1bb55d!important;box-shadow:0 0 0 3px rgba(27,181,93,.10)!important}
+.admin-top-user,.admin-menu-btn{border:1px solid var(--ui-border)!important;background:#fff!important;border-radius:8px!important;color:#647281!important;box-shadow:none!important}
+.admin-main{background:var(--ui-bg)!important}
+.admin-panel{box-shadow:var(--ui-shadow)!important}
+.admin-panel th{color:#718092!important;border-bottom:1px solid var(--ui-border)!important}
+.admin-panel td{border-bottom:1px solid #edf0f3!important}
+/* dynamically-rendered admin content uses common form controls */
+.admin-main input,.admin-main select,.admin-main textarea{border:1px solid var(--ui-border-strong)!important;border-radius:8px!important;box-shadow:none!important;background:#fff!important;color:var(--ui-text)!important}
+.admin-main button:not(.admin-side-item):not(.admin-menu-btn):not(.admin-top-user):not(.admin-mobile-close){border-radius:8px!important;box-shadow:none!important}
+.admin-main .btn,.admin-main .small-btn{border:1px solid var(--ui-border-strong)!important}
+.admin-main .btn.yellow{background:var(--ui-primary)!important;border-color:var(--ui-primary)!important;color:#fff!important}
+.api-panel pre{border:1px solid var(--ui-border)!important;border-radius:8px!important;background:#f8fafc!important;box-shadow:none!important}
+.api-note{border:1px solid #e6d28d!important;border-radius:8px!important;background:#fff8df!important;box-shadow:none!important}
+.code-tabs button{border:1px solid var(--ui-border)!important;border-radius:8px!important;background:#fff!important;box-shadow:none!important}
+.code-tabs button.active{background:#eef8f1!important;border-color:#b9e4c7!important}
+/* Mobile: same design, stacked instead of cramped */
+@media(max-width:720px){
+  body{font-size:14px!important}
+  header.max-w-6xl{padding:14px 14px!important}
+  header.max-w-6xl .nb-btn{padding:8px 11px!important}
+  body.public-contrast>section:first-of-type{padding:38px 14px!important}
+  body.public-contrast h1{font-size:30px!important;line-height:1.16!important}
+  body.public-contrast .stat-chip{min-height:104px!important}
+  body.key-page{padding:10px!important}
+  body.key-page .w-full.max-w-3xl{width:100%!important}
+  body.key-page .key-choice-card{padding:14px!important}
+  body.key-page .grid.grid-cols-2.md\:grid-cols-4{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body:has(#loginForm){padding:12px!important}
+  body:has(#loginForm)>div{width:100%!important}
+  body:has(#loginForm) section{padding:18px!important}
+  .admin-sidebar{width:min(86vw,320px)!important}
+  .admin-main{padding:14px!important}
+  .admin-topbar-inner{padding-inline:12px!important}
+  .admin-status-chip{font-size:11px!important;padding:7px 10px!important}
+}
+@media(max-width:440px){
+  body.public-contrast .stats{gap:8px!important}
+  body.public-contrast .stat-chip{padding:11px!important}
+  body.key-page .grid.grid-cols-2.md\:grid-cols-4{gap:7px!important}
+  body.key-page .step-box{min-height:58px}
+  body:has(#loginForm) section{padding:15px!important}
+  .admin-topbar-right{gap:6px!important}
+  .admin-status-chip{max-width:150px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
