@@ -1,1 +1,93 @@
-<!doctype html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>BDZTEAM - Đăng Nhập Admin</title><script src="https://cdn.tailwindcss.com"></script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com"><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><link rel="stylesheet" href="/styles.css?v=admin-login-v3"><link rel="stylesheet" href="/reference-theme.css?v=admin-login-v3"><link rel="stylesheet" href="/basic-ui.css?v=basic-ui-v2"><link rel="stylesheet" href="/reference-demo-v2.css?v=reference-demo-v2"></head><body class="min-h-screen p-4 md:p-8 flex items-center justify-center"><div class="w-full max-w-md"><div class="text-center mb-5"><img src="https://files.catbox.moe/xpaekr.jpg" class="bdz-logo-lg mx-auto" alt="BDZTEAM"><h1 class="text-2xl md:text-3xl font-black mt-3">BDZTEAM ADMIN</h1><p class="text-xs text-[#6B7280]">Đăng nhập quản trị hệ thống</p></div><section class="nb-card nb-card-active p-5"><div id="error" class="error-box hidden mb-4"></div><form id="loginForm" class="space-y-4" data-no-loader><div><label class="block text-xs font-bold text-[#6B7280] mb-2">TÀI KHOẢN</label><input id="username" class="input" required autofocus autocomplete="username"></div><div><label class="block text-xs font-bold text-[#6B7280] mb-2">MẬT KHẨU</label><div class="relative"><input id="password" class="input pr-11" type="password" required autocomplete="current-password"><button id="togglePassword" type="button" aria-label="Hiện mật khẩu" class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center"><i id="passwordIcon" class="fa-solid fa-eye"></i></button></div></div><button id="loginBtn" type="submit" class="w-full nb-btn nb-btn-yellow py-3">Đăng nhập</button></form><form id="authForm" class="space-y-4 hidden" data-no-loader><div class="bg-gray-100 border border-gray-300 rounded-md p-3 text-xs font-bold">Admin phụ yêu cầu thêm mã xác thực 10 ký tự.</div><div><label class="block text-xs font-bold text-[#6B7280] mb-2">MÃ XÁC THỰC</label><input id="authCode" class="input font-mono tracking-widest text-center uppercase" maxlength="10" autocomplete="one-time-code"></div><button id="authBtn" type="submit" class="w-full nb-btn nb-btn-yellow py-3">Xác nhận mã</button></form><div class="flex justify-center mt-4 text-xs font-bold"><a href="/" class="text-[#55708e]">← Quay lại Get Key</a></div></section></div><script src="/admin-login.js?v=admin-login-v3"></script></body></html>
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f1f3f6">
+<title>BDZTEAM - Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/styles.css?v=admin-login-v4">
+<link rel="stylesheet" href="/reference-theme.css?v=admin-login-v4">
+<link rel="stylesheet" href="/basic-ui.css?v=basic-ui-v3">
+<link rel="stylesheet" href="/reference-demo-v3.css?v=reference-demo-v3">
+</head>
+<body class="public-contrast">
+<header class="demo-header">
+  <div class="demo-header-inner">
+    <a class="demo-brand" href="/">BDZTEAM</a>
+    <div class="demo-header-tools">
+      <span class="demo-theme" aria-hidden="true"><i class="fa-regular fa-sun"></i></span>
+      <span class="demo-login-link">Login</span>
+    </div>
+  </div>
+</header>
+<main class="demo-login-main">
+  <section class="demo-login-card" aria-label="Admin Login">
+    <div class="demo-login-title">LOGIN</div>
+    <div class="demo-login-body">
+      <div id="error" class="demo-error" hidden role="alert"></div>
+      <form id="loginForm" data-no-loader>
+        <div class="demo-login-field">
+          <div class="demo-login-control">
+            <span class="demo-login-icon"><i class="fa-regular fa-user"></i></span>
+            <input id="username" required autofocus autocomplete="username" placeholder="Your username" aria-label="Username">
+          </div>
+        </div>
+        <div class="demo-login-field">
+          <div class="demo-login-control">
+            <span class="demo-login-icon"><i class="fa-solid fa-shield-halved"></i></span>
+            <input id="password" type="password" required autocomplete="current-password" placeholder="Your password" aria-label="Password">
+            <button id="togglePassword" type="button" class="demo-eye" aria-label="Hiện mật khẩu"><i id="passwordIcon" class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+        <label class="demo-stay"><input id="stayLogin" type="checkbox"><span>Stay login?</span></label>
+        <div class="demo-login-actions">
+          <a href="/" class="demo-back-link">Get Key</a>
+          <button id="loginBtn" type="submit" class="demo-login-button"><i class="fa-solid fa-right-to-bracket"></i> Log in</button>
+        </div>
+      </form>
+      <form id="authForm" class="demo-auth-form" hidden data-no-loader>
+        <div class="demo-auth-note">Admin phụ yêu cầu thêm mã xác thực 10 ký tự.</div>
+        <div class="demo-login-field">
+          <div class="demo-login-control"><span class="demo-login-icon"><i class="fa-solid fa-shield-halved"></i></span><input id="authCode" class="mono" maxlength="10" autocomplete="one-time-code" placeholder="Auth code" aria-label="Auth code"></div>
+        </div>
+        <div class="demo-login-actions"><button id="authBtn" type="submit" class="demo-login-button"><i class="fa-solid fa-right-to-bracket"></i> Log in</button></div>
+      </form>
+    </div>
+  </section>
+</main>
+<footer class="demo-footer">
+  <div class="demo-footer-inner">
+    <div class="demo-social"><span><i class="fa-brands fa-telegram"></i></span><span><i class="fa-brands fa-youtube"></i></span><span><i class="fa-brands fa-discord"></i></span></div>
+    <div class="demo-copy">© Copyright 2026 BDZTEAM</div>
+  </div>
+</footer>
+<style>
+.demo-login-main{width:min(1140px,calc(100% - 32px));min-height:400px;margin:0 auto;display:flex;justify-content:center;align-items:flex-start;padding-top:64px}
+.demo-login-card{width:364px;background:#fff;border:1px solid #cfd5dd;border-radius:7px;box-shadow:0 3px 10px rgba(15,23,42,.06);overflow:hidden}
+.demo-login-title{height:41px;border-bottom:1px solid #d6dbe2;display:grid;place-items:center;font-size:16px;color:#182638}
+.demo-login-body{padding:36px 20px 20px}
+.demo-login-field{margin-bottom:15px}
+.demo-login-control{height:37px;display:flex;align-items:center;border:1px solid #cbd3dc;border-radius:8px;background:#fff;overflow:hidden}
+.demo-login-icon{width:39px;height:100%;display:grid;place-items:center;border-right:1px solid #dde2e8;color:#49657f;font-size:12px;flex:0 0 auto}
+.demo-login-control input{height:100%;flex:1;min-width:0;border:0;outline:0;background:transparent;padding:0 11px;color:#344152;font-size:14px}
+.demo-login-control input::placeholder{color:#8190a0}
+.demo-login-control:focus-within{border-color:#9aa9bb;box-shadow:0 0 0 2px rgba(64,99,135,.07)}
+.demo-eye{width:37px;height:100%;border:0;background:transparent;color:#68788b;cursor:pointer}
+.demo-stay{display:flex;align-items:center;gap:8px;font-size:14px;color:#273445;margin:3px 0 27px}
+.demo-stay input{width:16px;height:16px;margin:0;accent-color:#2563eb}
+.demo-login-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.demo-back-link{font-size:14px;color:#1264eb}
+.demo-login-button{height:36px;padding:0 17px;border:0;border-radius:5px;background:#1f70f2;color:#fff;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.demo-login-button:hover{background:#1764dd}
+.demo-login-button:disabled{opacity:.6;cursor:not-allowed}
+.demo-auth-note{margin:-5px 0 15px;padding:10px;border:1px solid #d8dee6;border-radius:5px;background:#f7f9fb;font-size:12px;color:#566476}
+.demo-auth-form .demo-login-actions{justify-content:flex-end}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em}
+@media(max-width:720px){.demo-login-main{width:calc(100% - 20px);padding-top:38px}.demo-login-card{width:100%;max-width:390px}.demo-login-body{padding:26px 14px 16px}.demo-login-control{height:42px}.demo-login-button{height:40px}.demo-stay{margin-bottom:22px}}
+</style>
+<script src="/admin-login.js?v=admin-login-v4"></script>
+</body>
+</html>
