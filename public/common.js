@@ -44,11 +44,13 @@ function mountTelegramNotice(){
   wrap.addEventListener('click',e=>{if(e.target===wrap)close()});
   document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',esc)}});
 }
+function bindPublicSocial(){const a=[...document.querySelectorAll('.demo-social span')];if(a.length<3)return;const cfg=[['https://t.me/BDZTEAM_VN','Telegram','fa-brands fa-telegram'],['https://www.youtube.com/@aryamodz','YouTube','fa-brands fa-youtube'],['https://tiktok.com/@bdzteammod','TikTok','fa-brands fa-tiktok']];cfg.forEach((x,i)=>{const el=a[i];el.title=x[1];el.setAttribute('aria-label',x[1]);el.setAttribute('role','link');el.tabIndex=0;el.style.cursor='pointer';const icon=el.querySelector('i');if(icon)icon.className=x[2];const go=()=>window.open(x[0],'_blank','noopener,noreferrer');el.onclick=go;el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}})}
 document.addEventListener('DOMContentLoaded',()=>{
   mountMotionStyles();
   mountUIPolish();
   mountTelegramNotice();
   mountPublicRecaptcha();
+  bindPublicSocial();
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const items=[...document.querySelectorAll('.reveal:not(.in)')];
   if(reduce||!('IntersectionObserver' in window))items.forEach(e=>e.classList.add('in'));
