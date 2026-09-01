@@ -1,0 +1,8 @@
+(()=>{'use strict';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const fmt=v=>{if(!v)return'—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleString('vi-VN',{hour12:false})};
+async function loadMeta(){try{const r=await fetch('/api/admin/key-meta',{credentials:'include',cache:'no-store',headers:{accept:'application/json'}});if(!r.ok)return null;const d=await r.json();return d.ok?d.keys||[]:null}catch{return null}}
+async function decorate(){const panel=document.querySelector('#panel');if(!panel)return;const cards=[...panel.querySelectorAll('.key-card')];if(!cards.length)return;const meta=await loadMeta();if(!meta)return;const byId=new Map(meta.map(x=>[String(x.id),x]));cards.forEach(card=>{const expiry=card.querySelector('[data-expiry]');const id=expiry?.getAttribute('data-expiry');const m=byId.get(String(id));if(!m)return;let box=card.querySelector('.key-product-meta');if(!box){box=document.createElement('div');box.className='key-product-meta';const main=card.querySelector('.key-main');if(main)main.appendChild(box)}box.innerHTML=`<span><b>Sản phẩm</b>${esc(m.product||'—')}</span><span><b>Slug</b><code>${esc(m.slug||'—')}</code></span>`})}
+function boot(){let last=0;const run=()=>{const panel=document.querySelector('#panel');if(!panel)return;if(panel===last)return;last=panel;setTimeout(decorate,20)};new MutationObserver(run).observe(document.body,{childList:true,subtree:true});setInterval(()=>{if(document.querySelector('#panel .key-card'))decorate()},1500)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
