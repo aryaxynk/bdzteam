@@ -26,10 +26,10 @@ export default async function handler(req,res){
   if(path==='/api/admin/login'&&req.method==='POST'){const {adminLogin}=await import('./admin_api.js');const raw=await request.text();let body={};try{body=raw?JSON.parse(raw):{}}catch{return send(res,jsonError('Dữ liệu đăng nhập không hợp lệ.',400))}return send(res,await adminLogin(toRequest(req,fullUrl.toString(),JSON.stringify(body)),env))}
   if(path==='/api/admin/auth-code'&&req.method==='POST'){const {adminAuthCode}=await import('./admin_api.js');return send(res,await adminAuthCode(request,env))}
   if(path==='/api/admin/logout'&&req.method==='POST')return send(res,json({ok:true},200,clearAuth()));
-  if(path.startsWith('/api/admin/')){const {requireAdmin,dashboard,adminAction}=await import('./admin_api.js');const s=await requireAdmin(request,env);if(!s)return send(res,json({ok:false,error:'Chưa đăng nhập quản trị.'},401));
+  if(path.startsWith('/api/admin/')){const {requireAdmin,dashboard,adminAction}=await import('./admin_api.js');const {handleKeyAdminAction}=await import('./key_admin_actions.js');const s=await requireAdmin(request,env);if(!s)return send(res,json({ok:false,error:'Chưa đăng nhập quản trị.'},401));
    if(path==='/api/admin/me'&&req.method==='GET')return send(res,json({ok:true,user:s.u,role:s.r}));
    if(path==='/api/admin/dashboard'&&req.method==='GET')return send(res,json(await dashboard(env,s)));
-   if(path==='/api/admin/action'&&req.method==='POST')return send(res,await adminAction(request,env,s));
+   if(path==='/api/admin/action'&&req.method==='POST'){const clone=request.clone();const handled=await handleKeyAdminAction(clone,env,s);if(handled)return send(res,handled);return send(res,await adminAction(request,env,s));}
    if(path==='/api/admin/create-key'&&req.method==='POST'){
     if(s.r!=='main')return send(res,json({ok:false,error:'Bạn không có quyền tạo Key Admin.'},403));
     const b=await request.json().catch(()=>({}));let code=String(b.key_code||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');if(!code)code='BDZ-'+crypto.randomUUID().replaceAll('-','').slice(0,12).toUpperCase();const productId=Number(b.product_id),hours=clampInt(b.duration_hours,1,720,10);let maxDevices=clampInt(b.max_devices,0,1000,1);
