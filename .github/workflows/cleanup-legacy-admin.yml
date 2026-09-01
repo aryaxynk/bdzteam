@@ -1,0 +1,69 @@
+name: cleanup-legacy-admin
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    if: contains(github.event.head_commit.message, '[legacy-cleanup]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Remove legacy admin renderers and obsolete assets
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('public/admin-v2.js')
+          s = p.read_text(encoding='utf-8')
+          a = s.find('function stats(){')
+          b = s.find('function keyStatus(', a)
+          if a == -1 or b == -1:
+              raise SystemExit('legacy dashboard block not found')
+          s = s[:a] + 'function dashboard(){return ""}\n' + s[b:]
+          a = s.find('const EX={')
+          b = s.find('function products(){', a)
+          if a != -1 and b != -1:
+              s = s[:a] + 'function apiPanel(){return ""}\n' + s[b:]
+          p.write_text(s, encoding='utf-8')
+          h = Path('public/admin.html')
+          html = h.read_text(encoding='utf-8')
+          html = html.replace('<link rel="stylesheet" href="/dashboard-bootstrap.css?v=dash-bootstrap-v1">','')
+          html = html.replace('<body class="dashboard-bootstrap">','<body>')
+          html = html.replace('<script src="/dashboard-bootstrap-release.js?v=dash-bootstrap-v1"></script>','')
+          h.write_text(html, encoding='utf-8')
+          PY
+          rm -f \
+            public/admin-clean-v1.css \
+            public/admin-dashboard-fix.js \
+            public/admin-extra-compat.js \
+            public/admin-final-polish.css \
+            public/admin-final-polish.js \
+            public/admin-fixed.js \
+            public/admin-full.css \
+            public/admin-full.js \
+            public/admin-hotfix.css \
+            public/admin-key-list-filter.js \
+            public/admin-key-list-patch.js \
+            public/dashboard-bootstrap.css \
+            public/dashboard-bootstrap-release.js
+          if git diff --quiet; then
+            echo 'Nothing to clean'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore(clean): remove legacy admin dashboard and obsolete assets'
+          git push
+      - name: Validate cleaned files
+        shell: bash
+        run: |
+          test -f public/admin-v2.js
+          test -f public/dashboard-v3.js
+          ! grep -q 'function stats(){' public/admin-v2.js
+          ! grep -q 'function dashboard(){const rows=S.data?.keys' public/admin-v2.js
+          ! test -e public/admin-dashboard-fix.js
