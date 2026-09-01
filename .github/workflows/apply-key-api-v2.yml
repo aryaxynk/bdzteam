@@ -1,0 +1,44 @@
+name: apply-key-api-v2
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/key_admin_actions.js'
+      - 'public/admin-api-integration-v3.js'
+      - 'public/admin.html'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: contains(github.event.head_commit.message, '[key-api-v2]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch API router and cleanup workflow
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('src/vercel_handler.js')
+          s = p.read_text(encoding='utf-8')
+          if "./key_admin_actions.js" not in s:
+              marker = "const {requireAdmin,dashboard,adminAction}=await import('./admin_api.js');"
+              repl = "const {requireAdmin,dashboard,adminAction}=await import('./admin_api.js');const {handleKeyAdminAction}=await import('./key_admin_actions.js');"
+              if marker not in s: raise SystemExit('admin import marker not found')
+              s = s.replace(marker, repl, 1)
+          old = "if(path==='/api/admin/action'&&req.method==='POST')return send(res,await adminAction(request,env,s));"
+          new = "if(path==='/api/admin/action'&&req.method==='POST'){const clone=request.clone();const handled=await handleKeyAdminAction(clone,env,s);if(handled)return send(res,handled);return send(res,await adminAction(request,env,s));}"
+          if old in s:
+              s = s.replace(old, new, 1)
+          elif new not in s:
+              raise SystemExit('admin action route not found')
+          p.write_text(s, encoding='utf-8')
+          # Retire this one-shot workflow after successful application.
+          wf=Path('.github/workflows/apply-key-api-v2.yml')
+          if wf.exists(): wf.unlink()
+          subprocess=__import__('subprocess')
+          subprocess.run(['git','config','user.name','github-actions[bot]'],check=True)
+          subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'],check=True)
+          subprocess.run(['git','add','-A'],check=True)
+          subprocess.run(['git','commit','-m','refactor(key): route all admin key actions through rebuilt handler'],check=True)
+          subprocess.run(['git','push'],check=True)
