@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - name: Remove legacy admin renderers and obsolete assets
+      - name: Remove legacy admin/dashboard code and obsolete assets
         shell: bash
         run: |
           python3 - <<'PY'
@@ -20,25 +20,31 @@ jobs:
           import re
           p = Path('public/admin-v2.js')
           s = p.read_text(encoding='utf-8')
-          original = s
-          s2, n = re.subn(r'function\s+stats\s*\(\)\s*\{.*?(?=function\s+keyStatus\s*\()', '', s, count=1, flags=re.S)
+          # Remove the compatibility stub for the retired Dashboard renderer.
+          s, n = re.subn(r'function\s+dashboard\s*\(\)\s*\{\s*return\s+[\"\']\s*[\"\']\s*;?\s*\}', '', s, count=1)
           if n != 1:
-              raise SystemExit('legacy dashboard block not found')
-          s = s2
-          s2, n = re.subn(r'const\s+EX\s*=\{.*?(?=function\s+products\s*\()', '', s, count=1, flags=re.S)
+              raise SystemExit('retired dashboard stub not found')
+          # Never call the retired renderer from the generic tab renderer.
+          s, n = re.subn(r"S\.tab==='dashboard'\?dashboard\(\):", 'S.tab===\'dashboard\'?\'\':', s, count=1)
           if n != 1:
-              raise SystemExit('legacy API examples block not found')
-          s = s2
-          s = re.sub(r'function\s+dashboard\s*\(\)\s*\{\s*return\s*["\']\s*["\'];?\s*\}', '', s, count=1)
-          s = re.sub(r'function\s+apiPanel\s*\(\)\s*\{\s*return\s*["\']\s*["\'];?\s*\}', '', s, count=1)
+              raise SystemExit('legacy dashboard call not found')
+          # The API tab has its own dedicated integration script; remove the retired inline examples.
+          s, n = re.subn(r'function\s+apiPanel\s*\(\)\s*\{\s*return\s+[\"\']\s*[\"\']\s*;?\s*\}', '', s, count=1)
+          if n != 1:
+              raise SystemExit('retired API panel stub not found')
+          s, n = re.subn(r"S\.tab==='api'\?apiPanel\(\):", "S.tab==='api'?'':", s, count=1)
+          if n != 1:
+              raise SystemExit('legacy API panel call not found')
           p.write_text(s, encoding='utf-8')
+
           h = Path('public/admin.html')
           html = h.read_text(encoding='utf-8')
           html = re.sub(r'<link[^>]+dashboard-bootstrap\.css[^>]*>', '', html)
           html = re.sub(r'<script[^>]+dashboard-bootstrap-release\.js[^>]*></script>', '', html)
-          html = html.replace(' class="dashboard-bootstrap"','')
+          html = html.replace(' class="dashboard-bootstrap"', '')
           h.write_text(html, encoding='utf-8')
           PY
+
           rm -f \
             public/admin-clean-v1.css \
             public/admin-dashboard-fix.js \
@@ -52,7 +58,24 @@ jobs:
             public/admin-key-list-filter.js \
             public/admin-key-list-patch.js \
             public/dashboard-bootstrap.css \
-            public/dashboard-bootstrap-release.js
+            public/dashboard-bootstrap-release.js \
+            CLEANUP_TRIGGER.txt
+
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('public/admin-v2.js').read_text(encoding='utf-8')
+          assert 'function dashboard(' not in s
+          assert 'function stats(' not in s
+          assert 'function apiPanel(' not in s
+          assert "S.tab==='dashboard'?dashboard()" not in s
+          assert "S.tab==='api'?apiPanel()" not in s
+          h = Path('public/admin.html').read_text(encoding='utf-8')
+          assert 'dashboard-bootstrap' not in h
+          for f in ['admin-dashboard-fix.js','dashboard-bootstrap.css','dashboard-bootstrap-release.js','admin-clean-v1.css','admin-extra-compat.js','admin-final-polish.css','admin-final-polish.js','admin-fixed.js','admin-full.css','admin-full.js','admin-hotfix.css','admin-key-list-filter.js','admin-key-list-patch.js']:
+              assert not Path('public',f).exists(), f
+          print('legacy cleanup validation: OK')
+          PY
+
           if git diff --quiet; then
             echo 'Nothing to clean'
             exit 0
@@ -60,16 +83,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'chore(clean): remove legacy dashboard and obsolete admin assets'
+          git commit -m 'chore(clean): remove retired admin dashboard and legacy assets'
           git push
-      - name: Validate cleaned files
-        shell: bash
-        run: |
-          test -f public/admin-v2.js
-          test -f public/dashboard-v3.js
-          ! grep -Eq 'function[[:space:]]+stats[[:space:]]*\(' public/admin-v2.js
-          ! grep -Eq 'function[[:space:]]+dashboard[[:space:]]*\(' public/admin-v2.js
-          ! grep -Eq 'const[[:space:]]+EX[[:space:]]*=' public/admin-v2.js
-          ! test -e public/admin-dashboard-fix.js
-          ! test -e public/dashboard-bootstrap.css
-          ! test -e public/dashboard-bootstrap-release.js
