@@ -17,23 +17,26 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path('public/admin-v2.js')
           s = p.read_text(encoding='utf-8')
-          a = s.find('function stats(){')
-          b = s.find('function keyStatus(', a)
-          if a == -1 or b == -1:
+          original = s
+          s2, n = re.subn(r'function\s+stats\s*\(\)\s*\{.*?(?=function\s+keyStatus\s*\()', '', s, count=1, flags=re.S)
+          if n != 1:
               raise SystemExit('legacy dashboard block not found')
-          s = s[:a] + 'function dashboard(){return ""}\n' + s[b:]
-          a = s.find('const EX={')
-          b = s.find('function products(){', a)
-          if a != -1 and b != -1:
-              s = s[:a] + 'function apiPanel(){return ""}\n' + s[b:]
+          s = s2
+          s2, n = re.subn(r'const\s+EX\s*=\{.*?(?=function\s+products\s*\()', '', s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('legacy API examples block not found')
+          s = s2
+          s = re.sub(r'function\s+dashboard\s*\(\)\s*\{\s*return\s*["\']\s*["\'];?\s*\}', '', s, count=1)
+          s = re.sub(r'function\s+apiPanel\s*\(\)\s*\{\s*return\s*["\']\s*["\'];?\s*\}', '', s, count=1)
           p.write_text(s, encoding='utf-8')
           h = Path('public/admin.html')
           html = h.read_text(encoding='utf-8')
-          html = html.replace('<link rel="stylesheet" href="/dashboard-bootstrap.css?v=dash-bootstrap-v1">','')
-          html = html.replace('<body class="dashboard-bootstrap">','<body>')
-          html = html.replace('<script src="/dashboard-bootstrap-release.js?v=dash-bootstrap-v1"></script>','')
+          html = re.sub(r'<link[^>]+dashboard-bootstrap\.css[^>]*>', '', html)
+          html = re.sub(r'<script[^>]+dashboard-bootstrap-release\.js[^>]*></script>', '', html)
+          html = html.replace(' class="dashboard-bootstrap"','')
           h.write_text(html, encoding='utf-8')
           PY
           rm -f \
@@ -57,13 +60,16 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'chore(clean): remove legacy admin dashboard and obsolete assets'
+          git commit -m 'chore(clean): remove legacy dashboard and obsolete admin assets'
           git push
       - name: Validate cleaned files
         shell: bash
         run: |
           test -f public/admin-v2.js
           test -f public/dashboard-v3.js
-          ! grep -q 'function stats(){' public/admin-v2.js
-          ! grep -q 'function dashboard(){const rows=S.data?.keys' public/admin-v2.js
+          ! grep -Eq 'function[[:space:]]+stats[[:space:]]*\(' public/admin-v2.js
+          ! grep -Eq 'function[[:space:]]+dashboard[[:space:]]*\(' public/admin-v2.js
+          ! grep -Eq 'const[[:space:]]+EX[[:space:]]*=' public/admin-v2.js
           ! test -e public/admin-dashboard-fix.js
+          ! test -e public/dashboard-bootstrap.css
+          ! test -e public/dashboard-bootstrap-release.js
