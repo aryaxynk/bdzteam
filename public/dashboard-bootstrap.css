@@ -1,4 +1,0 @@
-/* Prevent the legacy Dashboard renderer from flashing before Dashboard V3 hydrates. */
-body.dashboard-bootstrap #panel{visibility:hidden}
-body.dashboard-bootstrap #panel::before{content:"";display:block;min-height:220px}
-@media(prefers-reduced-motion:reduce){body.dashboard-bootstrap #panel{visibility:hidden}}
