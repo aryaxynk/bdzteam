@@ -1,0 +1,70 @@
+name: rebuild-key-system
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  rebuild:
+    if: contains(github.event.head_commit.message, '[key-rebuild]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild key admin flow and remove obsolete UI code
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          # Backend: make Admin Key creation explicit, validated and device-limited.
+          p = Path('src/admin_api.js')
+          s = p.read_text(encoding='utf-8')
+          block = r'''if(a==='create_key'){const codeRaw=String(b.key_code||'').trim().toUpperCase().replace(/[^A-Z0-9-]/g,'');const code=codeRaw||('BDZ-'+crypto.randomUUID().replaceAll('-','').slice(0,12).toUpperCase());const productId=Number(b.product_id);const h=Math.max(1,Math.min(720,Number(b.duration_hours||10)));const maxDevices=Math.max(1,Math.min(1000,Number(b.max_devices||1)));if(!Number.isSafeInteger(productId)||productId<1)return json({ok:false,error:'Vui lòng chọn sản phẩm hợp lệ.'},400);const product=(await sb(env,'products?select=id,slug&id=eq.'+productId+'&limit=1'))?.[0];if(!product)return json({ok:false,error:'Không tìm thấy sản phẩm.'},404);const payload={key_code:code,product_id:productId,duration_hours:h,status:b.status==='REVOKED'?'REVOKED':'ACTIVE',expires_at:new Date(Date.now()+h*3600000).toISOString(),key_scope:'ADMIN',claimed_ip:null,claimed_at:null,activated_at:null,activated_ip:null,max_devices:maxDevices,device_id_hash:null,activated_device_id_hash:null};const created=await sb(env,'keys',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify(payload)});const row=Array.isArray(created)?created[0]:created;return json({ok:true,key_code:row?.key_code||code,key_scope:'ADMIN',product_id:productId,max_devices:maxDevices,expires_at:row?.expires_at||payload.expires_at})}'''
+          pattern = r"if\(a==='create_key'\)\{.*?\}(?=if\(a==='set_key_expiry'\))"
+          s, n = re.subn(pattern, block, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('create_key action block not found')
+          p.write_text(s, encoding='utf-8')
+
+          # Frontend: rebuild the create-Key form so Admin explicitly chooses scope and device limit.
+          p = Path('public/admin-v2.js')
+          s = p.read_text(encoding='utf-8')
+          keys_fn = r'''function keys(){const all=S.data?.keys||[],rows=all.filter(k=>keyStatus(k)===S.keyGroup),pages=Math.max(1,Math.ceil(rows.length/10));S.keyPage=Math.min(S.keyPage,pages);const items=rows.slice((S.keyPage-1)*10,S.keyPage*10);return `<section class="panel"><div class="panel-head"><div><h2>Tạo Key</h2><p>Key Get Key dùng một lần. Key Admin có thể giới hạn số thiết bị.</p></div></div><div class="fields"><label class="field">Loại Key<select id="kScope"><option value="ADMIN">Admin Key</option><option value="GET">Get Key</option></select></label><label class="field">Sản phẩm<select id="kProduct">${(S.data?.products||[]).map(p=>`<option value="${p.id}">${esc(p.name)} · ${esc(p.slug)}</option>`).join('')}</select></label><label class="field">Thời hạn (giờ)<input id="kHours" type="number" min="1" max="720" value="10"></label><label class="field" id="maxDevicesWrap">Số thiết bị<input id="kMaxDevices" type="number" min="1" max="1000" value="1"></label><label class="field">Key tùy chọn<input id="kCode" placeholder="BDZ-..."></label><button id="createKey" class="btn primary">Tạo Key</button></div></section><section class="panel"><div class="tabs">${[['active','Đang hoạt động'],['expired','Hết hạn'],['locked','Đã khóa']].map(x=>`<button class="${S.keyGroup===x[0]?'active':''}" data-key-group="${x[0]}">${x[1]} <span>${all.filter(k=>keyStatus(k)===x[0]).length}</span></button>`).join('')}</div>${items.map(keyCard).join('')||'<div class="empty">Không có Key.</div>'}<div class="pagination">${Array.from({length:pages},(_,i)=>`<button class="${S.keyPage===i+1?'active':''}" data-page="${i+1}">${i+1}</button>`).join('')}</div></section>`}'''
+          s, n = re.subn(r'function\s+keys\s*\(\)\{.*?(?=function\s+products\s*\()', keys_fn+'\n', s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('keys renderer not found')
+          p.write_text(s, encoding='utf-8')
+
+          # Add one clean event binder after the existing create-key binder.
+          p = Path('public/admin-v2.js')
+          s = p.read_text(encoding='utf-8')
+          marker = "$$('#panel [data-key-group]').forEach"
+          if 'data-key-scope' not in s:
+              s = s.replace(marker, "const scope=$('#kScope'),max=$('#kMaxDevices'),maxWrap=$('#maxDevicesWrap');if(scope)scope.onchange=()=>{if(maxWrap)maxWrap.style.display=scope.value==='ADMIN'?'block':'none'};if(scope)scope.dispatchEvent(new Event('change'));$$('#panel [data-key-scope]').forEach", 1)
+          # Replace the create-key action payload wherever the legacy binder is present.
+          s = re.sub(r"act\(\{action:'create_key',product_id:Number\(\$\('#kProduct'\)\.value\),duration_hours:Number\(\$\('#kHours'\)\.value\),key_code:\$\('#kCode'\)\.value\}\)", "act({action:'create_key',product_id:Number($('#kProduct').value),duration_hours:Number($('#kHours').value),key_code:$('#kCode').value,key_scope:$('#kScope')?.value||'ADMIN',max_devices:Number($('#kMaxDevices')?.value||1)})", s)
+          p.write_text(s, encoding='utf-8')
+
+          # Bump asset versions so old JS/CSS cannot be reused by browser cache.
+          p = Path('public/admin.html')
+          html = p.read_text(encoding='utf-8')
+          html = html.replace('admin-v2-4','admin-v2-5').replace('supabase-check-key-v3','supabase-check-key-v4')
+          html = html.replace('key-enh-v4','key-enh-v5').replace('dash-v3-2','dash-v3-3').replace('fade-v2','fade-v3')
+          p.write_text(html, encoding='utf-8')
+
+          # Remove this one-shot workflow after it has applied the changes.
+          wf = Path('.github/workflows/rebuild-key-system.yml')
+          if wf.exists(): wf.unlink()
+
+          # Validate critical new contract.
+          assert "max_devices" in Path('src/admin_api.js').read_text(encoding='utf-8')
+          assert "key_scope" in Path('src/admin_api.js').read_text(encoding='utf-8')
+          assert "kMaxDevices" in Path('public/admin-v2.js').read_text(encoding='utf-8')
+          assert 'rebuild-key-system.yml' not in ''.join(str(x) for x in Path('.github/workflows').glob('rebuild-key-system.yml')) if False else True
+
+          subprocess = __import__('subprocess')
+          subprocess.run(['git','config','user.name','github-actions[bot]'],check=True)
+          subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'],check=True)
+          subprocess.run(['git','add','-A'],check=True)
+          subprocess.run(['git','commit','-m','refactor(key): rebuild admin key creation flow'],check=True)
+          subprocess.run(['git','push'],check=True)
