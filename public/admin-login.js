@@ -1,3 +1,4 @@
+(()=>{const r=matchMedia?.('(prefers-reduced-motion: reduce)').matches;if(!r){const s=document.createElement('style');s.textContent='body{animation:bdzFi .26s ease both}@keyframes bdzFi{from{opacity:0}to{opacity:1}}body.bdzFo{animation:bdzFo .18s ease both!important}@keyframes bdzFo{from{opacity:1}to{opacity:0}}';document.head.appendChild(s);document.addEventListener('click',e=>{const a=e.target.closest?.('a[href]');if(!a)return;const u=new URL(a.href,location.href);if(u.origin!==location.origin||u.hash||a.target==='_blank'||e.defaultPrevented)return;if(u.href===location.href)return;e.preventDefault();document.body.classList.add('bdzFo');setTimeout(()=>location.href=u.href,180)},{capture:true})}})();
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);const errorBox=$('error'),loginForm=$('loginForm'),loginBtn=$('loginBtn');
