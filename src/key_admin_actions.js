@@ -13,14 +13,27 @@ const keyCode = (v) => {
 export async function handleKeyAdminAction(request, env, session) {
   const b = await request.json().catch(() => ({}));
   const raw = String(b.action || '').trim().toLowerCase();
-  const aliases = { create_admin_key: 'create_key', create_get_key: 'create_key', update_expiry: 'set_key_expiry', update_key_expiry: 'set_key_expiry', extend_expiry: 'extend_key', reduce_expiry: 'reduce_key', lock_key: 'lock_key', unlock_key: 'unlock_key', revoke_key: 'lock_key', restore_key: 'unlock_key' };
+  const aliases = {
+    create_admin_key: 'create_key',
+    create_admin_key_with_limit: 'create_key',
+    create_key_with_limit: 'create_key',
+    create_get_key: 'create_key',
+    update_expiry: 'set_key_expiry',
+    update_key_expiry: 'set_key_expiry',
+    set_expiry: 'set_key_expiry',
+    extend_expiry: 'extend_key',
+    reduce_expiry: 'reduce_key',
+    revoke_key: 'lock_key',
+    restore_key: 'unlock_key',
+    delete: 'delete_key'
+  };
   const action = aliases[raw] || raw;
   if (!['create_key','set_key_expiry','extend_key','reduce_key','toggle_key','lock_key','unlock_key','delete_key'].includes(action)) return null;
   if (session?.r !== 'main') return json({ok:false,error:'Bạn không có quyền quản lý Key.'},403);
   try {
     if (action === 'create_key') {
-      const scopeValue = String(b.key_scope || (raw === 'create_get_key' ? 'GET' : 'ADMIN')).trim().toUpperCase();
-      const key_scope = scopeValue === 'GET' ? 'GET' : 'ADMIN';
+      const requestedScope = String(b.key_scope || (raw === 'create_get_key' ? 'GET' : 'ADMIN')).trim().toUpperCase();
+      const key_scope = requestedScope === 'GET' ? 'GET' : 'ADMIN';
       const productId = int(b.product_id,1,Number.MAX_SAFE_INTEGER,0);
       const hours = int(b.duration_hours,1,720,10);
       const maxDevices = key_scope === 'ADMIN' ? int(b.max_devices,1,1000,1) : 0;
