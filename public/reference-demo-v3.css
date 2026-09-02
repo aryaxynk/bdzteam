@@ -37,6 +37,11 @@ button,input,select{font:inherit}
 .demo-footer{margin-top:16px;background:#fff;border-top:1px solid #d5dbe3;min-height:140px}
 .demo-footer-inner{width:min(1140px,calc(100% - 32px));margin:0 auto;padding:26px 12px;text-align:center;color:#6e7886}
 .demo-social{display:flex;justify-content:center;align-items:center;gap:28px;font-size:20px;margin-bottom:20px}
+.demo-social span{display:inline-flex;align-items:center;justify-content:center;transition:transform .15s ease,opacity .15s ease;cursor:pointer}
+.demo-social span:hover{transform:translateY(-1px);opacity:.9}
+.demo-social span[title="Telegram"]{color:#229ED9}
+.demo-social span[title="YouTube"]{color:#FF0000}
+.demo-social span[title="TikTok"]{color:#111}
 .demo-copy{font-size:12px;font-style:italic}
 @media(max-width:720px){
   .demo-header{height:60px}
