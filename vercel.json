@@ -4,14 +4,23 @@
   "trailingSlash":false,
   "headers":[{"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},{"key":"X-Frame-Options","value":"DENY"},{"key":"Permissions-Policy","value":"camera=(), microphone=(), geolocation=()"}]}],
   "redirects":[
-    {"source":"/login.html","destination":"/login","permanent":true},{"source":"/register.html","destination":"/register","permanent":true},{"source":"/admin.html","destination":"/admin","permanent":true},{"source":"/key.html","destination":"/","permanent":true},{"source":"/dashboard.html","destination":"/admin","permanent":true},{"source":"/get-key.html","destination":"/","permanent":true},{"source":"/admin-login","destination":"/login","permanent":true}
+    {"source":"/login.html","destination":"/login","permanent":true},
+    {"source":"/register.html","destination":"/register","permanent":true},
+    {"source":"/admin.html","destination":"/admin","permanent":true},
+    {"source":"/dashboard.html","destination":"/admin","permanent":true},
+    {"source":"/get-key.html","destination":"/","permanent":true},
+    {"source":"/admin-login","destination":"/login","permanent":true}
   ],
   "rewrites":[
     {"source":"/api/:path*","destination":"/api/index?route=/:path*"},
-    {"source":"/","destination":"/key.html"},{"source":"/index","destination":"/key.html"},{"source":"/index/","destination":"/key.html"},
-    {"source":"/session-check","destination":"/api/session-check"},{"source":"/session-check/","destination":"/api/session-check"},{"source":"/health","destination":"/api/health"},{"source":"/health/","destination":"/api/health"},
-    {"source":"/key","destination":"/key.html"},{"source":"/key/","destination":"/key.html"},{"source":"/get-key","destination":"/key.html"},{"source":"/get-key/","destination":"/key.html"},{"source":"/getkey","destination":"/key.html"},{"source":"/getkey/","destination":"/key.html"},
-    {"source":"/login","destination":"/login.html"},{"source":"/login/","destination":"/login.html"},{"source":"/register","destination":"/register.html"},{"source":"/register/","destination":"/register.html"},
-    {"source":"/admin","destination":"/admin.html"},{"source":"/admin/","destination":"/admin.html"},{"source":"/dashboard","destination":"/admin.html"},{"source":"/dashboard/","destination":"/admin.html"}
+    {"source":"/","destination":"/key.html"},
+    {"source":"/get-key","destination":"/key.html"},
+    {"source":"/getkey","destination":"/key.html"},
+    {"source":"/login","destination":"/login.html"},
+    {"source":"/register","destination":"/register.html"},
+    {"source":"/admin","destination":"/admin.html"},
+    {"source":"/dashboard","destination":"/admin.html"},
+    {"source":"/session-check","destination":"/api/session-check"},
+    {"source":"/health","destination":"/api/health"}
   ]
 }
