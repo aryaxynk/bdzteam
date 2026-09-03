@@ -16,6 +16,7 @@ const PERMISSIONS = Object.freeze({
   create_get_key: 'Tạo Get Key',
   create_admin_key: 'Tạo Admin Key',
   edit_expiry: 'Sửa thời hạn Key',
+  edit_limit: 'Sửa giới hạn thiết bị Key',
   lock_keys: 'Khóa / mở khóa Key',
   delete_keys: 'Xóa Key'
 });
@@ -25,6 +26,7 @@ const DEFAULT_PERMISSIONS = Object.freeze({
   create_get_key: true,
   create_admin_key: true,
   edit_expiry: true,
+  edit_limit: true,
   lock_keys: true,
   delete_keys: true
 });
@@ -96,21 +98,28 @@ export async function handleKeyAdminAction(request, env, session) {
     set_expiry: 'set_key_expiry',
     extend_expiry: 'extend_key',
     reduce_expiry: 'reduce_key',
+    update_limit: 'set_key_limit',
+    set_limit: 'set_key_limit',
+    update_max_devices: 'set_key_limit',
+    set_max_devices: 'set_key_limit',
+    change_limit: 'set_key_limit',
     revoke_key: 'lock_key',
     restore_key: 'unlock_key',
     delete: 'delete_key'
   };
   const action = aliases[raw] || raw;
 
-  if (!['create_key', 'set_key_expiry', 'extend_key', 'reduce_key', 'toggle_key', 'lock_key', 'unlock_key', 'delete_key'].includes(action)) return null;
+  if (!['create_key', 'set_key_expiry', 'extend_key', 'reduce_key', 'set_key_limit', 'toggle_key', 'lock_key', 'unlock_key', 'delete_key'].includes(action)) return null;
 
   const permission = action === 'create_key'
     ? (String(b.key_scope || (raw === 'create_get_key' ? 'GET' : 'ADMIN')).trim().toUpperCase() === 'GET' ? 'create_get_key' : 'create_admin_key')
     : action === 'set_key_expiry' || action === 'extend_key' || action === 'reduce_key'
       ? 'edit_expiry'
-      : action === 'delete_key'
-        ? 'delete_keys'
-        : 'lock_keys';
+      : action === 'set_key_limit'
+        ? 'edit_limit'
+        : action === 'delete_key'
+          ? 'delete_keys'
+          : 'lock_keys';
 
   if (!(await checkKeyPermission(env, session, permission))) return denied(permission);
 
@@ -151,8 +160,19 @@ export async function handleKeyAdminAction(request, env, session) {
 
     const id = int(b.key_id, 1, Number.MAX_SAFE_INTEGER, 0);
     if (!id) return json({ ok: false, error: 'Key không hợp lệ.' }, 400);
-    const row = (await sb(env, `keys?select=id,status,expires_at&id=eq.${id}&limit=1`).catch(() => []))?.[0];
+    const row = (await sb(env, `keys?select=id,status,expires_at,max_devices,key_scope&id=eq.${id}&limit=1`).catch(() => []))?.[0];
     if (!row) return json({ ok: false, error: 'Không tìm thấy Key.' }, 404);
+
+    if (action === 'set_key_limit') {
+      if (String(row.key_scope || '').toUpperCase() !== 'ADMIN') return json({ ok: false, error: 'GET Key không có giới hạn thiết bị.' }, 400);
+      const nextLimit = int(b.max_devices ?? b.limit, 1, 1000, 0);
+      if (!nextLimit) return json({ ok: false, error: 'Giới hạn thiết bị không hợp lệ.' }, 400);
+      const bindings = await sb(env, `key_device_bindings?key_id=eq.${id}&select=device_id_hash&limit=1000`).catch(() => []);
+      const used = Array.isArray(bindings) ? bindings.length : 0;
+      if (nextLimit < used) return json({ ok: false, error: `Limit mới phải lớn hơn hoặc bằng số thiết bị đã dùng (${used}).` }, 400);
+      await sb(env, `keys?id=eq.${id}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ max_devices: nextLimit }) });
+      return json({ ok: true, max_devices: nextLimit, devices_used: used });
+    }
 
     if (action === 'toggle_key' || action === 'lock_key' || action === 'unlock_key') {
       const next = action === 'lock_key' ? 'REVOKED' : action === 'unlock_key' ? 'ACTIVE' : row.status === 'REVOKED' ? 'ACTIVE' : 'REVOKED';
