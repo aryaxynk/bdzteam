@@ -17,6 +17,19 @@ function bdzToMessage(v,seen=new WeakSet()){
 }
 window.BDZToMessage=bdzToMessage;
 function bdzPublicPage(){const p=location.pathname;return !['/login','/login/','/login.html','/admin','/admin/','/admin.html','/admin.html/','/dashboard','/dashboard/','/dashboard.html','/dashboard.html/'].includes(p)}
+function mountPublicThemeToggle(){
+  const btn=document.querySelector('.demo-theme');
+  if(!btn||btn.dataset.bdzThemeBound==='1')return;
+  btn.dataset.bdzThemeBound='1';
+  btn.setAttribute('role','button');btn.setAttribute('tabindex','0');btn.setAttribute('aria-label','Chuyển giao diện sáng/tối');btn.title='Chuyển giao diện sáng/tối';btn.style.cursor='pointer';
+  if(!document.getElementById('bdz-public-theme-style')){
+    const style=document.createElement('style');style.id='bdz-public-theme-style';style.textContent=`body.bdz-dark{background:#111827;color:#e5e7eb}body.bdz-dark .demo-header{background:#111827;border-bottom-color:#374151}body.bdz-dark .demo-brand,body.bdz-dark .demo-login-link,body.bdz-dark .demo-header-tools{color:#e5e7eb}body.bdz-dark .demo-main{color:#e5e7eb}body.bdz-dark .demo-card,body.bdz-dark .demo-success{background:#1f2937;border-color:#374151;color:#e5e7eb}body.bdz-dark .demo-card-head{border-bottom-color:#374151;color:#e5e7eb}body.bdz-dark .demo-card-head .head-user{color:#9fb6d1}body.bdz-dark .demo-control{background:#111827;border-color:#4b5563;color:#e5e7eb}body.bdz-dark .demo-control .demo-icon{border-right-color:#374151;color:#9fb6d1}body.bdz-dark .demo-control select,body.bdz-dark .demo-control input{color:#e5e7eb}body.bdz-dark .demo-control input::placeholder{color:#9ca3af}body.bdz-dark .demo-control select option{background:#111827;color:#e5e7eb}body.bdz-dark .demo-hint{color:#cbd5e1}body.bdz-dark .demo-error{background:#3f1d25;border-color:#7f1d1d;color:#fecaca}body.bdz-dark .demo-keybox{background:#111827;border-color:#4b5563;color:#fff}body.bdz-dark .demo-footer{background:#111827;border-top-color:#374151;color:#cbd5e1}body.bdz-dark .demo-theme{color:#f8fafc}`;document.head.appendChild(style)
+  }
+  let dark=false;try{dark=localStorage.getItem('bdz-theme')==='dark'}catch{}
+  const apply=()=>{document.body.classList.toggle('bdz-dark',dark);const i=btn.querySelector('i');if(i)i.className=dark?'fa-regular fa-moon':'fa-regular fa-sun';btn.title=dark?'Chuyển sang giao diện sáng':'Chuyển sang giao diện tối';btn.setAttribute('aria-label',btn.title)};
+  const toggle=()=>{dark=!dark;try{localStorage.setItem('bdz-theme',dark?'dark':'light')}catch{}apply()};
+  btn.addEventListener('click',toggle);btn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});apply();
+}
 function mountPublicRecaptcha(){
   if(!bdzPublicPage())return;
   if(window.grecaptcha||document.querySelector('script[data-bdz-recaptcha]')||document.querySelector('script[src*="google.com/recaptcha/api.js"]'))return;
@@ -49,6 +62,7 @@ function bindPublicSocial(){const a=[...document.querySelectorAll('.demo-social 
 document.addEventListener('DOMContentLoaded',()=>{
   mountMotionStyles();
   mountUIPolish();
+  mountPublicThemeToggle();
   mountTelegramNotice();
   mountPublicRecaptcha();
   bindPublicSocial();
