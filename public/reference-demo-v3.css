@@ -8,7 +8,7 @@ button,input,select{font:inherit}
 .demo-header-inner{width:min(1140px,calc(100% - 32px));height:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
 .demo-brand{font-size:20px;font-weight:800;letter-spacing:.01em;color:#20293a}
 .demo-header-tools{display:flex;align-items:center;gap:22px;color:#606b79}
-.demo-theme{font-size:17px;line-height:1}
+.demo-theme{display:none!important}
 .demo-login-link{font-size:16px;color:#606b79}
 .demo-main{width:min(1140px,calc(100% - 32px));min-height:500px;margin:16px auto 0;display:flex;align-items:flex-start;justify-content:flex-start}
 .demo-card{width:558px;background:#fff;border:1px solid #cfd5dd;border-radius:6px;box-shadow:0 3px 10px rgba(15,23,42,.06);overflow:hidden}
