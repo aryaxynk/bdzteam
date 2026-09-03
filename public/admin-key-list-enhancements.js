@@ -15,7 +15,7 @@ function enrich(){
   const menu=card.querySelector('.menu');const id=menu?.id?.replace(/^menu-/,'');if(!id)return;const k=find(id);if(!k)return;
   let extra=card.querySelector('.key-extra');if(!extra){extra=document.createElement('div');extra.className='key-extra';const main=card.querySelector('.key-main');(main||card).appendChild(extra)}
   const scope=String(k.key_scope||'').toUpperCase()==='ADMIN'?'ADMIN':'GET';const slug=k.product_slug||k.products?.slug||'—';const name=k.product_name||k.products?.name||'—';const used=Number(k.devices_used||0);const limit=scope==='ADMIN'?Number(k.max_devices||0):0;
-  const html=`<span class="key-chip">Loại: <strong>${scope}</strong></span><span class="key-chip">Product: <strong>${esc(name)}</strong></span><span class="key-chip">Slug: <strong>${esc(slug)}</strong></span>${scope==='ADMIN'?`<span class="key-chip">Thiết bị: <strong>${used}/${limit}</strong></span>`:'<span class="key-chip">Limit: <strong>1 lần</strong></span>'}`;
+  const html=`<span class="key-chip">Loại: <strong>${scope}</strong></span><span class="key-chip">Product: <strong>${esc(name)}</strong></span><span class="key-chip">Slug: <strong>${esc(slug)}</strong></span>${scope==='ADMIN'?`<span class="key-chip">Thiết bị: <strong>${Math.min(used,limit)}/${limit}</strong></span>`:'<span class="key-chip">Limit: <strong>1 lần</strong></span>'}`;
   if(extra.innerHTML!==html)extra.innerHTML=html;
   if(scope==='ADMIN'&&!menu.querySelector('[data-set-limit]')){const b=document.createElement('button');b.type='button';b.dataset.setLimit=id;b.textContent='Sửa Limit';menu.insertBefore(b,menu.firstChild)}
  });
@@ -23,8 +23,12 @@ function enrich(){
 function schedule(){if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;enrich()})}
 async function editLimit(id){
  const k=find(id);if(!k||String(k.key_scope||'').toUpperCase()!=='ADMIN')return;
- const used=Number(k.devices_used||0),old=Number(k.max_devices||1);const value=window.prompt(`Giới hạn thiết bị mới (đã dùng ${used}/${old}):`,String(old));if(value===null)return;const n=Number(value);if(!Number.isInteger(n)||n<1||n>1000){alert('Limit phải là số nguyên từ 1 đến 1000.');return}if(n<used){alert(`Limit mới không được nhỏ hơn số thiết bị đã dùng (${used}).`);return}
- try{await api({action:'set_key_limit',key_id:Number(id),max_devices:n});k.max_devices=n;await loadInfo(true);const fresh=find(id);if(fresh)fresh.max_devices=n;enrich();}catch(e){alert(msg(e)||'Không thể cập nhật Limit.')}
+ const used=Number(k.devices_used||0),old=Number(k.max_devices||1);const value=window.prompt(`Giới hạn thiết bị mới (đã dùng ${used}/${old}). Nếu giảm limit, các thiết bị vượt giới hạn sẽ bị gỡ liên kết:`,String(old));if(value===null)return;const n=Number(value);if(!Number.isInteger(n)||n<1||n>1000){alert('Limit phải là số nguyên từ 1 đến 1000.');return}
+ try{
+  const result=await api({action:'set_key_limit',key_id:Number(id),max_devices:n});
+  k.max_devices=n;k.devices_used=Number(result.devices_used??Math.min(used,n));await loadInfo(true);enrich();
+  if(Number(result.removed_devices||0)>0)alert(`Đã giảm Limit xuống ${n}. Đã gỡ ${result.removed_devices} thiết bị vượt giới hạn.`);
+ }catch(e){alert(msg(e)||'Không thể cập nhật Limit.')}
 }
 document.addEventListener('click',async e=>{const b=e.target.closest?.('[data-set-limit]');if(b){e.preventDefault();e.stopPropagation();await editLimit(b.dataset.setLimit);return}const m=e.target.closest?.('[data-menu]');if(m)setTimeout(schedule,0)});
 const obs=new MutationObserver(()=>schedule());obs.observe(document.body,{subtree:true,childList:true});
