@@ -9,6 +9,7 @@
   let mounted=false;
   function setupNav(){
     const b=$('[data-tab="settings"]');if(!b)return false;
+    if(b.dataset.profileNav==='1')return true;
     b.removeAttribute('disabled');
     b.innerHTML='<i class="fa-solid fa-user"></i>Hồ sơ';
     b.dataset.profileNav='1';
