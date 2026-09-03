@@ -167,11 +167,20 @@ export async function handleKeyAdminAction(request, env, session) {
       if (String(row.key_scope || '').toUpperCase() !== 'ADMIN') return json({ ok: false, error: 'GET Key không có giới hạn thiết bị.' }, 400);
       const nextLimit = int(b.max_devices ?? b.limit, 1, 1000, 0);
       if (!nextLimit) return json({ ok: false, error: 'Giới hạn thiết bị không hợp lệ.' }, 400);
-      const bindings = await sb(env, `key_device_bindings?key_id=eq.${id}&select=device_id_hash&limit=1000`).catch(() => []);
+      const bindings = await sb(env, `key_device_bindings?key_id=eq.${id}&select=device_id_hash,created_at,last_seen_at&order=created_at.asc&limit=1000`).catch(() => []);
       const used = Array.isArray(bindings) ? bindings.length : 0;
-      if (nextLimit < used) return json({ ok: false, error: `Limit mới phải lớn hơn hoặc bằng số thiết bị đã dùng (${used}).` }, 400);
+      const removed = Math.max(0, used - nextLimit);
+      if (removed > 0) {
+        const keep = bindings.slice(0, nextLimit).map((binding) => binding.device_id_hash).filter(Boolean);
+        if (!keep.length) {
+          await sb(env, `key_device_bindings?key_id=eq.${id}`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
+        } else {
+          const keepEncoded = keep.map((deviceId) => encodeURIComponent(deviceId)).join(',');
+          await sb(env, `key_device_bindings?key_id=eq.${id}&device_id_hash=not.in.(${keepEncoded})`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
+        }
+      }
       await sb(env, `keys?id=eq.${id}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ max_devices: nextLimit }) });
-      return json({ ok: true, max_devices: nextLimit, devices_used: used });
+      return json({ ok: true, max_devices: nextLimit, devices_used: Math.min(used, nextLimit), removed_devices: removed });
     }
 
     if (action === 'toggle_key' || action === 'lock_key' || action === 'unlock_key') {
