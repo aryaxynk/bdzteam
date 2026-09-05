@@ -2,6 +2,7 @@ import { setting, saveSetting } from "./supabase.js";
 
 export const PROVIDERS = Object.freeze(["vuotlink"]);
 const DEFAULT_API_URL = "https://vuotlink.xyz/api";
+const INTERNAL_QUOTA = 100000;
 
 function cleanUrl(value) {
   const raw = String(value || "").trim();
@@ -25,7 +26,7 @@ export function normalizeSlots(_raw, apiUrl = DEFAULT_API_URL, apiToken = "") {
       provider: "vuotlink",
       api_url: cleanUrl(apiUrl),
       token: String(apiToken || "").trim(),
-      quota: 0,
+      quota: INTERNAL_QUOTA,
       enabled: Boolean(String(apiToken || "").trim())
     }
   };
