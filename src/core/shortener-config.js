@@ -18,7 +18,7 @@ export function isShortenerProvider(value) {
   return String(value || "").toLowerCase() === "vuotlink";
 }
 
-export function normalizeSlots(raw, apiUrl = DEFAULT_API_URL, apiToken = "") {
+export function normalizeSlots(_raw, apiUrl = DEFAULT_API_URL, apiToken = "") {
   return {
     1: {
       position: 1,
@@ -42,7 +42,8 @@ export async function getSlots(env) {
 export async function saveSlots(env, value) {
   const source = value && (value[1] || value["1"] || value) || {};
   const apiUrl = cleanUrl(source.api_url || source.url || DEFAULT_API_URL);
-  const apiToken = String(source.token || source.api_token || "").trim();
+  const suppliedToken = String(source.token || source.api_token || "").trim();
+  const apiToken = suppliedToken || await setting(env, "shortener_api_token", "").catch(() => "");
   await saveSetting(env, "shortener_api_url", apiUrl);
   await saveSetting(env, "shortener_api_token", apiToken);
   return normalizeSlots("", apiUrl, apiToken);
