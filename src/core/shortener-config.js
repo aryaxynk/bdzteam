@@ -1,29 +1,51 @@
-import { setting } from "./supabase.js";
+import { setting, saveSetting } from "./supabase.js";
 
-// The web now uses one fixed shortener. These exports remain as compatibility
-// helpers for older admin routes, but provider selection and slot rotation are gone.
 export const PROVIDERS = Object.freeze(["vuotlink"]);
+const DEFAULT_API_URL = "https://vuotlink.xyz/api";
+
+function cleanUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return DEFAULT_API_URL;
+  try {
+    const u = new URL(raw);
+    return u.protocol === "https:" || u.protocol === "http:" ? u.href.replace(/\/$/, "") : DEFAULT_API_URL;
+  } catch {
+    return DEFAULT_API_URL;
+  }
+}
 
 export function isShortenerProvider(value) {
   return String(value || "").toLowerCase() === "vuotlink";
 }
 
-export function normalizeSlots(raw) {
+export function normalizeSlots(raw, apiUrl = DEFAULT_API_URL, apiToken = "") {
   return {
     1: {
       position: 1,
       provider: "vuotlink",
-      token: "",
+      api_url: cleanUrl(apiUrl),
+      token: String(apiToken || "").trim(),
       quota: 0,
-      enabled: true
+      enabled: Boolean(String(apiToken || "").trim())
     }
   };
 }
 
 export async function getSlots(env) {
-  return normalizeSlots(await setting(env, "shortener_slots", "{}"));
+  const [apiUrl, apiToken] = await Promise.all([
+    setting(env, "shortener_api_url", DEFAULT_API_URL).catch(() => DEFAULT_API_URL),
+    setting(env, "shortener_api_token", "").catch(() => "")
+  ]);
+  return normalizeSlots("", apiUrl, apiToken);
 }
 
-export async function saveSlots(_env, _value) {
-  return normalizeSlots("{}");
+export async function saveSlots(env, value) {
+  const source = value && (value[1] || value["1"] || value) || {};
+  const apiUrl = cleanUrl(source.api_url || source.url || DEFAULT_API_URL);
+  const apiToken = String(source.token || source.api_token || "").trim();
+  await saveSetting(env, "shortener_api_url", apiUrl);
+  await saveSetting(env, "shortener_api_token", apiToken);
+  return normalizeSlots("", apiUrl, apiToken);
 }
+
+export const DEFAULT_ENDPOINT = DEFAULT_API_URL;
