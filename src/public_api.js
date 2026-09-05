@@ -80,7 +80,7 @@ export async function startGetKey(request,env){
     await securityLog(env,"key_token_create_error",ip,String(e&&e.message||e));
     return json({error:"Không thể khởi tạo phiên lấy Key. Vui lòng thử lại."},503);
   }
-  const original=new URL(request.url).origin+"/key.html?step=3&token="+encodeURIComponent(token);
+  const original=new URL(request.url).origin+"/key.html?token="+encodeURIComponent(token);
   try{
     const redirect=await shortenWithVuotlink(original,env);
     return json({redirect,shortener:"vuotlink"});
@@ -122,7 +122,7 @@ export async function checkKey(request,env){
   if(!key)return json({error:"Thiếu Key."},400);
   const ip=ipOf(request);
   if(isBadUserAgent(request))return json({error:"Trình duyệt hoặc công cụ truy cập không được hỗ trợ."},403);
-  if(await banned(env,ip)||await autoBanned(env,ip))return json({error:"IP của bạn đã bị chặn."},403);
+  if(await banned(env,ip)||await autoBanned(env,ip))return json({error:"IP của bạn bị chặn."},403);
   if(!(await consumeRateLimit(env,"check-key",ip,300,15)))return json({error:"Bạn đã tra cứu quá nhiều lần. Vui lòng thử lại sau vài phút."},429);
   if(product){
     const r=await rpc(env,"verify_key",{p_key_code:key,p_product_slug:String(product).toLowerCase()});
