@@ -1,7 +1,7 @@
-const PROVIDERS = Object.freeze(["link4m", "trafficvn"]);
+const PROVIDERS = Object.freeze(["vuotlink"]);
 
 export function isShortenerProvider(value) {
-  return PROVIDERS.includes(String(value || "").toLowerCase());
+  return String(value || "").toLowerCase() === "vuotlink";
 }
 
 export function supportedShorteners() {
@@ -9,14 +9,7 @@ export function supportedShorteners() {
 }
 
 export async function shortenWithProvider(provider, token, destination, env) {
-  const name = String(provider || "").toLowerCase();
-  if (name === "link4m") {
-    const mod = await import("./link4m.js");
-    return mod.shortenLink4M(token, destination, env);
-  }
-  if (name === "trafficvn") {
-    const mod = await import("./trafficvn.js");
-    return mod.shortenTrafficVN(token, destination, env);
-  }
-  throw new Error("Provider vượt link không hợp lệ");
+  if (!isShortenerProvider(provider)) throw new Error("Provider vượt link không hợp lệ");
+  const mod = await import("./vuotlink.js");
+  return mod.shortenVuotlink(token, destination, env);
 }
