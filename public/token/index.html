@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>BDZ Token</title>
+<style>
+:root{color-scheme:dark;--bg:#08090c;--panel:#11141a;--line:#272d38;--text:#f5f7fb;--muted:#9aa4b2;--accent:#7c5cff;--ok:#4ade80}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#1a1c30,transparent 38%),var(--bg);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif;display:grid;place-items:center;padding:20px}.card{width:min(560px,100%);background:rgba(17,20,26,.96);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:0 24px 90px rgba(0,0,0,.42)}.brand{font-weight:900;letter-spacing:.04em}.sub{color:var(--muted);line-height:1.6}.token{margin:22px 0;padding:18px;border:1px dashed #3a4250;border-radius:16px;background:#0b0e13;font:700 16px ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all;user-select:all}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{padding:12px 15px;border-radius:12px;border:1px solid var(--line);background:#171b23;color:var(--text);font-weight:800;cursor:pointer}.btn.primary{background:linear-gradient(135deg,#7c5cff,#5b4bd6);border-color:transparent}.note{margin-top:18px;color:var(--muted);font-size:13px}.ok{color:var(--ok);font-weight:800}.error{color:#fb7185;font-weight:700}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand">BDZ TOKEN</div>
+  <h1>Token GET KEY</h1>
+  <p class="sub">Bạn đã hoàn tất bước vượt link. Sao chép token bên dưới và gửi nguyên token này cho <b>BDZ Key Bot</b> trên Telegram.</p>
+  <div id="state" class="note">Đang kiểm tra token…</div>
+  <div id="token" class="token" hidden></div>
+  <div class="actions"><button id="copy" class="btn primary" hidden>Sao chép token</button><button class="btn" onclick="location.href='https://t.me/'">Mở Telegram</button></div>
+  <div class="note">Token chỉ dùng một lần và có thời hạn ngắn. Không chia sẻ token cho người khác.</div>
+</main>
+<script>
+const p=new URLSearchParams(location.search); const value=(p.get('token')||'').trim();
+const state=document.getElementById('state'), box=document.getElementById('token'), copy=document.getElementById('copy');
+if(!value || value.length<20 || value.length>128 || !/^[A-Za-z0-9_-]+$/.test(value)) { state.innerHTML='<span class="error">Token không hợp lệ hoặc đã hết hạn.</span>'; }
+else { state.innerHTML='<span class="ok">✓ Token hợp lệ về định dạng</span>'; box.hidden=false; box.textContent=value; copy.hidden=false; copy.onclick=async()=>{try{await navigator.clipboard.writeText(value); copy.textContent='Đã sao chép ✓';setTimeout(()=>copy.textContent='Sao chép token',1600)}catch{window.prompt('Sao chép token:',value)}}; }
+</script>
+</body>
+</html>
