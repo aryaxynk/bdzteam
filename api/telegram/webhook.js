@@ -1,65 +1,147 @@
 const crypto = require('node:crypto');
-const { json, env, supabaseFetch, createKey } = require('../_lib');
+const { json, env, supabaseFetch, createKey, createClaimToken, reserveClaimToken, cancelClaimToken, shortenVuotLink } = require('../_lib');
 
-function webhookSecret() { return crypto.createHash('sha256').update(env('ADMIN_SESSION_SECRET') + ':telegram-webhook').digest('hex').slice(0, 48); }
+function webhookSecret() {
+  return crypto.createHash('sha256').update(env('ADMIN_SESSION_SECRET') + ':telegram-webhook').digest('hex').slice(0, 48);
+}
+
 async function telegram(method, payload) {
   const token = env('TELEGRAM_BOT_TOKEN');
-  const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+  const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
   const data = await r.json().catch(() => null);
   if (!r.ok || data?.ok === false) throw new Error(`Telegram HTTP ${r.status}`);
   return data;
 }
-function isTelegramAdmin(userId) {
-  const raw = String(process.env.TELEGRAM_ADMIN_IDS || '').trim();
-  return raw ? raw.split(',').map(v => v.trim()).filter(Boolean).includes(String(userId)) : false;
-}
-function parseArgs(text) { return String(text || '').trim().split(/\s+/).filter(Boolean).slice(1); }
+
 async function touchTelegramUser(tg) {
   if (!tg?.id) return;
-  await supabaseFetch('telegram_users', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ telegram_user_id: tg.id, username: tg.username || null, first_name: tg.first_name || null, last_name: tg.last_name || null, last_seen_at: new Date().toISOString() }) });
+  await supabaseFetch('telegram_users', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      telegram_user_id: tg.id,
+      username: tg.username || null,
+      first_name: tg.first_name || null,
+      last_name: tg.last_name || null,
+      last_seen_at: new Date().toISOString()
+    })
+  });
 }
-async function sendKey(chatId, scope, tg) {
-  const item = await createKey(scope, tg);
-  const label = scope === 'dev_ys' ? 'DEV YS' : 'QUICK';
-  await telegram('sendMessage', { chat_id: chatId, text: `✅ KEY ${label}\n\n<code>${item.key_code}</code>\n\n⏱️ Hạn: ${new Date(item.expires_at).toLocaleString('vi-VN')}`, parse_mode: 'HTML' });
+
+async function sendHelp(chatId) {
+  return telegram('sendMessage', {
+    chat_id: chatId,
+    text: '🔐 <b>BDZ KEY BOT</b>\n\nBấm <b>🔑 GET KEY</b> để nhận link vượt.\nSau khi vượt link, sao chép token tại trang BDZ và gửi token này lại cho bot để nhận KEY.',
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [[{ text: '🔑 GET KEY', callback_data: 'get:key' }]]
+    }
+  });
 }
-async function handleCommand(chatId, text, tg) {
-  const lower = String(text || '').trim().toLowerCase();
-  await touchTelegramUser(tg);
-  if (lower === '/start' || lower === '/help') return telegram('sendMessage', { chat_id: chatId, text: '🔐 <b>BDZ KEY BOT</b>\n\n/getkey — tạo và nhận KEY QUICK\n/getdev — tạo và nhận KEY DEV YS\n/createkey quick 24 — admin tạo key', parse_mode: 'HTML', reply_markup: { inline_keyboard: [[{ text: '🔑 GET KEY', callback_data: 'get:quick' }], [{ text: '🛠️ GET DEV YS', callback_data: 'get:dev_ys' }]] } });
-  if (lower === '/getkey' || lower === '/getquick') return sendKey(chatId, 'quick', tg);
-  if (lower === '/getdev' || lower === '/getdevys') return sendKey(chatId, 'dev_ys', tg);
-  if (lower.startsWith('/createkey')) {
-    if (!isTelegramAdmin(tg?.id)) return telegram('sendMessage', { chat_id: chatId, text: '⛔ Lệnh này chỉ dành cho Telegram admin.' });
-    const args = parseArgs(text);
-    const scope = String(args[0] || 'quick').toLowerCase() === 'dev_ys' ? 'dev_ys' : 'quick';
-    const hours = Math.max(1, Math.min(8760, Number(args[1] || 24)));
-    const item = await createKey(scope, null, hours);
-    return telegram('sendMessage', { chat_id: chatId, text: `✅ <b>Đã tạo key</b>\n\n<code>${item.key_code}</code>\n\nScope: ${scope}\n⏱️ Hạn: ${new Date(item.expires_at).toLocaleString('vi-VN')}`, parse_mode: 'HTML' });
+
+async function startKeyFlow(chatId, tg) {
+  const claim = await createClaimToken(tg, 'quick', 15);
+  const tokenUrl = `https://bdzteam.vercel.app/token?token=${encodeURIComponent(claim.raw)}`;
+  let shortenedUrl;
+  try {
+    shortenedUrl = await shortenVuotLink(tokenUrl);
+  } catch (error) {
+    await supabaseFetch(`key_claim_tokens?id=eq.${Number(claim.row?.id || 0)}&status=eq.PENDING`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({ status: 'CANCELLED' })
+    }).catch(() => {});
+    console.error(error);
+    return telegram('sendMessage', {
+      chat_id: chatId,
+      text: '⚠️ Hiện không tạo được link vượt. Vui lòng thử lại sau ít phút.'
+    });
   }
+
+  return telegram('sendMessage', {
+    chat_id: chatId,
+    text: `🔗 <b>LINK GET KEY</b>\n\n${shortenedUrl}\n\n⏳ Link có hiệu lực trong 15 phút.\nSau khi vượt xong, sao chép token trên trang BDZ và gửi token đó lại cho bot.`,
+    parse_mode: 'HTML',
+    disable_web_page_preview: false
+  });
 }
+
+function normalizeSubmittedToken(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return '';
+  if (raw.toLowerCase().startsWith('token ')) return raw.slice(6).trim();
+  if (raw.toLowerCase().startsWith('token:')) return raw.slice(6).trim();
+  return raw;
+}
+
+async function claimWithSubmittedToken(chatId, tg, text) {
+  const token = normalizeSubmittedToken(text);
+  if (!token || token.length < 20 || token.length > 128 || !/^[A-Za-z0-9_-]+$/.test(token)) return false;
+
+  const result = await reserveClaimToken(token, tg?.id);
+  if (!result.ok) {
+    const messages = {
+      TOKEN_NOT_FOUND: '❌ Token không hợp lệ.',
+      TOKEN_EXPIRED: '⏳ Token đã hết hạn. Hãy dùng /getkey để lấy link mới.',
+      TOKEN_ALREADY_USED: '⚠️ Token này đã được sử dụng. Hãy dùng /getkey để lấy token mới.',
+      TOKEN_OWNER_MISMATCH: '⛔ Token này không thuộc tài khoản Telegram của bạn.'
+    };
+    await telegram('sendMessage', { chat_id: chatId, text: messages[result.reason] || '❌ Token không hợp lệ.' });
+    return true;
+  }
+
+  try {
+    const key = await createKey('quick', tg);
+    await telegram('sendMessage', {
+      chat_id: chatId,
+      text: `✅ <b>GET KEY THÀNH CÔNG</b>\n\n<code>${key.key_code}</code>\n\n⏱️ Hạn: ${new Date(key.expires_at).toLocaleString('vi-VN')}`,
+      parse_mode: 'HTML'
+    });
+  } catch (error) {
+    await cancelClaimToken(result.row?.id);
+    throw error;
+  }
+  return true;
+}
+
+async function handleMessage(chatId, text, tg) {
+  await touchTelegramUser(tg);
+  const lower = String(text || '').trim().toLowerCase();
+  if (lower === '/start' || lower === '/help') return sendHelp(chatId);
+  if (lower === '/getkey' || lower === '/getquick') return startKeyFlow(chatId, tg);
+  if (lower.startsWith('/')) return telegram('sendMessage', { chat_id: chatId, text: '❔ Lệnh không hợp lệ. Dùng /getkey để nhận key.' });
+  const handled = await claimWithSubmittedToken(chatId, tg, text);
+  if (!handled) return telegram('sendMessage', { chat_id: chatId, text: '📋 Hãy gửi token bạn nhận được tại trang /token, hoặc dùng /getkey để lấy link mới.' });
+}
+
 async function answerCallback(query) {
   const chatId = query?.message?.chat?.id;
   if (!chatId) return;
   await telegram('answerCallbackQuery', { callback_query_id: query.id });
-  const [kind, scope] = String(query.data || '').split(':');
-  if (kind === 'get' && (scope === 'quick' || scope === 'dev_ys')) await sendKey(chatId, scope, query.from);
+  if (query.data === 'get:key') await startKeyFlow(chatId, query.from);
 }
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
-  const expected = webhookSecret();
-  if (String(req.headers['x-telegram-bot-api-secret-token'] || '') !== expected) return json(res, 401, { ok: false, error: 'INVALID_WEBHOOK_SECRET' });
+  if (String(req.headers['x-telegram-bot-api-secret-token'] || '') !== webhookSecret()) return json(res, 401, { ok: false, error: 'INVALID_WEBHOOK_SECRET' });
+
   try {
     const update = req.body || {};
-    if (update.message?.chat?.id) await handleCommand(update.message.chat.id, update.message.text, update.message.from);
+    if (update.message?.chat?.id) await handleMessage(update.message.chat.id, update.message.text, update.message.from);
     if (update.callback_query) await answerCallback(update.callback_query);
     return json(res, 200, { ok: true });
   } catch (error) {
     console.error(error);
     try {
       const chatId = req.body?.message?.chat?.id || req.body?.callback_query?.message?.chat?.id;
-      if (chatId) await telegram('sendMessage', { chat_id: chatId, text: '⚠️ Không thể xử lý yêu cầu lúc này. Vui lòng thử lại.' });
-    } catch (sendError) { console.error(sendError); }
+      if (chatId) await telegram('sendMessage', { chat_id: chatId, text: '⚠️ Có lỗi khi xử lý yêu cầu. Vui lòng thử lại.' });
+    } catch (sendError) {
+      console.error(sendError);
+    }
     return json(res, 500, { ok: false, error: 'BOT_HANDLER_FAILED' });
   }
 };
