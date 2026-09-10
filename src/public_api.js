@@ -11,7 +11,7 @@ export async function siteData(env){
     setting(env,"maintenance_enabled","false").catch(()=>"false"),
     setting(env,"maintenance_message",defaults.maintenance_message).catch(()=>defaults.maintenance_message)
   ]);
-  return{site_name:vals[0],site_slogan:vals[1],contact_info:vals[2],maintenance_enabled:vals[3]==='true',maintenance_message:vals[4],logo_url:"https://files.catbox.moe/xpaekr.jpg"};
+  return{site_name:vals[0],site_slogan:vals[1],contact_info:vals[2],maintenance_enabled:vals[3]==='true',maintenance_message:vals[4],logo_url:"https://files.catbox.moe/hvagjt.jpg"};
 }
 
 export async function publicStats(env){
