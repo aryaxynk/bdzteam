@@ -4,13 +4,6 @@ function body(req) { return req.body || {}; }
 async function audit(actor, action, target, detail = {}) {
   await supabaseFetch('admin_audit', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ action, actor, target: target == null ? null : String(target), detail }) });
 }
-async function telegram(method, payload) {
-  const token = env('TELEGRAM_BOT_TOKEN');
-  const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
-  const data = await r.json().catch(() => null);
-  if (!r.ok || data?.ok === false) throw new Error(`Telegram HTTP ${r.status}`);
-  return data;
-}
 module.exports = async function handler(req, res) {
   try {
     if (req.method === 'POST' && req.body?.action === 'login') {
@@ -24,22 +17,24 @@ module.exports = async function handler(req, res) {
     if (!session) return json(res, 401, { ok: false, error: 'UNAUTHORIZED' });
 
     if (req.method === 'GET') {
-      const [keys, checks, users, shorteners, auditRows] = await Promise.all([
+      const [keys, checks, users, shorteners, auditRows, claimTokens] = await Promise.all([
         supabaseFetch('app_keys?select=id,key_code,key_scope,status,duration_hours,expires_at,telegram_user_id,telegram_username,activated_at,last_checked_at,check_count,created_at&order=created_at.desc&limit=500'),
         supabaseFetch('key_checks?select=id,key_id,key_scope,result,app_version,created_at&order=created_at.desc&limit=50'),
         supabaseFetch('telegram_users?select=telegram_user_id,username,first_name,last_name,last_seen_at,created_at&order=last_seen_at.desc&limit=100'),
-        supabaseFetch('shortener_configs?select=id,provider,enabled,base_url,sort_order,updated_at&order=sort_order.asc'),
-        supabaseFetch('admin_audit?select=id,action,actor,target,detail,created_at&order=created_at.desc&limit=50')
+        supabaseFetch('shortener_configs?provider=eq.vuotlink&select=id,provider,enabled,base_url,sort_order,updated_at&limit=1'),
+        supabaseFetch('admin_audit?select=id,action,actor,target,detail,created_at&order=created_at.desc&limit=50'),
+        supabaseFetch('key_claim_tokens?select=id,telegram_user_id,telegram_username,scope,status,expires_at,used_at,created_at&order=created_at.desc&limit=100')
       ]);
-      const tokenRows = await supabaseFetch('shortener_configs?select=provider,api_token');
+      const tokenRows = await supabaseFetch('shortener_configs?provider=eq.vuotlink&select=provider,api_token&limit=1');
       const tokenMap = Object.fromEntries((tokenRows || []).map(r => [r.provider, Boolean(r.api_token)]));
-      return json(res, 200, { ok: true, user: session.sub, keys, checks, users, shorteners: (shorteners || []).map(s => ({ ...s, has_token: !!tokenMap[s.provider] })), audit: auditRows || [] });
+      return json(res, 200, { ok: true, user: session.sub, keys, checks, users, shorteners: (shorteners || []).map(s => ({ ...s, has_token: !!tokenMap[s.provider] })), claim_tokens: claimTokens || [], audit: auditRows || [] });
     }
     if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
     const action = body(req).action;
 
     if (action === 'create_key') {
-      const scope = body(req).scope === 'dev_ys' ? 'dev_ys' : 'quick';
+      const rawScope = String(body(req).scope || '').toLowerCase();
+      const scope = rawScope === 'dev' || rawScope === 'dev_ys' ? 'dev' : 'quick';
       const hours = Math.max(1, Math.min(8760, Number(body(req).duration_hours || 24)));
       const keyCode = randomKey(scope);
       const created = await supabaseFetch('app_keys', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ key_code: keyCode, key_scope: scope, duration_hours: hours, expires_at: new Date(Date.now() + hours * 3600000).toISOString(), status: 'ACTIVE', max_devices: 1, check_count: 0 }) });
