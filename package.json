@@ -1,6 +1,8 @@
 {
   "name": "bdzteam-admin-bot",
   "private": true,
-  "scripts": {"check": "node --check api/_lib.js && node --check api/check-key.js && node --check api/admin.js && node --check api/telegram/webhook.js"},
-  "engines": {"node": ">=20"}
+  "scripts": {
+    "check": "node --check api/_lib.js && node --check api/check-key.js && node --check api/shorten.js && node --check api/admin.js && node --check api/telegram/webhook.js"
+  },
+  "engines": { "node": ">=20" }
 }
