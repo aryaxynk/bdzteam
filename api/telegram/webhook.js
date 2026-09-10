@@ -1,37 +1,116 @@
-const crypto = require('node:crypto');
-const { json, env, supabaseFetch } = require('../_lib');
+const { json, env, supabaseFetch, createKey } = require('../_lib');
 
 async function telegram(method, payload) {
   const token = env('TELEGRAM_BOT_TOKEN');
-  const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(payload) });
-  if (!r.ok) throw new Error(`Telegram HTTP ${r.status}`);
-  return r.json();
+  const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await r.json().catch(() => null);
+  if (!r.ok || data?.ok === false) throw new Error(`Telegram HTTP ${r.status}`);
+  return data;
 }
-async function createGetKey(scope, tg) {
-  const hours = scope === 'dev_ys' ? Number(process.env.DEV_YS_KEY_HOURS || 24) : Number(process.env.QUICK_KEY_HOURS || 24);
-  const keyCode = `BDZ-${scope.toUpperCase()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-  const expires = new Date(Date.now()+hours*3600000).toISOString();
-  const rows = await supabaseFetch('app_keys',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({key_code:keyCode,key_scope:scope,status:'ACTIVE',duration_hours:hours,expires_at:expires,telegram_user_id:tg.id,telegram_username:tg.username || null})});
-  await supabaseFetch('telegram_users',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:JSON.stringify({telegram_user_id:tg.id,username:tg.username||null,first_name:tg.first_name||null,last_name:tg.last_name||null,last_seen_at:new Date().toISOString()})});
-  return rows?.[0] || {key_code:keyCode,expires_at:expires};
+
+function isTelegramAdmin(userId) {
+  const raw = String(process.env.TELEGRAM_ADMIN_IDS || '').trim();
+  if (!raw) return false;
+  return raw.split(',').map(v => v.trim()).filter(Boolean).includes(String(userId));
 }
+
+function parseArgs(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).slice(1);
+}
+
+async function touchTelegramUser(tg) {
+  if (!tg?.id) return;
+  await supabaseFetch('telegram_users', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      telegram_user_id: tg.id,
+      username: tg.username || null,
+      first_name: tg.first_name || null,
+      last_name: tg.last_name || null,
+      last_seen_at: new Date().toISOString()
+    })
+  });
+}
+
 async function sendKey(chatId, scope, tg) {
-  const item=await createGetKey(scope,tg);
-  await telegram('sendMessage',{chat_id:chatId,text:`✅ KEY ${scope.toUpperCase()}\n\n${item.key_code}\n\n⏱️ Hạn: ${new Date(item.expires_at).toLocaleString('vi-VN')}`});
+  const item = await createKey(scope, tg);
+  const label = scope === 'dev_ys' ? 'DEV YS' : 'QUICK';
+  await telegram('sendMessage', {
+    chat_id: chatId,
+    text: `✅ KEY ${label}\n\n<code>${item.key_code}</code>\n\n⏱️ Hạn: ${new Date(item.expires_at).toLocaleString('vi-VN')}`,
+    parse_mode: 'HTML'
+  });
 }
-module.exports = async function handler(req,res) {
-  if (req.method !== 'POST') return json(res,405,{ok:false});
+
+async function handleCommand(chatId, text, tg) {
+  const lower = String(text || '').trim().toLowerCase();
+  await touchTelegramUser(tg);
+
+  if (lower === '/start' || lower === '/help') {
+    return telegram('sendMessage', {
+      chat_id: chatId,
+      text: '🔐 <b>BDZ KEY BOT</b>\n\n/getkey — tạo và nhận KEY QUICK\n/getdev — tạo và nhận KEY DEV YS\n/createkey quick 24 — admin tạo key\n\nMỗi key được lưu trực tiếp vào Supabase để API của app xác thực.',
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '🔑 GET KEY', callback_data: 'get:quick' }],
+          [{ text: '🛠️ GET DEV YS', callback_data: 'get:dev_ys' }]
+        ]
+      }
+    });
+  }
+
+  if (lower === '/getkey' || lower === '/getquick') return sendKey(chatId, 'quick', tg);
+  if (lower === '/getdev' || lower === '/getdevys') return sendKey(chatId, 'dev_ys', tg);
+
+  if (lower.startsWith('/createkey')) {
+    if (!isTelegramAdmin(tg?.id)) {
+      return telegram('sendMessage', { chat_id: chatId, text: '⛔ Lệnh này chỉ dành cho Telegram admin.' });
+    }
+    const args = parseArgs(text);
+    const scope = String(args[0] || 'quick').toLowerCase() === 'dev_ys' ? 'dev_ys' : 'quick';
+    const hours = Number(args[1] || 24);
+    const item = await createKey(scope, null, hours);
+    return telegram('sendMessage', {
+      chat_id: chatId,
+      text: `✅ <b>Đã tạo key</b>\n\n<code>${item.key_code}</code>\n\nScope: ${scope}\n⏱️ Hạn: ${new Date(item.expires_at).toLocaleString('vi-VN')}\n\nKey đã được lưu vào Supabase.`,
+      parse_mode: 'HTML'
+    });
+  }
+
+  return null;
+}
+
+async function answerCallback(query) {
+  const chatId = query?.message?.chat?.id;
+  if (!chatId) return;
+  await telegram('answerCallbackQuery', { callback_query_id: query.id });
+  const [kind, scope] = String(query.data || '').split(':');
+  if (kind === 'get' && (scope === 'quick' || scope === 'dev_ys')) await sendKey(chatId, scope, query.from);
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
   try {
     const update = req.body || {};
-    const msg = update.message;
-    if (msg?.chat?.id) {
-      const chatId=msg.chat.id; const text=String(msg.text||'').trim().toLowerCase();
-      if (text === '/start' || text === '/help') await telegram('sendMessage',{chat_id:chatId,text:'🔐 BDZ KEY BOT\n\n/getkey — key QUICK\n/getdev — key DEV YS',reply_markup:{inline_keyboard:[[{text:'🔑 GET KEY',callback_data:'get:quick'}],[{text:'🛠️ GET DEV YS',callback_data:'get:dev_ys'}]]}});
-      else if (text === '/getkey' || text === '/getquick') await sendKey(chatId,'quick',msg.from);
-      else if (text === '/getdev') await sendKey(chatId,'dev_ys',msg.from);
+    if (update.message?.chat?.id) {
+      await handleCommand(update.message.chat.id, update.message.text, update.message.from);
     }
-    const q=update.callback_query;
-    if (q?.message?.chat?.id) { const [kind,scope]=String(q.data||'').split(':'); await telegram('answerCallbackQuery',{callback_query_id:q.id}); if(kind==='get'&&(scope==='quick'||scope==='dev_ys')) await sendKey(q.message.chat.id,scope,q.from); }
-    return json(res,200,{ok:true});
-  } catch(e) { console.error(e); return json(res,200,{ok:true}); }
+    if (update.callback_query) await answerCallback(update.callback_query);
+    return json(res, 200, { ok: true });
+  } catch (error) {
+    console.error(error);
+    try {
+      const chatId = req.body?.message?.chat?.id || req.body?.callback_query?.message?.chat?.id;
+      if (chatId) await telegram('sendMessage', { chat_id: chatId, text: '⚠️ Không thể xử lý yêu cầu lúc này. Vui lòng thử lại sau.' });
+    } catch (sendError) {
+      console.error(sendError);
+    }
+    return json(res, 200, { ok: true });
+  }
 };
