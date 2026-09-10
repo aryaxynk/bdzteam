@@ -17,7 +17,8 @@ module.exports=async function handler(req,res){try{
   ]);
   const tokenRows=await supabaseFetch('shortener_configs?provider=eq.vuotlink&select=provider,api_token&limit=1');
   const hasToken=Boolean(tokenRows?.[0]?.api_token);
-  return json(res,200,{ok:true,user:session.sub,keys:keys||[],checks:checks||[],users:users||[],shorteners:(shorteners||[]).map(s=>({...s,has_token:hasToken})),claim_tokens:claimTokens||[],audit:auditRows||[],api:{endpoint:'/api/check-key',quick:{method:'POST',scope:'quick',response:'compact'},dev:{method:'POST',scope:'dev',response:'full'}}})
+  const publishable=env('SUPABASE_PUBLISHABLE_KEY',false)||env('SUPABASE_Publishable_KEY',false)||'';
+  return json(res,200,{ok:true,user:session.sub,keys:keys||[],checks:checks||[],users:users||[],shorteners:(shorteners||[]).map(s=>({...s,has_token:hasToken})),claim_tokens:claimTokens||[],audit:auditRows||[],api:{supabase_url:env('SUPABASE_URL'),publishable_key:publishable,quick:{rpc:'check_key_quick',response:'compact'},dev:{rpc:'check_key_dev',response:'full'}}})
  }
  if(req.method!=='POST')return json(res,405,{ok:false,error:'METHOD_NOT_ALLOWED'});
  const b=body(req),action=b.action;
