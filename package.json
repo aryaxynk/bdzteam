@@ -1,7 +1,6 @@
 {
-  "name": "bdzteam-vercel",
+  "name": "bdzteam-admin-bot",
   "private": true,
-  "type": "module",
-  "engines": {"node": ">=20"},
-  "dependencies": {"bcryptjs": "^3.0.3"}
+  "scripts": {"check": "node --check api/_lib.js && node --check api/check-key.js && node --check api/admin.js && node --check api/telegram/webhook.js"},
+  "engines": {"node": ">=20"}
 }
