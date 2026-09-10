@@ -17,6 +17,10 @@ function requestData(req) {
   };
 }
 
+function normalizeScope(value) {
+  return String(value || '').toLowerCase() === 'dev' ? 'dev' : 'quick';
+}
+
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -24,7 +28,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const { key, scope = 'quick', device_id, app_version } = requestData(req);
-    const requestedScope = String(scope).toLowerCase() === 'dev_ys' ? 'dev_ys' : 'quick';
+    const requestedScope = normalizeScope(scope);
     const normalizedKey = String(key || '').trim();
     if (!normalizedKey) return json(res, 400, { ok: false, valid: false, result: 'INVALID', reason: 'MISSING_KEY' });
     if (!device_id) return json(res, 400, { ok: false, valid: false, result: 'INVALID', reason: 'MISSING_DEVICE_ID' });
