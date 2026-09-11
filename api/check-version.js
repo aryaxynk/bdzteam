@@ -1,0 +1,4 @@
+const{json,rpc}=require('./_lib');
+function cors(res){res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','Content-Type');res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS')}
+function body(req){return req.method==='GET'?req.query||{}:req.body||{}}
+module.exports=async function(req,res){cors(res);if(req.method==='OPTIONS')return res.status(204).end();if(!['GET','POST'].includes(req.method))return json(res,405,{ok:false,error:'METHOD_NOT_ALLOWED'});try{const v=String(body(req).version||body(req).app_version||'').trim().slice(0,80);if(!v)return json(res,400,{ok:false,version_valid:false,update_required:true,reason:'VERSION_REQUIRED'});return json(res,200,await rpc('check_app_version',{p_app_version:v}))}catch(error){console.error(error?.message||error);return json(res,500,{ok:false,version_valid:false,update_required:true,error:'VERSION_CHECK_FAILED'})}};
