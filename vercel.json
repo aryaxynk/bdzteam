@@ -1,1 +1,1 @@
-{"version":2,"rewrites":[{"source":"/","destination":"/admin.html"},{"source":"/admin","destination":"/admin.html"},{"source":"/token","destination":"/token/index.html"}],"headers":[{"source":"/api/(.*)","headers":[{"key":"Cache-Control","value":"no-store"}]}]}
+{"version":2,"rewrites":[{"source":"/","destination":"/admin-shell.html"},{"source":"/admin","destination":"/admin-shell.html"},{"source":"/token","destination":"/token/index.html"}],"headers":[{"source":"/api/(.*)","headers":[{"key":"Cache-Control","value":"no-store"}]}]}
