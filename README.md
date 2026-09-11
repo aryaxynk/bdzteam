@@ -3,29 +3,66 @@
 ## Kiến trúc
 - **Vercel**: Admin Web + serverless API.
 - **Supabase**: nguồn dữ liệu chính cho keys, key checks, Telegram users, shortener configs và admin audit.
-- **Telegram Bot**: tạo/phát key cho người dùng; `/getkey` và `/getdev` tự tạo key rồi lưu vào Supabase.
-- **App**: gọi `POST` hoặc `GET /api/check-key` để xác thực key qua backend, không nhúng service-role key vào APK.
+- **Telegram Bot**: tạo/phát key cho người dùng; flow GET KEY và claim token lưu dữ liệu ở Supabase.
+- **App**: gọi một API xác thực duy nhất để kiểm tra key.
 
-## API
-### Check key
+## Unified Key API
+### Vercel
 `POST /api/check-key`
 
-Body JSON:
+Cũng hỗ trợ `GET /api/check-key`.
+
+Request JSON/query:
 ```json
 {
-  "key": "BDZ-QUICK-...",
-  "scope": "quick",
+  "key": "YOUR_KEY",
   "device_id": "unique-device-id",
   "app_version": "1.0.0"
 }
 ```
 
-Cũng hỗ trợ `GET /api/check-key?key=...&scope=quick&device_id=...&app_version=...` và CORS cho app/client.
+**Không còn tham số `scope` ở client và không còn hai API QUICK/DEV.** QUICK/DEV chỉ là phân loại key nội bộ. Server tự trả `scope` trong response.
 
-Kết quả hợp lệ trả `ok: true`, `valid: true`, `result: "VALID"`. Key bị khoá, hết hạn, sai scope hoặc khác thiết bị sẽ trả trạng thái tương ứng.
+Response thành công:
+```json
+{
+  "ok": true,
+  "valid": true,
+  "result": "VALID",
+  "key": "YOUR_KEY",
+  "scope": "quick",
+  "status": "ACTIVE",
+  "expires_at": "...",
+  "created_at": "...",
+  "activated": true,
+  "activated_at": "...",
+  "last_checked_at": "...",
+  "check_count": 1,
+  "max_checks": 0,
+  "max_devices": 1,
+  "telegram_user_id": null,
+  "telegram_username": null,
+  "app_version": "1.0.0"
+}
+```
 
-### Shorten
-`POST /api/shorten` là endpoint dành cho Admin session. Provider mặc định là **VuotLink**.
+### Supabase direct
+RPC duy nhất dành cho client:
+`POST /rest/v1/rpc/check_key`
+
+Body:
+```json
+{
+  "p_key": "YOUR_KEY",
+  "p_device_id": "unique-device-id",
+  "p_app_version": "1.0.0"
+}
+```
+
+Client chỉ dùng publishable/anon key. Không đưa `SUPABASE_SERVICE_ROLE_KEY` vào APK hoặc frontend public.
+
+## Shorten
+`POST /api/shorten` là endpoint dành cho Admin session. Provider duy nhất là **VuotLink**.
 
 ```json
 {
@@ -33,16 +70,12 @@ Kết quả hợp lệ trả `ok: true`, `valid: true`, `result: "VALID"`. Key b
 }
 ```
 
-Endpoint mặc định của VuotLink:
-`https://vuotlink.xyz/api?api=<VUOTLINK_API_TOKEN>&url=<ENCODED_URL>`
-
-Ứng dụng đọc trường `shortenedUrl` từ JSON khi `status` là `success`.
+Token VuotLink chỉ được dùng server-side.
 
 ## Telegram Bot
 - `/start` hoặc `/help`: hiện menu.
-- `/getkey`: tạo và gửi KEY QUICK; key được lưu vào Supabase.
-- `/getdev`: tạo và gửi KEY DEV YS; key được lưu vào Supabase.
-- `/createkey quick 24` hoặc `/createkey dev_ys 24`: tạo key thủ công cho Telegram admin khi `TELEGRAM_ADMIN_IDS` được cấu hình.
+- GET KEY tạo claim/key theo cấu hình hiện tại.
+- Claim token được hash trước khi lưu và được redeem bằng RPC an toàn.
 
 ## Vercel Environment Variables
 Bắt buộc:
@@ -55,8 +88,7 @@ Bắt buộc:
 
 Tuỳ chọn:
 - `QUICK_KEY_HOURS`
-- `DEV_YS_KEY_HOURS`
-- `TELEGRAM_ADMIN_IDS` (ID Telegram, ngăn cách bằng dấu phẩy)
-- `VUOTLINK_API_TOKEN` (token API mặc định cho VuotLink)
-
-**Không** đưa `SUPABASE_SERVICE_ROLE_KEY` vào app/APK hoặc frontend public. Repo/API chỉ sử dụng key này ở server-side.
+- `DEV_KEY_HOURS`
+- `TELEGRAM_ADMIN_IDS`
+- `VUOTLINK_API_TOKEN`
+- `VUOTLINK_BASE_URL`
