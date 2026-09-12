@@ -3,10 +3,47 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="refresh" content="0;url=/admin">
-<title>BDZ Control</title>
-<script>location.replace('/admin');</script>
-<style>html,body{margin:0;min-height:100%;background:#080b12;color:#fff;font:15px system-ui;display:grid;place-items:center}main{padding:24px;text-align:center}a{color:#8dd8ff}</style>
+<meta name="robots" content="noindex,nofollow">
+<title>BDZ Key System</title>
+<style>
+:root{color-scheme:dark;--bg:#07080b;--panel:#11141a;--line:#252b35;--text:#f5f7fb;--muted:#98a1ad;--accent:#7c5cff;--ok:#4ade80;--danger:#fb7185}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#1d2140,transparent 42%),var(--bg);color:var(--text);font:16px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:grid;place-items:center;padding:20px}.card{width:min(620px,100%);background:rgba(17,20,26,.96);border:1px solid var(--line);border-radius:26px;padding:30px;box-shadow:0 24px 90px rgba(0,0,0,.45)}.brand{font-weight:900;letter-spacing:.08em;font-size:13px;color:#b7bdfc}.title{margin:9px 0 8px;font-size:34px;line-height:1.12}.sub{margin:0;color:var(--muted);line-height:1.65}.steps{margin:24px 0;padding:18px 20px;border:1px solid var(--line);border-radius:18px;background:#0c0f14}.steps strong{display:block;margin-bottom:8px}.steps div{margin:7px 0;color:#c7ced9}.btn{width:100%;padding:14px 16px;border:0;border-radius:14px;background:linear-gradient(135deg,#7c5cff,#5948d4);color:white;font-weight:900;font-size:16px;cursor:pointer}.btn:disabled{opacity:.55;cursor:wait}.result{margin-top:16px;padding:16px;border-radius:16px;background:#0b0e13;border:1px solid var(--line);display:none}.result.show{display:block}.status{font-weight:800}.ok{color:var(--ok)}.error{color:var(--danger)}.link{margin-top:12px;display:flex;gap:10px;align-items:center;word-break:break-all}.link a{color:#c4b5fd;font-weight:800}.small{margin-top:16px;color:var(--muted);font-size:13px;line-height:1.55}code{background:#181c24;padding:2px 6px;border-radius:6px}
+</style>
 </head>
-<body><main><div>Đang mở BDZ Admin…</div><a href="/admin">Mở Admin</a></main></body>
+<body>
+<main class="card">
+  <div class="brand">BDZ KEY SYSTEM</div>
+  <h1 class="title">Nhận Key</h1>
+  <p class="sub">Tạo một phiên GET KEY, hoàn tất bước rút gọn link, sau đó hệ thống sẽ cấp Key trực tiếp trên website.</p>
+  <section class="steps">
+    <strong>Quy trình</strong>
+    <div>1. Nhấn <b>Bắt đầu GET KEY</b>.</div>
+    <div>2. Mở link rút gọn và hoàn tất bước yêu cầu.</div>
+    <div>3. Hệ thống chuyển về trang nhận Key và cấp Key một lần.</div>
+  </section>
+  <button id="start" class="btn">Bắt đầu GET KEY</button>
+  <div id="result" class="result">
+    <div id="status" class="status"></div>
+    <div id="link" class="link"></div>
+  </div>
+  <div class="small">Phiên GET KEY có thời hạn ngắn. Không chia sẻ link phiên cho người khác. Key được kiểm tra phía server.</div>
+</main>
+<script>
+const start=document.getElementById('start');
+const result=document.getElementById('result');
+const status=document.getElementById('status');
+const link=document.getElementById('link');
+start.onclick=async()=>{
+  start.disabled=true;result.classList.add('show');status.className='status';status.textContent='Đang tạo phiên GET KEY…';link.innerHTML='';
+  try{
+    const r=await fetch('/api/get-key',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'start'})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok||!d.shortenedUrl)throw new Error(d.error||'Không tạo được link GET KEY');
+    status.className='status ok';status.textContent='✓ Phiên đã sẵn sàng';
+    const a=document.createElement('a');a.href=d.shortenedUrl;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Mở link GET KEY';link.appendChild(a);
+  }catch(e){status.className='status error';status.textContent='✕ '+(e?.message||'Có lỗi xảy ra');}
+  finally{start.disabled=false;}
+};
+</script>
+</body>
 </html>
