@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>BDZ API</title>
+<link rel="stylesheet" href="./neo.css">
+<style>pre{white-space:pre-wrap;word-break:break-word;font-size:12px}</style>
+</head>
+<body>
+<main class="wrap" style="padding:24px 0 48px">
+  <header class="top neo" style="margin-bottom:18px">
+    <div class="brand"><span class="logo">BZ</span>API CHECK KEY</div>
+    <span class="tag blue">APK / NATIVE</span>
+    <span class="grow"></span>
+    <a class="btn" href="./admin.html" style="text-decoration:none">ADMIN</a>
+  </header>
+
+  <section class="neo panel" style="padding:20px;margin-bottom:16px">
+    <h2>Endpoint</h2>
+    <pre class="code">POST https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key
+Header: Content-Type: application/json
+Header: apikey: sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0
+
+Body:
+{
+  "key": "YOUR_KEY",
+  "device_id": "STABLE_DEVICE_ID",
+  "app_version": "V1",
+  "ip": "optional"
+}
+
+OK:
+{ "ok": true, "key_valid": true, "message": "Key hợp lệ.", "expires_at": "...", ... }
+
+FAIL (mọi lý do):
+{ "ok": false, "key_valid": false, "message": "Key không hợp lệ." }</pre>
+    <p class="muted" style="margin-top:10px">Device limit · thời hạn · IP bind · check limit — tất cả fail đều trả cùng 1 message, không lộ chi tiết.</p>
+  </section>
+
+  <div class="grid two">
+    <section class="neo panel" style="padding:20px">
+      <h2>Java</h2>
+      <pre class="code">OkHttpClient client = new OkHttpClient();
+JSONObject body = new JSONObject();
+body.put("key", key);
+body.put("device_id", deviceId);
+body.put("app_version", "V1");
+
+Request req = new Request.Builder()
+  .url("https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key")
+  .addHeader("Content-Type", "application/json")
+  .addHeader("apikey", "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0")
+  .post(RequestBody.create(body.toString(), MediaType.parse("application/json")))
+  .build();
+
+try (Response res = client.newCall(req).execute()) {
+  JSONObject j = new JSONObject(res.body().string());
+  boolean ok = j.optBoolean("ok", false) && j.optBoolean("key_valid", false);
+}</pre>
+    </section>
+
+    <section class="neo panel" style="padding:20px">
+      <h2>Python</h2>
+      <pre class="code">import requests
+
+url = "https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key"
+headers = {
+  "Content-Type": "application/json",
+  "apikey": "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0",
+}
+payload = {
+  "key": key,
+  "device_id": device_id,
+  "app_version": "V1",
+}
+r = requests.post(url, json=payload, headers=headers, timeout=10)
+data = r.json()
+ok = data.get("ok") and data.get("key_valid")</pre>
+    </section>
+  </div>
+
+  <section class="neo panel" style="padding:20px;margin-top:16px">
+    <h2>C++ (libcurl)</h2>
+    <pre class="code">#include <curl/curl.h>
+#include <string>
+
+std::string body = R"({"key":")" + key + R"(","device_id":")" + deviceId + R"(","app_version":"V1"})";
+CURL* curl = curl_easy_init();
+struct curl_slist* headers = nullptr;
+headers = curl_slist_append(headers, "Content-Type: application/json");
+headers = curl_slist_append(headers, "apikey: sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0");
+
+curl_easy_setopt(curl, CURLOPT_URL, "https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key");
+curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+curl_easy_perform(curl);
+curl_slist_free_all(headers);
+curl_easy_cleanup(curl);</pre>
+  </section>
+
+  <section class="neo panel" style="padding:20px;margin-top:16px">
+    <h2>C (libcurl)</h2>
+    <pre class="code">CURL *curl = curl_easy_init();
+struct curl_slist *h = NULL;
+h = curl_slist_append(h, "Content-Type: application/json");
+h = curl_slist_append(h, "apikey: sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0");
+const char *body = "{\"key\":\"YOUR_KEY\",\"device_id\":\"DEVICE\",\"app_version\":\"V1\"}";
+curl_easy_setopt(curl, CURLOPT_URL, "https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key");
+curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h);
+curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+curl_easy_perform(curl);
+curl_slist_free_all(h);
+curl_easy_cleanup(curl);</pre>
+  </section>
+</main>
+</body>
+</html>
