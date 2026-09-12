@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Nhận Key</title>
-<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../style.css?v=8">
 <link rel="icon" href="https://263.org.vn/logo">
 </head>
 <body>
@@ -28,10 +28,27 @@
     <p class="hint" style="margin-top:14px;margin-bottom:0;text-align:center;font-size:12px">Token dùng một lần</p>
   </div>
 </main>
-<script src="../config.js"></script>
-<script src="../supabase-api.js"></script>
+<script src="../config.js?v=8"></script>
+<script src="../supabase-api.js?v=8"></script>
 <script>
 (function(){
+  function viErr(err){
+    var m={
+      TOKEN_NOT_FOUND:'Token không tồn tại hoặc không hợp lệ.',
+      TOKEN_ALREADY_USED:'Token đã được sử dụng.',
+      TOKEN_EXPIRED:'Token đã hết hạn. Vui lòng nhận key lại.',
+      TOKEN_CONTEXT_MISMATCH:'Phiên không khớp. Hãy mở link trên cùng thiết bị.',
+      TOKEN_INVALID:'Token không hợp lệ.',
+      CLAIM_UNAVAILABLE:'Không thể cấp key. Thử lại sau.',
+      MAINTENANCE:'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
+      BANNED:'Bạn đã bị khóa tạm thời. Vui lòng thử lại sau.',
+      SERVER_ERROR:'Lỗi máy chủ. Thử lại sau.'
+    };
+    if(!err) return 'Không thể cấp key.';
+    if(m[err]) return m[err];
+    if(/[àáạảãâăèéêìíòóôơùúýăđ]/i.test(err)) return err;
+    return 'Không thể cấp key. Thử lại sau.';
+  }
   var q=new URLSearchParams(location.search);
   var t=(q.get('token')||'').trim();
   var s=document.getElementById('status');
@@ -52,22 +69,17 @@
     try{
       var v=BDZ.visitorId();
       var d=await BDZ.edge('web-get-key',{action:'claim',token:t,ip:v,visitor_id:v});
-      if(!d||!d.ok||!d.key||!d.key.key_code) throw Error((d&&d.error)||'Không thể cấp Key.');
+      if(!d||!d.ok||!d.key||!d.key.key_code) throw Error(viErr(d&&d.error));
       k.textContent=d.key.key_code;
       o.classList.remove('hidden');
       s.className='okbox';
-      s.textContent='Get key thành công';
+      s.textContent='Nhận key thành công';
       i.textContent='Key đã được cấp.';
       c.onclick=function(){
         if(navigator.clipboard&&navigator.clipboard.writeText){
-          navigator.clipboard.writeText(d.key.key_code).then(function(){
-            c.textContent='Đã sao chép';
-          }).catch(function(){
-            window.prompt('Key:', d.key.key_code);
-          });
-        } else {
-          window.prompt('Key:', d.key.key_code);
-        }
+          navigator.clipboard.writeText(d.key.key_code).then(function(){ c.textContent='Đã sao chép'; })
+            .catch(function(){ window.prompt('Key:', d.key.key_code); });
+        } else window.prompt('Key:', d.key.key_code);
       };
     }catch(e){
       bad(e.message||'Có lỗi xảy ra.');
