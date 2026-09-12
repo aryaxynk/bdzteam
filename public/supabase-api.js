@@ -1,4 +1,4 @@
-(() => {
+(()=>{
   const c=window.BDZ_CONFIG;
   if(!c?.SUPABASE_URL||!c?.SUPABASE_PUBLISHABLE_KEY) throw new Error('BDZ_CONFIG_MISSING');
   const base=c.SUPABASE_URL.replace(/\/$/,'');
@@ -16,4 +16,8 @@
   }
   function visitorId(){let id=localStorage.getItem('bdz_visitor');if(!id){id=crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;localStorage.setItem('bdz_visitor',id)}return id}
   window.BDZ={...c,rpc,edge,visitorId};
+  const harden=document.createElement('script');
+  harden.src='./security-hardening.js';
+  harden.defer=true;
+  document.head.appendChild(harden);
 })();
