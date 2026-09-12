@@ -1,3 +1,0 @@
-BDZ WEB RELEASE 2026-09-12
-Frontend: GitHub Pages
-Backend: Supabase
