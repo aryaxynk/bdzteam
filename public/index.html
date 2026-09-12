@@ -9,11 +9,20 @@
 <link rel="icon" href="https://263.org.vn/logo">
 </head>
 <body>
-<main class="login-page">
-  <div class="login-box">
-    <div class="logo-wrap"><img src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer"></div>
-    <h1>Nhận Key</h1>
-    <p class="sub">Hoàn tất bước vượt link để nhận key</p>
+<script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
+<div class="topbar">
+  <img class="logo-img" src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer">
+  <span class="brand">Nhận Key</span>
+  <span class="grow"></span>
+  <button type="button" class="btn sm" id="themeBtn" title="Sáng/Tối">◐</button>
+</div>
+<main class="wrap" style="padding-top:32px;padding-bottom:48px;max-width:420px">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:16px">
+      <img src="https://263.org.vn/logo" alt="" width="56" height="56" style="border-radius:12px;object-fit:cover" referrerpolicy="no-referrer">
+      <h2 style="margin:12px 0 4px">Nhận Key</h2>
+      <p class="hint" style="margin:0">Hoàn tất bước vượt link để nhận key</p>
+    </div>
     <button id="start" class="btn primary" style="width:100%">Bắt đầu</button>
     <div id="result" class="hidden" style="margin-top:14px">
       <div id="status"></div>
@@ -25,19 +34,22 @@
 <script src="./supabase-api.js"></script>
 <script>
 (function(){
-  const t=localStorage.getItem('bdz_theme')||'light';
-  document.documentElement.dataset.theme=t;
-  const b=document.getElementById('start'), box=document.getElementById('result'),
-        s=document.getElementById('status'), l=document.getElementById('link');
-  b.onclick=async()=>{
+  document.getElementById('themeBtn').onclick=function(){
+    var n=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=n;
+    localStorage.setItem('bdz_theme',n);
+  };
+  var b=document.getElementById('start'), box=document.getElementById('result'),
+      s=document.getElementById('status'), l=document.getElementById('link');
+  b.onclick=async function(){
     b.disabled=true; box.classList.remove('hidden'); box.className='okbox';
     s.textContent='Đang tạo…'; l.textContent='';
     try{
-      const v=BDZ.visitorId();
-      const x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
-      if(!x?.ok||!x?.shortenedUrl) throw Error(x?.error||'Không tạo được');
+      var v=BDZ.visitorId();
+      var x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
+      if(!x||!x.ok||!x.shortenedUrl) throw Error((x&&x.error)||'Không tạo được');
       s.textContent='Link sẵn sàng';
-      const a=document.createElement('a'); a.href=x.shortenedUrl; a.target='_blank'; a.rel='noopener noreferrer';
+      var a=document.createElement('a'); a.href=x.shortenedUrl; a.target='_blank'; a.rel='noopener noreferrer';
       a.textContent='Mở liên kết'; a.style.fontWeight='700';
       l.append(a);
     }catch(e){ box.className='err'; s.textContent=e.message||'Lỗi'; }
