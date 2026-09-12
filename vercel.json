@@ -2,7 +2,7 @@
   "version": 2,
   "rewrites": [
     {"source": "/", "destination": "/index.html"},
-    {"source": "/admin", "destination": "/admin-shell.html"},
+    {"source": "/admin", "destination": "/admin.html"},
     {"source": "/token", "destination": "/token/index.html"}
   ],
   "headers": [
