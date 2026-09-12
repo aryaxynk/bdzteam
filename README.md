@@ -1,9 +1,10 @@
 # BDZ Key Service
 
 ## Kiến trúc
-- **Vercel**: Admin Web + serverless API + Telegram webhook.
-- **Supabase**: nguồn dữ liệu chính cho keys, validation logs, Telegram users, claim tokens, shortener và admin controls.
-- **Telegram Bot**: flow GET KEY, claim token một lần, trạng thái key và thông tin bảo mật.
+- **Vercel**: Web Get Key + Admin Web + serverless API.
+- **Supabase**: nguồn dữ liệu chính cho keys, validation logs, claim tokens, shortener và admin controls.
+- **GitHub**: source code và triển khai qua Vercel.
+- **Telegram Bot**: đã loại bỏ khỏi hệ thống.
 - **App**: gọi một API xác thực duy nhất.
 
 ## Unified Key API
@@ -27,39 +28,35 @@ Response hợp lệ:
 ```json
 {
   "ok": true,
-  "valid": true,
-  "result": "VALID",
-  "status": "ACTIVE",
+  "key_valid": true,
+  "version_valid": true,
+  "update_required": false,
+  "authenticated": true,
   "expires_at": "...",
-  "created_at": "...",
-  "activated": true,
+  "device_bound": true,
+  "checks_used": 1,
+  "checks_remaining": 99,
+  "max_checks": 100,
+  "max_devices": 1,
   "activated_at": "...",
   "last_checked_at": "...",
-  "check_count": 1,
-  "max_checks": 0,
-  "max_devices": 1,
-  "telegram_user_id": null,
-  "telegram_username": null,
+  "server_time": "...",
   "app_version": "1.0.0"
 }
 ```
 
-Các trạng thái chính: `ACTIVE`, `DISABLED`, `EXPIRED`, `DEVICE_MISMATCH`, `LIMIT_REACHED`, `KEY_NOT_FOUND`, `INVALID_FORMAT`.
+## Web Get Key
+Trang chủ `/` là giao diện GET KEY.
 
-### Supabase direct
-RPC dành cho client:
-`POST /rest/v1/rpc/check_key`
+Flow:
+1. User bấm **Bắt đầu GET KEY**.
+2. Vercel tạo claim token dùng một lần và lưu hash trong Supabase.
+3. Vercel tạo link đích `/token?token=...` rồi gửi qua shortener đang cấu hình.
+4. User hoàn tất bước rút gọn và quay về trang `/token`.
+5. Vercel nhận token, đánh dấu token đã dùng và tạo Key mới phía server.
+6. Website hiển thị Key trực tiếp, không cần Telegram.
 
-Body:
-```json
-{
-  "p_key": "YOUR_KEY",
-  "p_device_id": "unique-device-id",
-  "p_app_version": "1.0.0"
-}
-```
-
-Client chỉ dùng publishable/anon key. Không đưa `SUPABASE_SERVICE_ROLE_KEY` vào APK hoặc frontend public.
+Claim token có thời hạn ngắn và không được lưu dạng plaintext trong Supabase.
 
 ## Admin Control Center
 Admin có hamburger navigation ở góc trên trái để mở các khu vực:
@@ -68,30 +65,20 @@ Admin có hamburger navigation ở góc trên trái để mở các khu vực:
 - Users
 - API Center
 - Security
+- Versions / Releases
 
-Dashboard tập trung vào system health và **Bot Status**: online/offline, username, webhook, pending updates, maintenance, users, keys, claims và failed checks.
+Admin session được ký bằng `ADMIN_SESSION_SECRET`; dữ liệu admin và audit được lưu trong Supabase.
 
 ## Shorten
 `POST /api/shorten` là endpoint server-side dành cho Admin. Provider hiện tại là **VuotLink**.
 
 ```json
 {
-  "url": "https://bdzteam.vercel.app/..."
+  "url": "https://bdzteam.vercel.app/token?..."
 }
 ```
 
 VuotLink token chỉ được dùng server-side.
-
-## Telegram Bot
-- `/start` hoặc `/menu`: mở dashboard hội thoại.
-- `/getkey`: tạo link nhận token.
-- `/status`: xem key hiện tại, hạn, device và số checks.
-- `/security`: thông tin bảo mật.
-- `/help`: hướng dẫn.
-- `/id`: Telegram ID.
-- `/support`: gửi yêu cầu hỗ trợ.
-
-Claim token được hash khi lưu, gắn với Telegram ID và chỉ redeem một lần.
 
 ## Vercel Environment Variables
 Bắt buộc:
@@ -100,9 +87,7 @@ Bắt buộc:
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 - `ADMIN_SESSION_SECRET`
-- `TELEGRAM_BOT_TOKEN`
 
 Tuỳ chọn:
 - `VUOTLINK_API_TOKEN`
 - `VUOTLINK_BASE_URL`
-- `TELEGRAM_ADMIN_IDS`
