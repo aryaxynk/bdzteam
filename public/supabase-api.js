@@ -16,8 +16,5 @@
   }
   function visitorId(){let id=localStorage.getItem('bdz_visitor');if(!id){id=crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;localStorage.setItem('bdz_visitor',id)}return id}
   window.BDZ={...c,rpc,edge,visitorId};
-  const harden=document.createElement('script');
-  harden.src='./security-hardening.js';
-  harden.defer=true;
-  document.head.appendChild(harden);
+  if(c.SITE_URL){const harden=document.createElement('script');harden.src=c.SITE_URL.replace(/\/$/,'')+'/security-hardening.js';harden.defer=true;document.head.appendChild(harden)}
 })();
