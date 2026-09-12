@@ -10,19 +10,13 @@
 </head>
 <body>
 <script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
-<div class="topbar">
-  <img class="logo-img" src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer">
-  <span class="brand">Nhận Key</span>
-  <span class="grow"></span>
-  <button type="button" class="btn sm" id="themeBtn" title="Sáng/Tối">◐</button>
-</div>
-<main class="wrap" style="padding-top:32px;padding-bottom:48px;max-width:420px">
-  <div class="card">
-    <div style="text-align:center;margin-bottom:16px">
-      <img src="https://263.org.vn/logo" alt="" width="56" height="56" style="border-radius:12px;object-fit:cover" referrerpolicy="no-referrer">
-      <h2 style="margin:12px 0 4px">Nhận Key</h2>
-      <p class="hint" id="intro" style="margin:0">Đang xác nhận phiên…</p>
+<main class="login-page">
+  <div class="login-box">
+    <div class="logo-wrap">
+      <img src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer">
     </div>
+    <h1>Nhận Key</h1>
+    <p class="sub" id="intro">Đang xác nhận phiên…</p>
     <div id="status" class="okbox" style="margin-bottom:12px">Đang xử lý…</div>
     <div id="out" class="hidden">
       <div class="field" style="margin-bottom:10px">
@@ -31,18 +25,13 @@
       </div>
       <button id="copy" class="btn primary" style="width:100%">Sao chép key</button>
     </div>
-    <p class="hint" style="margin-top:14px;margin-bottom:0;text-align:center;font-size:12px">Token dùng một lần · đúng phiên tạo session</p>
+    <p class="hint" style="margin-top:14px;margin-bottom:0;text-align:center;font-size:12px">Token dùng một lần</p>
   </div>
 </main>
 <script src="../config.js"></script>
 <script src="../supabase-api.js"></script>
 <script>
 (function(){
-  document.getElementById('themeBtn').onclick=function(){
-    var n=document.documentElement.dataset.theme==='dark'?'light':'dark';
-    document.documentElement.dataset.theme=n;
-    localStorage.setItem('bdz_theme',n);
-  };
   var q=new URLSearchParams(location.search);
   var t=(q.get('token')||'').trim();
   var s=document.getElementById('status');

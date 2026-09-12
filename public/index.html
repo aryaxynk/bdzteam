@@ -10,23 +10,21 @@
 </head>
 <body>
 <script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
-<div class="topbar">
-  <img class="logo-img" src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer">
-  <span class="brand">Nhận Key</span>
-  <span class="grow"></span>
-  <button type="button" class="btn sm" id="themeBtn" title="Sáng/Tối">◐</button>
-</div>
-<main class="wrap" style="padding-top:32px;padding-bottom:48px;max-width:420px">
-  <div class="card">
-    <div style="text-align:center;margin-bottom:16px">
-      <img src="https://263.org.vn/logo" alt="" width="56" height="56" style="border-radius:12px;object-fit:cover" referrerpolicy="no-referrer">
-      <h2 style="margin:12px 0 4px">Nhận Key</h2>
-      <p class="hint" style="margin:0">Hoàn tất bước vượt link để nhận key</p>
+<main class="login-page">
+  <div class="login-box">
+    <div class="logo-wrap">
+      <img src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer">
     </div>
+    <h1>Nhận Key</h1>
+    <p class="sub">Hoàn tất bước vượt link để nhận key</p>
     <button id="start" class="btn primary" style="width:100%">Bắt đầu</button>
     <div id="result" class="hidden" style="margin-top:14px">
       <div id="status"></div>
       <div id="link" style="margin-top:8px;word-break:break-all"></div>
+    </div>
+    <div style="margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <a href="./admin.html" class="hint" style="font-size:12px;text-decoration:none;color:var(--muted)">Admin</a>
+      <button type="button" class="btn sm" id="themeBtn" title="Sáng/Tối">◐</button>
     </div>
   </div>
 </main>
