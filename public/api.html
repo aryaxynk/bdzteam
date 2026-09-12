@@ -4,75 +4,261 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>API</title>
+<title>API App</title>
 <link rel="stylesheet" href="./style.css">
 <link rel="icon" href="https://263.org.vn/logo">
-<style>pre{white-space:pre-wrap;word-break:break-word;font-size:12px}</style>
+<style>
+pre.code{white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.45;max-height:420px;overflow:auto}
+.lang{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+</style>
 </head>
 <body>
 <script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
 <div class="topbar">
   <img class="logo-img" src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer">
-  <span class="brand">API</span>
+  <span class="brand">API App</span>
   <span class="grow"></span>
   <a class="btn sm" href="./admin.html" style="text-decoration:none">Admin</a>
 </div>
-<main class="wrap" style="padding-top:20px;padding-bottom:40px">
-  <div class="card">
-    <h2>Check Key</h2>
-    <p class="hint">Gọi trực tiếp. Mọi lỗi trả cùng một message.</p>
-    <pre class="code">POST /functions/v1/check-key
-Content-Type: application/json
-apikey: <publishable_key>
+<main class="wrap" style="padding-top:20px;padding-bottom:48px">
 
-{"key":"...","device_id":"...","app_version":"V1","ip":"optional"}
+<div class="card">
+  <h2>API check key (APK / App)</h2>
+  <p class="hint">App gửi key + device_id lên Supabase. Server kiểm tra: key tồn tại, còn hạn (Time check), đúng device (Limit device), đúng IP. Client chỉ nhận hợp lệ / không hợp lệ — không lộ chi tiết lỗi.</p>
+  <pre class="code">POST https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key
 
-OK:  {"ok":true,"key_valid":true,"message":"Key hợp lệ."}
-FAIL: {"ok":false,"key_valid":false,"message":"Key không hợp lệ."}</pre>
-  </div>
-  <div class="grid2">
-    <div class="card"><h2>Java</h2>
-      <pre class="code">OkHttpClient c = new OkHttpClient();
-JSONObject b = new JSONObject();
-b.put("key", key);
-b.put("device_id", deviceId);
-b.put("app_version", "V1");
-Request req = new Request.Builder()
-  .url(BASE + "/functions/v1/check-key")
-  .addHeader("Content-Type", "application/json")
-  .addHeader("apikey", API_KEY)
-  .post(RequestBody.create(b.toString(), MediaType.parse("application/json")))
-  .build();
-try (Response res = c.newCall(req).execute()) {
-  JSONObject j = new JSONObject(res.body().string());
-  boolean ok = j.optBoolean("ok") && j.optBoolean("key_valid");
+Headers:
+  Content-Type: application/json
+  apikey: <SUPABASE_PUBLISHABLE_KEY>
+
+Body (JSON):
+{
+  "key": "<key_code>",
+  "device_id": "<unique_device_id>",
+  "app_version": "V1",
+  "ip": "<optional>"
+}
+
+Response OK:
+{
+  "ok": true,
+  "key_valid": true,
+  "message": "Key hợp lệ."
+}
+
+Response FAIL (sai key / hết hạn Time check / Limit device / sai IP / disabled):
+{
+  "ok": false,
+  "key_valid": false,
+  "message": "Key không hợp lệ."
+}
+
+Quy tắc app:
+  if (ok && key_valid) → cho login
+  else → chặn (message chung, không phân biệt lỗi)</pre>
+</div>
+
+<div class="card">
+  <h2>Java (Android / OkHttp)</h2>
+  <div class="lang">Sẵn gắn APK</div>
+  <pre class="code">// build.gradle: implementation "com.squareup.okhttp3:okhttp:4.12.0"
+//              implementation "org.json:json:20231013"
+
+public class KeyApi {
+  private static final String BASE =
+      "https://nklukqriopezsoalnghm.supabase.co";
+  private static final String API_KEY =
+      "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0";
+
+  public static boolean checkKey(String key, String deviceId) throws Exception {
+    OkHttpClient client = new OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .build();
+
+    JSONObject body = new JSONObject();
+    body.put("key", key);
+    body.put("device_id", deviceId);
+    body.put("app_version", "V1");
+
+    Request req = new Request.Builder()
+        .url(BASE + "/functions/v1/check-key")
+        .addHeader("Content-Type", "application/json")
+        .addHeader("apikey", API_KEY)
+        .post(RequestBody.create(
+            body.toString(),
+            MediaType.parse("application/json; charset=utf-8")))
+        .build();
+
+    try (Response res = client.newCall(req).execute()) {
+      String raw = res.body() != null ? res.body().string() : "{}";
+      JSONObject j = new JSONObject(raw);
+      // Login chỉ khi cả hai true
+      return j.optBoolean("ok", false) && j.optBoolean("key_valid", false);
+    }
+  }
+}
+
+// Dùng:
+// boolean allowed = KeyApi.checkKey(userKey, Settings.Secure.ANDROID_ID);</pre>
+</div>
+
+<div class="card">
+  <h2>Python</h2>
+  <div class="lang">requests</div>
+  <pre class="code">import requests
+
+BASE = "https://nklukqriopezsoalnghm.supabase.co"
+API_KEY = "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0"
+
+def check_key(key: str, device_id: str, app_version: str = "V1") -> bool:
+    r = requests.post(
+        f"{BASE}/functions/v1/check-key",
+        headers={
+            "Content-Type": "application/json",
+            "apikey": API_KEY,
+        },
+        json={
+            "key": key,
+            "device_id": device_id,
+            "app_version": app_version,
+        },
+        timeout=15,
+    )
+    data = r.json()
+    return bool(data.get("ok")) and bool(data.get("key_valid"))
+
+# Dùng:
+# if check_key("YOUR_KEY", "device-uuid"):
+#     print("login ok")
+# else:
+#     print("Key không hợp lệ.")</pre>
+</div>
+
+<div class="card">
+  <h2>C++ (libcurl)</h2>
+  <div class="lang">C++11+</div>
+  <pre class="code">// g++ -std=c++11 main.cpp -lcurl -o check_key
+#include <curl/curl.h>
+#include <string>
+#include <iostream>
+
+static size_t write_cb(char* p, size_t s, size_t n, void* u) {
+  ((std::string*)u)->append(p, s * n);
+  return s * n;
+}
+
+bool check_key(const std::string& key, const std::string& device_id) {
+  const std::string url =
+    "https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key";
+  const std::string api_key =
+    "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0";
+
+  std::string body =
+    std::string("{\"key\":\"") + key +
+    "\",\"device_id\":\"" + device_id +
+    "\",\"app_version\":\"V1\"}";
+
+  std::string response;
+  CURL* curl = curl_easy_init();
+  if (!curl) return false;
+
+  struct curl_slist* headers = nullptr;
+  headers = curl_slist_append(headers, "Content-Type: application/json");
+  headers = curl_slist_append(headers, ("apikey: " + api_key).c_str());
+
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
+
+  CURLcode rc = curl_easy_perform(curl);
+  curl_slist_free_all(headers);
+  curl_easy_cleanup(curl);
+  if (rc != CURLE_OK) return false;
+
+  // Đơn giản: tìm "key_valid":true
+  return response.find("\"key_valid\":true") != std::string::npos
+      || response.find("\"key_valid\": true") != std::string::npos;
 }</pre>
-    </div>
-    <div class="card"><h2>Python</h2>
-      <pre class="code">import requests
-r = requests.post(
-  BASE + "/functions/v1/check-key",
-  headers={"Content-Type":"application/json","apikey": API_KEY},
-  json={"key": key, "device_id": device_id, "app_version": "V1"},
-  timeout=10,
-)
-d = r.json()
-ok = d.get("ok") and d.get("key_valid")</pre>
-    </div>
-  </div>
-  <div class="card"><h2>C++ / C (libcurl)</h2>
-    <pre class="code">CURL *curl = curl_easy_init();
-struct curl_slist *h = NULL;
-h = curl_slist_append(h, "Content-Type: application/json");
-h = curl_slist_append(h, "apikey: YOUR_KEY");
-const char *body = "{\"key\":\"K\",\"device_id\":\"D\",\"app_version\":\"V1\"}";
-curl_easy_setopt(curl, CURLOPT_URL, "https://PROJECT.supabase.co/functions/v1/check-key");
-curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h);
-curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
-curl_easy_perform(curl);
-curl_slist_free_all(h);
-curl_easy_cleanup(curl);</pre>
-  </div>
+</div>
+
+<div class="card">
+  <h2>C (libcurl)</h2>
+  <div class="lang">C99</div>
+  <pre class="code">/* gcc main.c -lcurl -o check_key */
+#include <stdio.h>
+#include <string.h>
+#include <curl/curl.h>
+
+struct mem { char *data; size_t size; };
+
+static size_t write_cb(void *contents, size_t size, size_t nmemb, void *userp) {
+  size_t realsize = size * nmemb;
+  struct mem *m = (struct mem *)userp;
+  char *ptr = realloc(m->data, m->size + realsize + 1);
+  if (!ptr) return 0;
+  m->data = ptr;
+  memcpy(&(m->data[m->size]), contents, realsize);
+  m->size += realsize;
+  m->data[m->size] = 0;
+  return realsize;
+}
+
+int check_key(const char *key, const char *device_id) {
+  CURL *curl;
+  CURLcode res;
+  struct curl_slist *headers = NULL;
+  struct mem chunk = {0};
+  char body[512];
+  int ok = 0;
+
+  snprintf(body, sizeof(body),
+    "{\"key\":\"%s\",\"device_id\":\"%s\",\"app_version\":\"V1\"}",
+    key, device_id);
+
+  curl = curl_easy_init();
+  if (!curl) return 0;
+
+  headers = curl_slist_append(headers, "Content-Type: application/json");
+  headers = curl_slist_append(headers,
+    "apikey: sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0");
+
+  curl_easy_setopt(curl, CURLOPT_URL,
+    "https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
+
+  res = curl_easy_perform(curl);
+  if (res == CURLE_OK && chunk.data) {
+    if (strstr(chunk.data, "\"key_valid\":true") ||
+        strstr(chunk.data, "\"key_valid\": true"))
+      ok = 1;
+  }
+
+  curl_slist_free_all(headers);
+  curl_easy_cleanup(curl);
+  free(chunk.data);
+  return ok;
+}</pre>
+</div>
+
+<div class="card">
+  <h2>Ghi chú gắn app</h2>
+  <p class="hint" style="margin:0">
+  1. <b>device_id</b> phải cố định theo máy (Android ID / UUID lưu local).<br>
+  2. Lần check đầu bind device + IP; lần sau sai device/IP → Key không hợp lệ (Limit device).<br>
+  3. Hết hạn → Key không hợp lệ (Time check).<br>
+  4. App chỉ cần <code>ok && key_valid</code> để cho login — không parse status chi tiết (bảo mật).<br>
+  5. Publishable key chỉ dùng gọi Edge Function public; không dùng service_role trong app.
+  </p>
+</div>
+
 </main>
 </body>
 </html>
