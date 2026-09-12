@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Key</title>
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./style.css?v=6">
 <link rel="icon" href="https://263.org.vn/logo">
 </head>
 <body>
@@ -28,10 +28,16 @@
     </div>
   </div>
 </main>
-<script src="./config.js"></script>
-<script src="./supabase-api.js"></script>
+<script src="./config.js?v=6"></script>
+<script src="./supabase-api.js?v=6"></script>
 <script>
 (function(){
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')){
+      e.preventDefault();
+    }
+  });
   document.getElementById('themeBtn').onclick=function(){
     var n=document.documentElement.dataset.theme==='dark'?'light':'dark';
     document.documentElement.dataset.theme=n;
@@ -45,7 +51,12 @@
     try{
       var v=BDZ.visitorId();
       var x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
-      if(!x||!x.ok||!x.shortenedUrl) throw Error((x&&x.error)||'Không tạo được');
+      if(!x||!x.ok||!x.shortenedUrl){
+        var err=(x&&x.error)||'Không tạo được';
+        if(err==='MAINTENANCE') throw Error('Hệ thống đang bảo trì. Thử lại sau.');
+        if(err==='BANNED'||err==='RATE_LIMITED') throw Error('Tạm khóa do thao tác quá nhiều. Thử lại sau.');
+        throw Error(err);
+      }
       s.textContent='Link sẵn sàng';
       var a=document.createElement('a'); a.href=x.shortenedUrl; a.target='_blank'; a.rel='noopener noreferrer';
       a.textContent='Mở liên kết'; a.style.fontWeight='700';
