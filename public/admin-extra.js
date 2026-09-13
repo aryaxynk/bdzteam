@@ -91,7 +91,7 @@ function patchSamples(){
       const el=$('apiSample'); if(el) el.textContent=FULL[b.dataset.lang]||'';};
   });
   if($('apiSample')) $('apiSample').textContent=FULL.java;
-  if($('apiSpec')) $('apiSpec').textContent=`POST https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key\n\nHeaders:\n  Content-Type: application/json\n  apikey: sb_publishable_...\n\nBody: {key, device_id, app_version}\nOK: key_valid true | FAIL: Key không hợp lệ.`;
+  if($('apiSpec')) $('apiSpec').textContent=`POST check-key | Body: key, device_id | OK/FAIL key_valid`;
 }
 (async()=>{
   for(let i=0;i<50;i++){ if($('navTabs')&&$('pg-settings')) break; await new Promise(r=>setTimeout(r,100)); }
@@ -136,12 +136,15 @@ async function enhanceKeyLabels(){
       }
       if(k.devices_used!=null){
         const tds=tr.querySelectorAll('td');
-        if(tds.length>=4){
-          tds[3].textContent=(k.devices_used)+'/'+(k.max_devices||1);
-        }
+        if(tds.length>=4) tds[3].textContent=(k.devices_used)+'/'+(k.max_devices||1);
       }
     });
   }catch(e){}
 }
 setInterval(enhanceKeyLabels,1200);
+
+(function clearPrefillUser(){
+  function go(){const el=document.getElementById('u');if(el&&el.value==='arya')el.value='';}
+  go(); setTimeout(go,50); setTimeout(go,200); setTimeout(go,500);
+})();
 })();
