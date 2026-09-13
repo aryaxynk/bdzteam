@@ -82,12 +82,8 @@ def check_key(key, device_id):
       json={"key":key,"device_id":device_id,"app_version":"V1"}, timeout=15)
     d=r.json(); return bool(d.get("ok") and d.get("key_valid"))
 `,
-cpp:`// Full C++ libcurl: xem api.html
-// POST /functions/v1/check-key + apikey + {key,device_id,app_version}
-// if response contains "key_valid":true -> login`,
-c:`/* Full C libcurl: xem api.html
- * POST check-key, parse key_valid */
-`
+cpp:`// Full C++ libcurl: xem api.html`,
+c:`/* Full C libcurl: xem api.html */`
 };
 function patchSamples(){
   document.querySelectorAll('.tab-lang').forEach(b=>{
@@ -95,22 +91,7 @@ function patchSamples(){
       const el=$('apiSample'); if(el) el.textContent=FULL[b.dataset.lang]||'';};
   });
   if($('apiSample')) $('apiSample').textContent=FULL.java;
-  if($('apiSpec')) $('apiSpec').textContent=`POST https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key
-
-Headers:
-  Content-Type: application/json
-  apikey: sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0
-
-Body:
-  {"key":"<key_code>","device_id":"<device_id>","app_version":"V1"}
-
-OK:   {"ok":true,"key_valid":true,"message":"Key hợp lệ."}
-FAIL: {"ok":false,"key_valid":false,"message":"Key không hợp lệ."}
-
-App: if (ok && key_valid) login(); else block();
-Checks: key · Time · Device limit · IP bind
-Bảo trì web KHÔNG ảnh hưởng API này.
-Full Java/Python/C++/C: api.html`;
+  if($('apiSpec')) $('apiSpec').textContent=`POST https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key\n\nHeaders:\n  Content-Type: application/json\n  apikey: sb_publishable_...\n\nBody: {key, device_id, app_version}\nOK: key_valid true | FAIL: Key không hợp lệ.`;
 }
 (async()=>{
   for(let i=0;i<50;i++){ if($('navTabs')&&$('pg-settings')) break; await new Promise(r=>setTimeout(r,100)); }
@@ -130,4 +111,37 @@ Full Java/Python/C++/C: api.html`;
   if(tok()) loadBans();
   patchSamples();
 })();
+
+async function enhanceKeyLabels(){
+  if(!tok()||!$('keyRows')) return;
+  try{
+    const x=await BDZ.rpc('bdz_admin_keys',{p_token:tok()});
+    if(!x?.ok||!Array.isArray(x.keys)) return;
+    const map={};
+    x.keys.forEach(k=>{map[k.id]=k});
+    $('keyRows').querySelectorAll('tr').forEach(tr=>{
+      const cb=tr.querySelector('.kchk');
+      if(!cb) return;
+      const k=map[+cb.value];
+      if(!k) return;
+      const mono=tr.querySelector('.mono');
+      if(mono&&k.created_by_name&&!mono.parentElement.querySelector('[data-admin-badge]')){
+        const sp=document.createElement('span');
+        sp.className='tag';
+        sp.dataset.adminBadge='1';
+        sp.setAttribute('style','margin-left:6px;font-size:10px;opacity:.9');
+        sp.title='Admin tạo';
+        sp.textContent='Admin: '+k.created_by_name;
+        mono.parentElement.appendChild(sp);
+      }
+      if(k.devices_used!=null){
+        const tds=tr.querySelectorAll('td');
+        if(tds.length>=4){
+          tds[3].textContent=(k.devices_used)+'/'+(k.max_devices||1);
+        }
+      }
+    });
+  }catch(e){}
+}
+setInterval(enhanceKeyLabels,1200);
 })();
