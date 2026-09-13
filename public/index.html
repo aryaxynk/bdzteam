@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Key</title>
-<link rel="stylesheet" href="./style.css?v=8">
+<link rel="stylesheet" href="./style.css?v=11">
 <link rel="icon" href="https://263.org.vn/logo">
 </head>
 <body>
@@ -16,6 +16,7 @@
       <img src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer">
     </div>
     <h1>Nhận Key</h1>
+    <p class="sub" id="durLine" style="margin-top:4px;font-weight:600;color:var(--text)">—</p>
     <p class="sub">Hoàn tất bước vượt link để nhận key</p>
     <button id="start" class="btn primary" style="width:100%">Bắt đầu</button>
     <div id="result" class="hidden" style="margin-top:14px">
@@ -28,8 +29,8 @@
     </div>
   </div>
 </main>
-<script src="./config.js?v=8"></script>
-<script src="./supabase-api.js?v=8"></script>
+<script src="./config.js?v=11"></script>
+<script src="./supabase-api.js?v=11"></script>
 <script>
 (function(){
   function viErr(err){
@@ -60,6 +61,19 @@
     document.documentElement.dataset.theme=n;
     localStorage.setItem('bdz_theme',n);
   };
+
+  // Hiện thời hạn key theo setting admin
+  (async function(){
+    var el=document.getElementById('durLine');
+    try{
+      var x=await BDZ.rpc('bdz_public_key_info',{});
+      var h=(x&&x.duration_hours)||5;
+      el.textContent='Thời hạn key: '+h+' giờ';
+    }catch(e){
+      el.textContent='Thời hạn key: 5 giờ';
+    }
+  })();
+
   var b=document.getElementById('start'), box=document.getElementById('result'),
       s=document.getElementById('status'), l=document.getElementById('link');
   b.onclick=async function(){
