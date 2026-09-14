@@ -53,45 +53,13 @@ function modalBan(){
     const x=await BDZ.rpc('bdz_admin_bans',{p_token:tok(),p_action:'ban',p_payload:{visitor_id:$('bVis').value.trim(),ip:$('bIp').value.trim(),reason:$('bReason').value.trim()||'manual',banned_until:until,note:$('bNote').value.trim()}});
     if(!x?.ok)throw Error(x?.error||'Lỗi');root.innerHTML='';loadBans()}catch(e){alert(e.message)}};
 }
-const FULL={
-java:`import okhttp3.*;
-import org.json.JSONObject;
-import java.util.concurrent.TimeUnit;
-public class KeyApi {
-  static final String BASE="https://nklukqriopezsoalnghm.supabase.co";
-  static final String API_KEY="sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0";
-  public static boolean checkKey(String key,String deviceId) throws Exception {
-    OkHttpClient c=new OkHttpClient.Builder().connectTimeout(10,TimeUnit.SECONDS).readTimeout(15,TimeUnit.SECONDS).build();
-    JSONObject body=new JSONObject(); body.put("key",key); body.put("device_id",deviceId); body.put("app_version","V1");
-    Request req=new Request.Builder().url(BASE+"/functions/v1/check-key")
-      .addHeader("Content-Type","application/json").addHeader("apikey",API_KEY)
-      .post(RequestBody.create(body.toString(),MediaType.parse("application/json"))).build();
-    try(Response res=c.newCall(req).execute()){
-      String s=res.body()!=null?res.body().string():"";
-      JSONObject j=new JSONObject(s);
-      return j.optBoolean("ok",false)&&j.optBoolean("key_valid",false);
-    }
-  }
-}`,
-python:`import requests
-BASE="https://nklukqriopezsoalnghm.supabase.co"
-API_KEY="sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0"
-def check_key(key, device_id):
-    r=requests.post(f"{BASE}/functions/v1/check-key",
-      headers={"Content-Type":"application/json","apikey":API_KEY},
-      json={"key":key,"device_id":device_id,"app_version":"V1"}, timeout=15)
-    d=r.json(); return bool(d.get("ok") and d.get("key_valid"))
-`,
-cpp:`// Full C++ libcurl: xem api.html`,
-c:`/* Full C libcurl: xem api.html */`
-};
+const FULL={java:'// Java OkHttp — xem api.html',python:'# Python — xem api.html',cpp:'// C++ — xem api.html',c:'/* C — xem api.html */'};
 function patchSamples(){
   document.querySelectorAll('.tab-lang').forEach(b=>{
     b.onclick=()=>{document.querySelectorAll('.tab-lang').forEach(x=>x.classList.toggle('active',x.dataset.lang===b.dataset.lang));
       const el=$('apiSample'); if(el) el.textContent=FULL[b.dataset.lang]||'';};
   });
   if($('apiSample')) $('apiSample').textContent=FULL.java;
-  if($('apiSpec')) $('apiSpec').textContent=`POST check-key | Body: key, device_id | OK/FAIL key_valid`;
 }
 (async()=>{
   for(let i=0;i<50;i++){ if($('navTabs')&&$('pg-settings')) break; await new Promise(r=>setTimeout(r,100)); }
@@ -147,4 +115,35 @@ setInterval(enhanceKeyLabels,1200);
   function go(){const el=document.getElementById('u');if(el&&el.value==='arya')el.value='';}
   go(); setTimeout(go,50); setTimeout(go,200); setTimeout(go,500);
 })();
+
+(function localizeFilter(){
+  function go(){
+    const sel=document.getElementById('filter');
+    if(!sel||sel.dataset.vi==='1') return;
+    const map={'':'Tất cả','ACTIVE':'Đang dùng','DISABLED':'Tắt','TIME_EXPIRED':'Hết hạn (time)','DEVICE_LIMIT':'Giới hạn máy','EXPIRED':'Hết hạn'};
+    const cur=sel.value;
+    sel.innerHTML='';
+    Object.keys(map).forEach(function(v){
+      const o=document.createElement('option');
+      o.value=v; o.textContent=map[v];
+      sel.appendChild(o);
+    });
+    sel.value=cur;
+    sel.dataset.vi='1';
+  }
+  go(); setTimeout(go,100); setTimeout(go,400); setTimeout(go,1000);
+})();
+
+const ST_VI={ACTIVE:'Đang dùng',DISABLED:'Tắt',EXPIRED:'Hết hạn',TIME_EXPIRED:'Hết hạn (time)',DEVICE_LIMIT:'Giới hạn máy',LIMIT_REACHED:'Hết lượt',REACTIVATED:'Kích hoạt lại',CREATED:'Mới tạo'};
+function viStatusTags(){
+  document.querySelectorAll('#keyRows .tag').forEach(function(el){
+    if(el.dataset.adminBadge) return;
+    var t=(el.textContent||'').trim();
+    if(ST_VI[t]) el.textContent=ST_VI[t];
+    if(t==='Active') el.textContent='Đang dùng';
+    if(t==='Time check') el.textContent='Hết hạn (time)';
+    if(t==='Limit device') el.textContent='Giới hạn máy';
+  });
+}
+setInterval(viStatusTags,800);
 })();
