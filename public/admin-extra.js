@@ -120,7 +120,7 @@ setInterval(enhanceKeyLabels,1200);
   function go(){
     const sel=document.getElementById('filter');
     if(!sel||sel.dataset.vi==='1') return;
-    const map={'':'Tất cả','ACTIVE':'Đang dùng','DISABLED':'Tắt','TIME_EXPIRED':'Hết hạn (time)','DEVICE_LIMIT':'Giới hạn máy','EXPIRED':'Hết hạn'};
+    const map={'':'Tất cả','ACTIVE':'Hoạt động','DISABLED':'Tắt','EXPIRED':'Hết hạn'};
     const cur=sel.value;
     sel.innerHTML='';
     Object.keys(map).forEach(function(v){
@@ -128,20 +128,20 @@ setInterval(enhanceKeyLabels,1200);
       o.value=v; o.textContent=map[v];
       sel.appendChild(o);
     });
-    sel.value=cur;
+    sel.value=cur in map ? cur : '';
     sel.dataset.vi='1';
   }
   go(); setTimeout(go,100); setTimeout(go,400); setTimeout(go,1000);
 })();
 
-const ST_VI={ACTIVE:'Đang dùng',DISABLED:'Tắt',EXPIRED:'Hết hạn',TIME_EXPIRED:'Hết hạn (time)',DEVICE_LIMIT:'Giới hạn máy',LIMIT_REACHED:'Hết lượt',REACTIVATED:'Kích hoạt lại',CREATED:'Mới tạo'};
+const ST_VI={ACTIVE:'Hoạt động',DISABLED:'Tắt',EXPIRED:'Hết hạn',TIME_EXPIRED:'Hết hạn',DEVICE_LIMIT:'Giới hạn máy',LIMIT_REACHED:'Hết lượt',REACTIVATED:'Hoạt động',CREATED:'Mới tạo'};
 function viStatusTags(){
   document.querySelectorAll('#keyRows .tag').forEach(function(el){
     if(el.dataset.adminBadge) return;
     var t=(el.textContent||'').trim();
     if(ST_VI[t]) el.textContent=ST_VI[t];
-    if(t==='Active') el.textContent='Đang dùng';
-    if(t==='Time check') el.textContent='Hết hạn (time)';
+    if(t==='Active'||t==='Đang dùng') el.textContent='Hoạt động';
+    if(t==='Time check'||t==='Hết hạn (time)') el.textContent='Hết hạn';
     if(t==='Limit device') el.textContent='Giới hạn máy';
   });
 }
