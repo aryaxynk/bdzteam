@@ -1,1 +1,103 @@
-PLACEHOLDER
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Nhận Key</title>
+<link rel="stylesheet" href="./style.css?v=63">
+<link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
+<link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
+</head>
+<body>
+<script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'dark';</script>
+<main class="bento-page">
+  <div class="bento-board">
+    <section class="bento-tile hero">
+      <div>
+        <img class="bento-logo" src="https://263.org.vn/logo?v=20261003" alt="" referrerpolicy="no-referrer">
+        <p class="bento-kicker" style="margin-top:20px">Key system</p>
+        <h1 class="bento-title">Nhận Key</h1>
+        <p class="bento-lead">Hoàn tất bước vượt link để nhận key. Mỗi phiên gắn với trình duyệt của bạn.</p>
+      </div>
+      <p class="bento-dur" id="durLine">—</p>
+    </section>
+    <section class="bento-tile action">
+      <p class="bento-kicker">Bước tiếp theo</p>
+      <button id="start" class="btn primary">Bắt đầu</button>
+      <div id="result" class="hidden">
+        <div id="status"></div>
+        <div id="link" style="margin-top:8px;word-break:break-all"></div>
+      </div>
+      <p class="hint">Sau khi vượt link, key sẽ hiện để bạn copy vào app.</p>
+    </section>
+    <section class="bento-tile meta">
+      <a href="./admin.html" class="hint" style="text-decoration:none;font-weight:600">Admin →</a>
+      <button type="button" class="btn sm" id="themeBtn" title="Sáng / Tối">◐ Giao diện</button>
+    </section>
+  </div>
+</main>
+<script src="./cosmos.js?v=63"></script>
+<script src="./config.js?v=63"></script>
+<script src="./supabase-api.js?v=63"></script>
+<script>
+(function(){
+  function viErr(err){
+    var m={
+      MAINTENANCE:'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
+      BANNED:'Bạn đã bị khóa tạm thời. Vui lòng thử lại sau.',
+      RATE_LIMITED:'Thao tác quá nhiều. Vui lòng thử lại sau.',
+      START_UNAVAILABLE:'Không thể tạo phiên. Thử lại sau.',
+      SHORTENER_NOT_CONFIGURED:'Hệ thống link chưa sẵn sàng.',
+      SHORTENER_UPSTREAM:'Lỗi tạo link. Thử lại sau.',
+      SHORTENER_INVALID_RESPONSE:'Lỗi tạo link. Thử lại sau.',
+      SERVER_ERROR:'Lỗi máy chủ. Thử lại sau.',
+      SERVER_CONFIG:'Lỗi cấu hình máy chủ.',
+      METHOD_NOT_ALLOWED:'Yêu cầu không hợp lệ.',
+      INVALID_ACTION:'Yêu cầu không hợp lệ.'
+    };
+    if(!err) return 'Không tạo được. Thử lại sau.';
+    if(m[err]) return m[err];
+    if(/[àáạảãâăèéêìíòóôơùúýăđ]/i.test(err)) return err;
+    return 'Không tạo được. Thử lại sau.';
+  }
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')) e.preventDefault();
+  });
+  document.getElementById('themeBtn').onclick=function(){
+    var n=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=n;
+    localStorage.setItem('bdz_theme',n);
+  };
+  (async function(){
+    var el=document.getElementById('durLine');
+    try{
+      if(typeof BDZ==='undefined'||!BDZ.rpc){ el.textContent='Thời hạn key · 5 giờ'; return; }
+      var x=await BDZ.rpc('bdz_public_key_info',{});
+      var h=(x&&x.duration_hours)||5;
+      el.textContent='Thời hạn key · '+h+' giờ';
+    }catch(e){ el.textContent='Thời hạn key · 5 giờ'; }
+  })();
+  var b=document.getElementById('start'), box=document.getElementById('result'),
+      s=document.getElementById('status'), l=document.getElementById('link');
+  b.onclick=async function(){
+    b.disabled=true; box.classList.remove('hidden'); box.className='okbox';
+    s.textContent='Đang tạo…'; l.textContent='';
+    try{
+      if(typeof BDZ==='undefined') throw Error('Chưa tải cấu hình. Refresh trang.');
+      var v=BDZ.visitorId();
+      var x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
+      if(!x||!x.ok||!x.shortenedUrl) throw Error(viErr(x&&x.error));
+      s.textContent='Link sẵn sàng';
+      var a=document.createElement('a'); a.href=x.shortenedUrl; a.target='_blank'; a.rel='noopener noreferrer';
+      a.textContent='Mở liên kết'; a.style.fontWeight='700';
+      l.append(a);
+    }catch(e){ box.className='err'; s.textContent=e.message||'Lỗi'; }
+    finally{ b.disabled=false; }
+  };
+})();
+</script>
+</body>
+</html>
