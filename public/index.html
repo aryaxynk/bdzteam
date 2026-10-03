@@ -4,19 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Nhận Key</title>
-<link rel="stylesheet" href="./style.css?v=50">
+<link rel="stylesheet" href="./style.css?v=60">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
 <body>
-<script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
+<script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'dark';</script>
 <main class="bento-page">
   <div class="bento-board">
     <section class="bento-tile hero">
       <div>
         <img class="bento-logo" src="https://263.org.vn/logo?v=20261003" alt="" referrerpolicy="no-referrer">
-        <p class="bento-kicker" style="margin-top:18px">Key system</p>
+        <p class="bento-kicker" style="margin-top:20px">Key system</p>
         <h1 class="bento-title">Nhận Key</h1>
         <p class="bento-lead">Hoàn tất bước vượt link để nhận key. Mỗi phiên gắn với trình duyệt của bạn.</p>
       </div>
@@ -29,16 +30,17 @@
         <div id="status"></div>
         <div id="link" style="margin-top:8px;word-break:break-all"></div>
       </div>
-      <p class="hint">Sau khi vượt link, key sẽ hiện để bạn copy vào app / script.</p>
+      <p class="hint">Sau khi vượt link, key sẽ hiện để bạn copy vào app.</p>
     </section>
     <section class="bento-tile meta">
-      <a href="./admin.html" class="hint" style="text-decoration:none">Admin</a>
-      <button type="button" class="btn sm" id="themeBtn" title="Sáng/Tối">◐ Giao diện</button>
+      <a href="./admin.html" class="hint" style="text-decoration:none;font-weight:600">Admin →</a>
+      <button type="button" class="btn sm" id="themeBtn" title="Sáng / Tối">◐ Giao diện</button>
     </section>
   </div>
 </main>
-<script src="./config.js?v=50"></script>
-<script src="./supabase-api.js?v=50"></script>
+<script src="./cosmos.js?v=60"></script>
+<script src="./config.js?v=60"></script>
+<script src="./supabase-api.js?v=60"></script>
 <script>
 (function(){
   function viErr(err){
@@ -72,6 +74,7 @@
   (async function(){
     var el=document.getElementById('durLine');
     try{
+      if(typeof BDZ==='undefined'||!BDZ.rpc){ el.textContent='Thời hạn key · 5 giờ'; return; }
       var x=await BDZ.rpc('bdz_public_key_info',{});
       var h=(x&&x.duration_hours)||5;
       el.textContent='Thời hạn key · '+h+' giờ';
@@ -83,6 +86,7 @@
     b.disabled=true; box.classList.remove('hidden'); box.className='okbox';
     s.textContent='Đang tạo…'; l.textContent='';
     try{
+      if(typeof BDZ==='undefined') throw Error('Chưa tải cấu hình. Refresh trang.');
       var v=BDZ.visitorId();
       var x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
       if(!x||!x.ok||!x.shortenedUrl) throw Error(viErr(x&&x.error));
