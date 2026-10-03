@@ -5,33 +5,40 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Nhận Key</title>
-<link rel="stylesheet" href="./style.css?v=40">
+<link rel="stylesheet" href="./style.css?v=50">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
 <body>
 <script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
-<main class="login-page">
-  <div class="login-box">
-    <div class="logo-wrap">
-      <img src="https://263.org.vn/logo?v=20261003" alt="" referrerpolicy="no-referrer">
-    </div>
-    <h1>Nhận Key</h1>
-    <p class="sub" id="durLine">—</p>
-    <p class="sub">Hoàn tất bước vượt link để nhận key</p>
-    <button id="start" class="btn primary">Bắt đầu</button>
-    <div id="result" class="hidden">
-      <div id="status"></div>
-      <div id="link" style="margin-top:8px;word-break:break-all"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <a href="./admin.html" class="hint" style="font-size:12px;text-decoration:none;color:var(--muted)">Admin</a>
-      <button type="button" class="btn sm" id="themeBtn" title="Sáng/Tối">◐</button>
-    </div>
+<main class="bento-page">
+  <div class="bento-board">
+    <section class="bento-tile hero">
+      <div>
+        <img class="bento-logo" src="https://263.org.vn/logo?v=20261003" alt="" referrerpolicy="no-referrer">
+        <p class="bento-kicker" style="margin-top:18px">Key system</p>
+        <h1 class="bento-title">Nhận Key</h1>
+        <p class="bento-lead">Hoàn tất bước vượt link để nhận key. Mỗi phiên gắn với trình duyệt của bạn.</p>
+      </div>
+      <p class="bento-dur" id="durLine">—</p>
+    </section>
+    <section class="bento-tile action">
+      <p class="bento-kicker">Bước tiếp theo</p>
+      <button id="start" class="btn primary">Bắt đầu</button>
+      <div id="result" class="hidden">
+        <div id="status"></div>
+        <div id="link" style="margin-top:8px;word-break:break-all"></div>
+      </div>
+      <p class="hint">Sau khi vượt link, key sẽ hiện để bạn copy vào app / script.</p>
+    </section>
+    <section class="bento-tile meta">
+      <a href="./admin.html" class="hint" style="text-decoration:none">Admin</a>
+      <button type="button" class="btn sm" id="themeBtn" title="Sáng/Tối">◐ Giao diện</button>
+    </section>
   </div>
 </main>
-<script src="./config.js?v=40"></script>
-<script src="./supabase-api.js?v=40"></script>
+<script src="./config.js?v=50"></script>
+<script src="./supabase-api.js?v=50"></script>
 <script>
 (function(){
   function viErr(err){
@@ -62,18 +69,14 @@
     document.documentElement.dataset.theme=n;
     localStorage.setItem('bdz_theme',n);
   };
-
   (async function(){
     var el=document.getElementById('durLine');
     try{
       var x=await BDZ.rpc('bdz_public_key_info',{});
       var h=(x&&x.duration_hours)||5;
-      el.textContent='Thời hạn key: '+h+' giờ';
-    }catch(e){
-      el.textContent='Thời hạn key: 5 giờ';
-    }
+      el.textContent='Thời hạn key · '+h+' giờ';
+    }catch(e){ el.textContent='Thời hạn key · 5 giờ'; }
   })();
-
   var b=document.getElementById('start'), box=document.getElementById('result'),
       s=document.getElementById('status'), l=document.getElementById('link');
   b.onclick=async function(){
