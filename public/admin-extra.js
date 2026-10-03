@@ -27,21 +27,15 @@ function injectMaint(){
   const d=document.createElement('div'); d.className='field';
   d.innerHTML='<label>Bảo trì web (chặn get key)</label><select id="setMaint" class="select"><option value="false">Tắt</option><option value="true">Bật</option></select>';
   grid.appendChild(d);
-  const hint=document.createElement('p'); hint.className='hint';
-  hint.textContent='Bảo trì chỉ chặn trang nhận key. API check-key app vẫn chạy.';
-  grid.parentElement.insertBefore(hint,$('saveSet'));
 }
 async function loadBans(){
+  if(!tok()||!$('banRows')) return;
   try{const x=await BDZ.rpc('bdz_admin_bans',{p_token:tok(),p_action:'list'});
-    if(!x?.ok){if($('banRows'))$('banRows').innerHTML='<tr><td colspan="6">—</td></tr>';return}
-    bans=x.bans||[];renderBans()}catch(e){}
-}
-function renderBans(){
-  if(!$('banRows'))return;
-  $('banRows').innerHTML=(bans||[]).map(b=>'<tr><td>'+b.id+'</td><td>'+esc(b.reason||'')+'</td><td style="font-size:12px">'+(b.banned_until?new Date(b.banned_until).toLocaleString('vi-VN'):'—')+'</td><td><span class="tag '+(b.active?'off':'on')+'">'+(b.active?'BAN':'OFF')+'</span></td><td style="font-size:12px">'+esc(b.note||'')+'</td><td>'+(b.active?'<button class="btn sm" data-unban="'+b.id+'">Unban</button>':'—')+'</td></tr>').join('')||'<tr><td colspan="6" style="color:var(--muted)">Không có ban</td></tr>';
-  $('banRows').querySelectorAll('[data-unban]').forEach(btn=>btn.onclick=async()=>{
-    if(!confirm('Unban #'+btn.dataset.unban+'?'))return;
-    try{const x=await BDZ.rpc('bdz_admin_bans',{p_token:tok(),p_action:'unban',p_payload:{id:+btn.dataset.unban}});if(!x?.ok)throw Error(x?.error||'Lỗi');loadBans()}catch(e){alert(e.message)}});
+    bans=x?.bans||x?.rows||[];
+    $('banRows').innerHTML=(bans||[]).map(b=>'<tr><td>'+b.id+'</td><td>'+esc(b.reason||'')+'</td><td style="font-size:12px">'+(b.banned_until?new Date(b.banned_until).toLocaleString('vi-VN'):'—')+'</td><td><span class="tag '+(b.active?'off':'on')+'">'+(b.active?'BAN':'OFF')+'</span></td><td style="font-size:12px">'+esc(b.note||'')+'</td><td>'+(b.active?'<button class="btn sm" data-unban="'+b.id+'">Unban</button>':'—')+'</td></tr>').join('')||'<tr><td colspan="6" style="color:var(--muted)">Không có ban</td></tr>';
+    $('banRows').querySelectorAll('[data-unban]').forEach(btn=>btn.onclick=async()=>{
+      try{const x=await BDZ.rpc('bdz_admin_bans',{p_token:tok(),p_action:'unban',p_payload:{id:+btn.dataset.unban}});if(!x?.ok)throw Error(x?.error||'Lỗi');loadBans()}catch(e){alert(e.message)}});
+  }catch(e){}
 }
 function modalBan(){
   const root=$('modalRoot');
@@ -49,17 +43,16 @@ function modalBan(){
   $('mCancel').onclick=()=>root.innerHTML='';
   $('mOk').onclick=async()=>{try{
     const hours=+$('bHours').value||24;
-    const until=new Date(Date.now()+hours*3600*1000).toISOString();
+    const until=new Date(Date.now()+hours*3600e3).toISOString();
     const x=await BDZ.rpc('bdz_admin_bans',{p_token:tok(),p_action:'ban',p_payload:{visitor_id:$('bVis').value.trim(),ip:$('bIp').value.trim(),reason:$('bReason').value.trim()||'manual',banned_until:until,note:$('bNote').value.trim()}});
-    if(!x?.ok)throw Error(x?.error||'Lỗi');root.innerHTML='';loadBans()}catch(e){alert(e.message)}};
+    if(!x?.ok)throw Error(x?.error||'Lỗi');root.innerHTML='';loadBans();
+  }catch(e){alert(e.message)}};
 }
-const FULL={java:'// Java OkHttp — xem api.html',python:'# Python — xem api.html',cpp:'// C++ — xem api.html',c:'/* C — xem api.html */'};
 function patchSamples(){
   document.querySelectorAll('.tab-lang').forEach(b=>{
     b.onclick=()=>{document.querySelectorAll('.tab-lang').forEach(x=>x.classList.toggle('active',x.dataset.lang===b.dataset.lang));
-      const el=$('apiSample'); if(el) el.textContent=FULL[b.dataset.lang]||'';};
+      const el=$('apiSample'); if(el) el.textContent=(window.FULL&&window.FULL[b.dataset.lang])||'';};
   });
-  if($('apiSample')) $('apiSample').textContent=FULL.java;
 }
 (async()=>{
   for(let i=0;i<50;i++){ if($('navTabs')&&$('pg-settings')) break; await new Promise(r=>setTimeout(r,100)); }
@@ -85,21 +78,15 @@ async function enhanceKeyLabels(){
   try{
     const x=await BDZ.rpc('bdz_admin_keys',{p_token:tok()});
     if(!x?.ok||!Array.isArray(x.keys)) return;
-    const map={};
-    x.keys.forEach(k=>{map[k.id]=k});
+    const map={}; x.keys.forEach(k=>{map[k.id]=k});
     $('keyRows').querySelectorAll('tr').forEach(tr=>{
-      const cb=tr.querySelector('.kchk');
-      if(!cb) return;
-      const k=map[+cb.value];
-      if(!k) return;
+      const cb=tr.querySelector('.kchk'); if(!cb) return;
+      const k=map[+cb.value]; if(!k) return;
       const mono=tr.querySelector('.mono');
       if(mono&&k.created_by_name&&!mono.parentElement.querySelector('[data-admin-badge]')){
-        const sp=document.createElement('span');
-        sp.className='tag';
-        sp.dataset.adminBadge='1';
+        const sp=document.createElement('span'); sp.className='tag'; sp.dataset.adminBadge='1';
         sp.setAttribute('style','margin-left:6px;font-size:10px;opacity:.9');
-        sp.title='Admin tạo';
-        sp.textContent='Admin: '+k.created_by_name;
+        sp.title='Admin tạo'; sp.textContent='Admin: '+k.created_by_name;
         mono.parentElement.appendChild(sp);
       }
       if(k.devices_used!=null){
@@ -121,15 +108,11 @@ setInterval(enhanceKeyLabels,1200);
     const sel=document.getElementById('filter');
     if(!sel||sel.dataset.vi==='1') return;
     const map={'':'Tất cả','ACTIVE':'Hoạt động','DISABLED':'Tắt','EXPIRED':'Hết hạn'};
-    const cur=sel.value;
-    sel.innerHTML='';
+    const cur=sel.value; sel.innerHTML='';
     Object.keys(map).forEach(function(v){
-      const o=document.createElement('option');
-      o.value=v; o.textContent=map[v];
-      sel.appendChild(o);
+      const o=document.createElement('option'); o.value=v; o.textContent=map[v]; sel.appendChild(o);
     });
-    sel.value=cur in map ? cur : '';
-    sel.dataset.vi='1';
+    sel.value=cur in map ? cur : ''; sel.dataset.vi='1';
   }
   go(); setTimeout(go,100); setTimeout(go,400); setTimeout(go,1000);
 })();
