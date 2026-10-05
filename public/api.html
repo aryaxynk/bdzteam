@@ -4,23 +4,35 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>API App</title>
-<link rel="stylesheet" href="./style.css">
-<link rel="icon" href="https://263.org.vn/logo">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>API · BDZ</title>
+<link rel="stylesheet" href="./style.css?v=72">
+<link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <style>
-pre.code{white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.45;max-height:420px;overflow:auto}
-.lang{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+pre.code{white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.45;max-height:420px;overflow:auto;margin:0}
+.lang{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+.api-grid{display:grid;gap:12px;max-width:var(--max);margin:0 auto;padding:24px 20px 48px}
+.api-grid .card h2{font-size:1.1rem;margin:0 0 8px}
+.api-grid .card .hint{margin:0 0 12px}
+.api-grid .card + .card{margin-top:0}
 </style>
 </head>
 <body>
-<script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
-<div class="topbar">
-  <img class="logo-img" src="https://263.org.vn/logo" alt="" referrerpolicy="no-referrer">
-  <span class="brand">API App</span>
-  <span class="grow"></span>
-  <a class="btn sm" href="./admin.html" style="text-decoration:none">Admin</a>
-</div>
-<main class="wrap" style="padding-top:20px;padding-bottom:48px">
+<script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'dark';</script>
+
+<header class="site-nav">
+  <a class="nav-brand" href="./">
+    <img src="https://263.org.vn/logo?v=20261003" alt="" width="32" height="32" referrerpolicy="no-referrer" style="width:32px;height:32px;object-fit:cover;border-radius:4px">
+    <span>BDZ API</span>
+  </a>
+  <div class="nav-actions">
+    <a href="./" class="btn sm ghost">Nhận key</a>
+    <a href="./admin.html" class="btn sm">Admin</a>
+    <button type="button" class="btn sm" id="themeBtn" title="Sáng / Tối">◐</button>
+  </div>
+</header>
+
+<main class="api-grid">
 
 <div class="card">
   <h2>API check key (APK / App)</h2>
@@ -93,13 +105,11 @@ public class KeyApi {
     try (Response res = client.newCall(req).execute()) {
       String raw = res.body() != null ? res.body().string() : "{}";
       JSONObject j = new JSONObject(raw);
-      // Login chỉ khi cả hai true
       return j.optBoolean("ok", false) && j.optBoolean("key_valid", false);
     }
   }
 }
 
-// Dùng:
 // boolean allowed = KeyApi.checkKey(userKey, Settings.Secure.ANDROID_ID);</pre>
 </div>
 
@@ -128,7 +138,6 @@ def check_key(key: str, device_id: str, app_version: str = "V1") -> bool:
     data = r.json()
     return bool(data.get("ok")) and bool(data.get("key_valid"))
 
-# Dùng:
 # if check_key("YOUR_KEY", "device-uuid"):
 #     print("login ok")
 # else:
@@ -179,7 +188,6 @@ bool check_key(const std::string& key, const std::string& device_id) {
   curl_easy_cleanup(curl);
   if (rc != CURLE_OK) return false;
 
-  // Đơn giản: tìm "key_valid":true
   return response.find("\"key_valid\":true") != std::string::npos
       || response.find("\"key_valid\": true") != std::string::npos;
 }</pre>
@@ -260,5 +268,18 @@ int check_key(const char *key, const char *device_id) {
 </div>
 
 </main>
+
+<footer class="site-foot">
+  <span>BDZ Team</span>
+  <a href="./">Nhận key</a>
+</footer>
+
+<script>
+document.getElementById('themeBtn').onclick=function(){
+  var n=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=n;
+  localStorage.setItem('bdz_theme',n);
+};
+</script>
 </body>
 </html>
