@@ -1,4 +1,4 @@
-/* BDZ Cosmos — charged particles + orbital links */
+/* BDZ Cosmos — particles + links (neutral on pure black) */
 (function () {
   'use strict';
   const canvas = document.createElement('canvas');
@@ -10,8 +10,8 @@
 
   const ctx = canvas.getContext('2d');
   let w = 0, h = 0, dpr = 1;
-  const N = 48;
-  const LINK = 130;
+  const N = 52;
+  const LINK = 140;
   const particles = [];
 
   function resize() {
@@ -34,8 +34,8 @@
     for (let i = 0; i < N; i++) {
       const angle = Math.random() * Math.PI * 2;
       const orbitR = 40 + Math.random() * Math.min(w, h) * 0.35;
-      const cx = w * (0.2 + Math.random() * 0.6);
-      const cy = h * (0.15 + Math.random() * 0.7);
+      const cx = w * (0.15 + Math.random() * 0.7);
+      const cy = h * (0.12 + Math.random() * 0.76);
       particles.push({
         cx, cy,
         r: orbitR,
@@ -76,18 +76,18 @@
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist > LINK) continue;
         const attract = a.charge !== b.charge ? 1 : 0.45;
-        const alpha = (1 - dist / LINK) * 0.35 * attract;
+        const alpha = (1 - dist / LINK) * 0.4 * attract;
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
         if (light) {
-          ctx.strokeStyle = 'rgba(59, 110, 245, ' + (alpha * 0.7) + ')';
+          ctx.strokeStyle = 'rgba(40, 40, 50, ' + (alpha * 0.55) + ')';
         } else {
           ctx.strokeStyle = a.charge !== b.charge
-            ? 'rgba(34, 211, 238, ' + alpha + ')'
-            : 'rgba(167, 139, 250, ' + (alpha * 0.7) + ')';
+            ? 'rgba(210, 210, 220, ' + alpha + ')'
+            : 'rgba(150, 150, 160, ' + (alpha * 0.7) + ')';
         }
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 0.85;
         ctx.stroke();
       }
     }
@@ -96,24 +96,22 @@
       const glow = 0.55 + 0.45 * Math.sin(p.pulse);
       const r = p.size * (0.85 + 0.15 * glow);
       ctx.beginPath();
-      ctx.arc(p.x, p.y, r * 3.5, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, r * 3.2, 0, Math.PI * 2);
       if (light) {
-        ctx.fillStyle = p.charge > 0
-          ? 'rgba(59, 110, 245, ' + (0.06 * glow) + ')'
-          : 'rgba(124, 92, 252, ' + (0.06 * glow) + ')';
+        ctx.fillStyle = 'rgba(30, 30, 40, ' + (0.05 * glow) + ')';
       } else {
-        ctx.fillStyle = p.charge > 0
-          ? 'rgba(91, 140, 255, ' + (0.12 * glow) + ')'
-          : 'rgba(34, 211, 238, ' + (0.1 * glow) + ')';
+        ctx.fillStyle = 'rgba(220, 220, 230, ' + (0.08 * glow) + ')';
       }
       ctx.fill();
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       if (light) {
-        ctx.fillStyle = p.charge > 0 ? 'rgba(59, 110, 245, ' + (0.7 * glow) + ')' : 'rgba(124, 92, 252, ' + (0.65 * glow) + ')';
+        ctx.fillStyle = 'rgba(50, 50, 60, ' + (0.55 * glow) + ')';
       } else {
-        ctx.fillStyle = p.charge > 0 ? 'rgba(180, 200, 255, ' + (0.9 * glow) + ')' : 'rgba(34, 211, 238, ' + (0.85 * glow) + ')';
+        ctx.fillStyle = p.charge > 0
+          ? 'rgba(240, 240, 245, ' + (0.9 * glow) + ')'
+          : 'rgba(190, 190, 200, ' + (0.8 * glow) + ')';
       }
       ctx.fill();
     }
