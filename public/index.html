@@ -5,42 +5,63 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Nhận Key</title>
-<link rel="stylesheet" href="./style.css?v=63">
+<title>Nhận Key · BDZ</title>
+<link rel="stylesheet" href="./style.css?v=70">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
 <body>
 <script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'dark';</script>
-<main class="bento-page">
-  <div class="bento-board">
-    <section class="bento-tile hero">
-      <div>
-        <img class="bento-logo" src="https://263.org.vn/logo?v=20261003" alt="" referrerpolicy="no-referrer">
-        <p class="bento-kicker" style="margin-top:20px">Key system</p>
-        <h1 class="bento-title">Nhận Key</h1>
-        <p class="bento-lead">Hoàn tất bước vượt link để nhận key. Mỗi phiên gắn với trình duyệt của bạn.</p>
-      </div>
-      <p class="bento-dur" id="durLine">—</p>
-    </section>
-    <section class="bento-tile action">
-      <p class="bento-kicker">Bước tiếp theo</p>
-      <button id="start" class="btn primary">Bắt đầu</button>
-      <div id="result" class="hidden">
-        <div id="status"></div>
-        <div id="link" style="margin-top:8px;word-break:break-all"></div>
-      </div>
-      <p class="hint">Sau khi vượt link, key sẽ hiện để bạn copy vào app.</p>
-    </section>
-    <section class="bento-tile meta">
-      <a href="./admin.html" class="hint" style="text-decoration:none;font-weight:600">Admin →</a>
-      <button type="button" class="btn sm" id="themeBtn" title="Sáng / Tối">◐ Giao diện</button>
-    </section>
+
+<header class="site-nav">
+  <a class="nav-brand" href="./">
+    <img src="https://263.org.vn/logo?v=20261003" alt="" referrerpolicy="no-referrer">
+    <span>BDZ Key</span>
+  </a>
+  <div class="nav-actions">
+    <a href="./admin.html" class="btn sm ghost">Admin</a>
+    <button type="button" class="btn sm" id="themeBtn" title="Sáng / Tối">◐</button>
   </div>
+</header>
+
+<main class="studio">
+  <section class="studio-hero">
+    <p class="eyebrow">Key system</p>
+    <h1>Nhận Key</h1>
+    <p class="lead">Vượt link một lần · gắn thiết bị · dùng trong app. Mỗi phiên chỉ thuộc trình duyệt của bạn.</p>
+    <div class="chips">
+      <span class="chip" id="durLine">Thời hạn · —</span>
+      <span class="chip">Bind device</span>
+      <span class="chip">Secure API</span>
+    </div>
+  </section>
+
+  <section class="studio-panel">
+    <div class="panel-head">
+      <div>
+        <p class="eyebrow">Bước tiếp theo</p>
+        <h2>Tạo phiên nhận key</h2>
+      </div>
+      <span class="step-badge">01</span>
+    </div>
+    <p class="panel-desc">Nhấn bắt đầu để mở link rút gọn. Sau khi vượt xong, key sẽ sẵn sàng copy vào menu.</p>
+    <button id="start" class="btn primary lg">Bắt đầu nhận key</button>
+    <div id="result" class="result hidden">
+      <div id="status"></div>
+      <div id="link" class="result-link"></div>
+    </div>
+    <p class="hint foot-hint">Không chia sẻ key công khai. Một key có thể giới hạn số máy.</p>
+  </section>
 </main>
-<script src="./cosmos.js?v=63"></script>
-<script src="./config.js?v=63"></script>
-<script src="./supabase-api.js?v=63"></script>
+
+<footer class="site-foot">
+  <span>BDZ Team</span>
+  <a href="./api.html">API docs</a>
+</footer>
+
+<script src="./cosmos.js?v=70"></script>
+<script src="./config.js?v=70"></script>
+<script src="./supabase-api.js?v=70"></script>
 <script>
 (function(){
   function viErr(err){
@@ -74,27 +95,27 @@
   (async function(){
     var el=document.getElementById('durLine');
     try{
-      if(typeof BDZ==='undefined'||!BDZ.rpc){ el.textContent='Thời hạn key · 5 giờ'; return; }
+      if(typeof BDZ==='undefined'||!BDZ.rpc){ el.textContent='Thời hạn · 5 giờ'; return; }
       var x=await BDZ.rpc('bdz_public_key_info',{});
       var h=(x&&x.duration_hours)||5;
-      el.textContent='Thời hạn key · '+h+' giờ';
-    }catch(e){ el.textContent='Thời hạn key · 5 giờ'; }
+      el.textContent='Thời hạn · '+h+' giờ';
+    }catch(e){ el.textContent='Thời hạn · 5 giờ'; }
   })();
   var b=document.getElementById('start'), box=document.getElementById('result'),
       s=document.getElementById('status'), l=document.getElementById('link');
   b.onclick=async function(){
-    b.disabled=true; box.classList.remove('hidden'); box.className='okbox';
+    b.disabled=true; box.classList.remove('hidden'); box.className='result okbox';
     s.textContent='Đang tạo…'; l.textContent='';
     try{
       if(typeof BDZ==='undefined') throw Error('Chưa tải cấu hình. Refresh trang.');
       var v=BDZ.visitorId();
       var x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
       if(!x||!x.ok||!x.shortenedUrl) throw Error(viErr(x&&x.error));
-      s.textContent='Link sẵn sàng';
+      s.textContent='Link sẵn sàng — mở và vượt xong để nhận key';
       var a=document.createElement('a'); a.href=x.shortenedUrl; a.target='_blank'; a.rel='noopener noreferrer';
-      a.textContent='Mở liên kết'; a.style.fontWeight='700';
+      a.textContent='Mở liên kết →'; a.className='result-cta';
       l.append(a);
-    }catch(e){ box.className='err'; s.textContent=e.message||'Lỗi'; }
+    }catch(e){ box.className='result err'; s.textContent=e.message||'Lỗi'; }
     finally{ b.disabled=false; }
   };
 })();
