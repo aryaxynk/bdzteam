@@ -6,11 +6,255 @@ function modalPerms(u){alert('Phân quyền: dùng RPC bdz_admin_perms (owner)')
 async function loadSettings(){try{const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'get'});if(x?.ok&&x.settings){settings=x.settings;if($('setDur'))$('setDur').value=settings.default_duration_hours||5;if($('setDev'))$('setDev').value=settings.default_max_devices||1;if($('setLim'))$('setLim').value=settings.get_key_limit_per_visitor||3;if($('setIp'))$('setIp').value=String(settings.bind_ip_on_activate??true);if($('setBind'))$('setBind').value=String(settings.bind_device_on_activate??true)}}catch(e){}}
 async function saveSettings(){try{const payload={default_duration_hours:+$('setDur').value,default_max_devices:+$('setDev').value,default_max_checks:0,get_key_limit_per_visitor:+$('setLim').value,bind_ip_on_activate:$('setIp').value==='true',bind_device_on_activate:$('setBind').value==='true'};const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'update',p_payload:payload});if(!x?.ok)throw Error(x?.error||'Lỗi');settings=x.settings||payload;$('saveMsg').textContent='Đã lưu'}catch(e){$('saveMsg').textContent=e.message}}
 const SAMPLES={
-java:`// Android Java — OkHttp\n// build.gradle:\n//   implementation "com.squareup.okhttp3:okhttp:4.12.0"\n//   implementation "org.json:json:20231013"\n\npublic class KeyApi {\n  static final String BASE =\n    "https://nklukqriopezsoalnghm.supabase.co";\n  static final String API_KEY =\n    "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0";\n\n  /** @return true = cho login menu */\n  public static boolean checkKey(String key, String deviceId)\n      throws Exception {\n    OkHttpClient client = new OkHttpClient.Builder()\n        .connectTimeout(10, TimeUnit.SECONDS)\n        .readTimeout(15, TimeUnit.SECONDS)\n        .build();\n\n    JSONObject body = new JSONObject();\n    body.put("key", key);\n    body.put("device_id", deviceId);\n    body.put("app_version", "V1");\n\n    Request req = new Request.Builder()\n        .url(BASE + "/functions/v1/check-key")\n        .addHeader("Content-Type", "application/json")\n        .addHeader("apikey", API_KEY)\n        .post(RequestBody.create(\n            body.toString(),\n            MediaType.parse("application/json; charset=utf-8")))\n        .build();\n\n    try (Response res = client.newCall(req).execute()) {\n      String raw = res.body() != null ? res.body().string() : "{}";\n      JSONObject j = new JSONObject(raw);\n      return j.optBoolean("ok", false)\n          && j.optBoolean("key_valid", false);\n    }\n  }\n}\n\n// String hwid = Settings.Secure.getString(\n//     getContentResolver(), Settings.Secure.ANDROID_ID);\n// if (KeyApi.checkKey(userKey, hwid)) { /* vào menu */ }\n`,
-native:`// Native C++ (JNI / Zygisk / ImGui)\n// Link: -lcurl\n\n#include <curl/curl.h>\n#include <string>\n\nstatic size_t write_cb(char* p, size_t s, size_t n, void* u) {\n  ((std::string*)u)->append(p, s * n);\n  return s * n;\n}\n\nbool bdz_check_key(const std::string& key,\n                   const std::string& device_id) {\n  const char* URL =\n    "https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key";\n  const char* API_KEY =\n    "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0";\n\n  std::string body =\n    std::string("{\\"key\\":\\"") + key +\n    "\\",\\"device_id\\":\\"" + device_id +\n    "\\",\\"app_version\\":\\"V1\\"}";\n\n  std::string response;\n  CURL* curl = curl_easy_init();\n  if (!curl) return false;\n\n  struct curl_slist* headers = nullptr;\n  headers = curl_slist_append(headers, "Content-Type: application/json");\n  headers = curl_slist_append(headers,\n      (std::string("apikey: ") + API_KEY).c_str());\n\n  curl_easy_setopt(curl, CURLOPT_URL, URL);\n  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);\n  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());\n  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);\n  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);\n  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);\n\n  CURLcode rc = curl_easy_perform(curl);\n  curl_slist_free_all(headers);\n  curl_easy_cleanup(curl);\n  if (rc != CURLE_OK) return false;\n\n  bool ok = response.find("\\"ok\\":true") != std::string::npos;\n  bool valid = response.find("\\"key_valid\\":true") != std::string::npos;\n  return ok && valid;\n}\n`,
-chung:`// BDZ check-key — CODE CHUNG (full)\n\nENDPOINT\n  POST {BASE}/functions/v1/check-key\n  BASE = https://nklukqriopezsoalnghm.supabase.co\n\nHEADERS\n  Content-Type: application/json\n  apikey: sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0\n\nBODY (biến cần thiết)\n  key          string   mã key user nhập\n  device_id    string   HWID cố định (Android ID)\n  app_version  string   luôn \"V1\"\n  ip           string?  optional\n\nRESPONSE\n  OK:   { ok:true,  key_valid:true,  message:\"Key hợp lệ.\" }\n  FAIL: { ok:false, key_valid:false, message:\"Key không hợp lệ.\" }\n\nQUY TẮC APP\n  if (ok && key_valid) → cho login / mở menu\n  else → chặn\n\nSTATUS (admin)\n  ACTIVE · REACTIVATED · DISABLED\n  EXPIRED · TIME_EXPIRED\n  DEVICE_LIMIT · LIMIT_REACHED · CREATED\n\nBIND\n  Lần 1: bind device_id (+ IP nếu bật)\n  Lần sau sai device/IP → fail\n`
+java:`// ═══════════════════════════════════════
+// BDZ — Android Java (OkHttp)
+// ═══════════════════════════════════════
+// build.gradle:
+//   implementation "com.squareup.okhttp3:okhttp:4.12.0"
+//   implementation "org.json:json:20231013"
+
+public class BdzApi {
+  static final String BASE =
+    "https://nklukqriopezsoalnghm.supabase.co";
+  static final String API_KEY =
+    "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0";
+  // Version app — phải trùng bản đang Bật trên admin
+  static final String APP_VERSION = "1.0.0";
+  static final String APP_ID = "default";
+
+  static OkHttpClient client = new OkHttpClient.Builder()
+      .connectTimeout(10, TimeUnit.SECONDS)
+      .readTimeout(15, TimeUnit.SECONDS)
+      .build();
+
+  // 1) Mỗi lần mở app — check version trước
+  //    true = cho chạy · false = bắt update
+  public static JSONObject checkVersion() throws Exception {
+    JSONObject body = new JSONObject();
+    body.put("version", APP_VERSION);
+    body.put("app_id", APP_ID);
+    Request req = new Request.Builder()
+        .url(BASE + "/functions/v1/check-version")
+        .addHeader("Content-Type", "application/json")
+        .addHeader("apikey", API_KEY)
+        .post(RequestBody.create(body.toString(),
+            MediaType.parse("application/json")))
+        .build();
+    try (Response res = client.newCall(req).execute()) {
+      String raw = res.body() != null ? res.body().string() : "{}";
+      return new JSONObject(raw);
+    }
+  }
+
+  // 2) Sau khi version OK — check key
+  //    true = cho login menu
+  public static boolean checkKey(String key, String deviceId)
+      throws Exception {
+    JSONObject body = new JSONObject();
+    body.put("key", key);
+    body.put("device_id", deviceId);
+    body.put("app_version", APP_VERSION);
+    Request req = new Request.Builder()
+        .url(BASE + "/functions/v1/check-key")
+        .addHeader("Content-Type", "application/json")
+        .addHeader("apikey", API_KEY)
+        .post(RequestBody.create(body.toString(),
+            MediaType.parse("application/json")))
+        .build();
+    try (Response res = client.newCall(req).execute()) {
+      String raw = res.body() != null ? res.body().string() : "{}";
+      JSONObject j = new JSONObject(raw);
+      return j.optBoolean("ok", false)
+          && j.optBoolean("key_valid", false);
+    }
+  }
+}
+
+// Startup:
+// JSONObject v = BdzApi.checkVersion();
+// if (!v.optBoolean("allowed", false)) {
+//   // hiện dialog update · v.optString("download_url")
+//   // chặn app
+// }
+// if (BdzApi.checkKey(userKey, hwid)) { /* vào menu */ }
+`,
+native:`// ═══════════════════════════════════════
+// BDZ — Native C++ (JNI / Zygisk / ImGui)
+// Link: -lcurl
+// ═══════════════════════════════════════
+
+#include <curl/curl.h>
+#include <string>
+
+static const char* BASE =
+  "https://nklukqriopezsoalnghm.supabase.co";
+static const char* API_KEY =
+  "sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0";
+static const char* APP_VERSION = "1.0.0";
+static const char* APP_ID = "default";
+
+static size_t write_cb(char* p, size_t s, size_t n, void* u) {
+  ((std::string*)u)->append(p, s * n);
+  return s * n;
+}
+
+static bool http_post(const char* path, const std::string& body,
+                      std::string& out) {
+  std::string url = std::string(BASE) + path;
+  CURL* curl = curl_easy_init();
+  if (!curl) return false;
+  struct curl_slist* h = nullptr;
+  h = curl_slist_append(h, "Content-Type: application/json");
+  h = curl_slist_append(h, (std::string("apikey: ") + API_KEY).c_str());
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, h);
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &out);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
+  CURLcode rc = curl_easy_perform(curl);
+  curl_slist_free_all(h);
+  curl_easy_cleanup(curl);
+  return rc == CURLE_OK;
+}
+
+bool bdz_check_version() {
+  std::string body = std::string("{\"version\":\"") + APP_VERSION +
+    "\",\"app_id\":\"" + APP_ID + "\"}";
+  std::string res;
+  if (!http_post("/functions/v1/check-version", body, res)) return false;
+  return res.find("\"allowed\":true") != std::string::npos
+      || res.find("\"allowed\": true") != std::string::npos;
+}
+
+bool bdz_check_key(const std::string& key,
+                   const std::string& device_id) {
+  std::string body =
+    std::string("{\"key\":\"") + key +
+    "\",\"device_id\":\"" + device_id +
+    "\",\"app_version\":\"" + APP_VERSION + "\"}";
+  std::string res;
+  if (!http_post("/functions/v1/check-key", body, res)) return false;
+  bool ok = res.find("\"ok\":true") != std::string::npos
+         || res.find("\"ok\": true") != std::string::npos;
+  bool valid = res.find("\"key_valid\":true") != std::string::npos
+            || res.find("\"key_valid\": true") != std::string::npos;
+  return ok && valid;
+}
+
+// Startup:
+// if (!bdz_check_version()) { /* hiện update · chặn app */ }
+// if (bdz_check_key(key, hwid)) { /* vào menu */ }
+`,
+chung:`// ═══════════════════════════════════════
+// BDZ API — CODE CHUNG (full)
+// ═══════════════════════════════════════
+
+BASE
+  https://nklukqriopezsoalnghm.supabase.co
+
+HEADER (cả 2 API)
+  Content-Type: application/json
+  apikey: sb_publishable_RUE5iV8GqoVCFxjVt5ZBpg_FlTC1v-0
+
+═══════════════════════════════════════
+1) CHECK VERSION  (mỗi lần mở app)
+═══════════════════════════════════════
+POST {BASE}/functions/v1/check-version
+
+BODY
+  version    string   version app đang chạy (vd "1.0.0")
+  app_id     string   id app (vd "default")
+
+RESPONSE
+  Cho chạy:
+    { "ok": true, "allowed": true,
+      "message": "Version hợp lệ." }
+
+  Bắt update (version Tắt / không có):
+    { "ok": true, "allowed": false,
+      "message": "Vui lòng cập nhật phiên bản mới nhất.",
+      "latest": "1.0.1",
+      "download_url": "https://...",
+      "note": "..." }
+
+QUY TẮC
+  allowed=true  → tiếp tục check-key
+  allowed=false → hiện dialog update · chặn app
+
+═══════════════════════════════════════
+2) CHECK KEY  (sau khi version OK)
+═══════════════════════════════════════
+POST {BASE}/functions/v1/check-key
+
+BODY
+  key          string   mã key user nhập
+  device_id    string   HWID máy (Android ID)
+  app_version  string   version app (nên gửi)
+
+RESPONSE
+  OK:
+    { "ok": true, "key_valid": true,
+      "message": "Key hợp lệ." }
+  FAIL:
+    { "ok": false, "key_valid": false,
+      "message": "Key không hợp lệ." }
+
+QUY TẮC
+  ok && key_valid → cho login / mở menu
+  còn lại         → chặn
+
+STATUS (admin xem)
+  ACTIVE · REACTIVATED · DISABLED
+  EXPIRED · TIME_EXPIRED
+  DEVICE_LIMIT · LIMIT_REACHED · CREATED
+
+TIMEOUT gợi ý: connect 10s · read 15s
+`
 };
-const API_SPEC=`ENDPOINT\n  POST https://nklukqriopezsoalnghm.supabase.co/functions/v1/check-key\n\nBIẾN BẮT BUỘC\n  key           mã key\n  device_id     HWID máy (Android ID)\n  app_version   \"V1\"\n\nBIẾN TÙY CHỌN\n  ip            client IP\n\nHEADER\n  Content-Type  application/json\n  apikey        publishable key\n\nRESPONSE\n  ok + key_valid = true  → cho login\n  còn lại                → Key không hợp lệ.\n\nSTATUS (admin)\n  ACTIVE · DISABLED · EXPIRED\n  TIME_EXPIRED · DEVICE_LIMIT\n  LIMIT_REACHED · REACTIVATED · CREATED`;
+
+const API_SPEC =
+`═══════════════════════════════════════
+CHECK VERSION  (mỗi lần mở app)
+═══════════════════════════════════════
+POST .../functions/v1/check-version
+
+BIẾN
+  version    version app đang chạy
+  app_id     id app (mặc định "default")
+
+RESPONSE
+  allowed=true   → cho mở app
+  allowed=false  → bắt update
+                 (trả latest + download_url)
+
+LOGIC SERVER
+  Version Bật + đúng  → allowed=true
+  Version Tắt / không có → allowed=false
+
+═══════════════════════════════════════
+CHECK KEY  (sau khi version OK)
+═══════════════════════════════════════
+POST .../functions/v1/check-key
+
+BIẾN BẮT BUỘC
+  key           mã key
+  device_id     HWID máy (Android ID)
+
+BIẾN TÙY CHỌN
+  app_version   version app
+  ip            client IP
+
+RESPONSE
+  ok + key_valid = true  → cho login
+  còn lại                → Key không hợp lệ
+
+STATUS (admin)
+  ACTIVE · DISABLED · EXPIRED
+  TIME_EXPIRED · DEVICE_LIMIT
+  LIMIT_REACHED · REACTIVATED · CREATED
+`;
+
 function showLang(lang){
   document.querySelectorAll('.tab-lang').forEach(b=>
     b.classList.toggle('active',b.dataset.lang===lang));
@@ -22,4 +266,4 @@ function showLang(lang){
 themeInit();shell();
 $('login')&&$('login').classList.remove('hidden');
 $('app')&&$('app').classList.add('hidden');
-(async()=>{if(!tok())return;try{const x=await BDZ.rpc('bdz_admin_keys',{p_token:tok()});if(x?.error==='UNAUTHORIZED'||!x||x.error){sessionStorage.clear();return}role=sessionStorage.getItem('bdz_r')||'OWNER';showApp();rows=x?.keys||[];await loadPerms();buildNav();renderDash();renderKeys();await Promise.all([loadSettings(),loadAdmins(),loadChart()]);showLang('java')}catch{sessionStorage.clear()}})();
+(async()=>{if(!tok())return;try{const x=await BDZ.rpc('bdz_admin_keys',{p_token:tok()});if(x?.error==='UNAUTHORIZED'||!x||x.error){sessionStorage.clear();return}role=sessionStorage.getItem('bdz_r')||'OWNER';showApp();rows=x?.keys||[];await loadPerms();buildNav();renderDash();renderKeys();await Promise.all([loadSettings(),loadAdmins(),loadChart(),typeof loadVersions==='function'?loadVersions():Promise.resolve()]);showLang('java')}catch{sessionStorage.clear()}})();
