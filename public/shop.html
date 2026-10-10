@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Shop · BDZ</title>
+<link rel="stylesheet" href="./style.css?v=90">
+<link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
+</head>
+<body>
+<script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'dark';</script>
+
+<header class="site-nav">
+  <a class="nav-brand" href="./">
+    <img src="https://263.org.vn/logo?v=20261003" alt="" width="32" height="32" referrerpolicy="no-referrer" style="width:32px;height:32px;object-fit:cover;border-radius:4px">
+    <span>BDZ</span>
+  </a>
+  <nav class="nav-links">
+    <a href="./">Nhận key</a>
+    <a href="./shop.html" class="active">Shop</a>
+  </nav>
+  <div class="nav-actions">
+    <a href="./admin.html" class="btn sm ghost">Admin</a>
+    <button type="button" class="btn sm" id="themeBtn" title="Sáng / Tối">◐</button>
+  </div>
+</header>
+
+<main class="shop-page">
+  <div class="shop-head">
+    <div>
+      <p class="eyebrow">Kho tải</p>
+      <h1>Shop</h1>
+      <p class="lead">Mod · công cụ · bản build. Bấm tải để mở link.</p>
+    </div>
+    <div class="shop-tools">
+      <input id="shopQ" class="input" type="search" placeholder="Tìm tên hoặc mã #…" autocomplete="off">
+    </div>
+  </div>
+  <div id="shopGrid" class="shop-grid" aria-live="polite">
+    <p class="shop-empty">Đang tải…</p>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <span>BDZ Team</span>
+  <span></span>
+</footer>
+
+<script src="./cosmos.js?v=90"></script>
+<script src="./config.js?v=90"></script>
+<script src="./supabase-api.js?v=90"></script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'}[c]})};
+  var rows=[];
+  document.getElementById('themeBtn').onclick=function(){
+    var n=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=n;
+    localStorage.setItem('bdz_theme',n);
+  };
+  function render(){
+    var q=(($('shopQ')&&$('shopQ').value)||'').trim().toLowerCase();
+    var list=rows.filter(function(p){
+      if(!q) return true;
+      return String(p.name).toLowerCase().indexOf(q)>=0 || String(p.code).toLowerCase().indexOf(q)>=0;
+    });
+    var g=$('shopGrid');
+    if(!list.length){
+      g.innerHTML='<p class="shop-empty">'+(rows.length?'Không khớp tìm kiếm.':'Chưa có sản phẩm.')+'</p>';
+      return;
+    }
+    g.innerHTML=list.map(function(p){
+      var img=p.image_url
+        ? '<div class="shop-thumb"><img src="'+esc(p.image_url)+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add(\'noimg\');this.remove()"></div>'
+        : '<div class="shop-thumb noimg"><span>BDZ</span></div>';
+      var desc=p.description?'<p class="shop-desc">'+esc(p.description)+'</p>':'';
+      return '<article class="shop-card">'+img+
+        '<div class="shop-body">'+
+          '<span class="shop-code" title="Mã sản phẩm">'+esc(p.code)+'</span>'+
+          '<h2 class="shop-name">'+esc(p.name)+'</h2>'+desc+
+          '<div class="shop-actions">'+
+            '<a class="btn primary sm shop-dl" href="'+esc(p.download_url)+'" target="_blank" rel="noopener noreferrer">Tải xuống</a>'+
+            '<button type="button" class="btn sm ghost" data-copy="'+esc(p.code)+'">Copy mã</button>'+
+          '</div>'+
+        '</div></article>';
+    }).join('');
+    g.querySelectorAll('[data-copy]').forEach(function(b){
+      b.onclick=function(){
+        var t=b.getAttribute('data-copy')||'';
+        if(navigator.clipboard&&navigator.clipboard.writeText){
+          navigator.clipboard.writeText(t).then(function(){b.textContent='Đã copy'; setTimeout(function(){b.textContent='Copy mã'},1200)}).catch(function(){});
+        }
+      };
+    });
+  }
+  async function load(){
+    var g=$('shopGrid');
+    try{
+      if(typeof BDZ==='undefined'||!BDZ.rpc) throw Error('CFG');
+      var x=await BDZ.rpc('bdz_shop_list',{});
+      if(!x||!x.ok) throw Error((x&&x.error)||'Lỗi');
+      rows=x.rows||[];
+      render();
+    }catch(e){
+      g.innerHTML='<p class="shop-empty">Không tải được shop. Thử lại sau.</p>';
+    }
+  }
+  if($('shopQ'))$('shopQ').oninput=render;
+  load();
+})();
+</script>
+</body>
+</html>
