@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Nhận Key · BDZ</title>
-<link rel="stylesheet" href="./style.css?v=103">
-<link rel="stylesheet" href="./shop.css?v=103">
+<link rel="stylesheet" href="./style.css?v=104">
+<link rel="stylesheet" href="./shop.css?v=104">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
@@ -33,7 +33,7 @@
   <section class="studio-hero">
     <p class="eyebrow">Key system</p>
     <h1>Nhận Key</h1>
-    <p class="lead">Vượt link một lần · gắn thiết bị · dùng trong app. Mỗi phiên chỉ thuộc trình duyệt của bạn.</p>
+    <p class="lead">Vượt link một lần · gắn thiết bị · dùng trong app.</p>
     <div class="chips">
       <span class="chip" id="durLine">Thời hạn · —</span>
       <span class="chip">Bind device</span>
@@ -48,21 +48,21 @@
         <h2>Tạo phiên nhận key</h2>
       </div>
     </div>
-    <p class="panel-desc">Nhấn bắt đầu — hệ thống tự chuyển sang trang vượt link. Xong sẽ nhận key.</p>
+    <p class="panel-desc">Nhấn nút bên dưới để nhận key.</p>
     <button id="start" class="btn primary lg">Bắt đầu nhận key</button>
     <div id="result" class="result hidden">
       <div id="status"></div>
       <div id="link" class="result-link"></div>
     </div>
-    <p class="hint foot-hint">Không chia sẻ key công khai. Một key có thể giới hạn số máy.</p>
+    <p class="hint foot-hint">Không chia sẻ key công khai.</p>
   </section>
 </main>
 
 <footer class="site-foot">
   <span>BDZ Team</span>
 </footer>
-<script src="./config.js?v=103"></script>
-<script src="./supabase-api.js?v=103"></script>
+<script src="./config.js?v=104"></script>
+<script src="./supabase-api.js?v=104"></script>
 <script>
 (function(){
   function viErr(err){
@@ -118,20 +118,30 @@
   })();
   var b=document.getElementById('start'), box=document.getElementById('result'),
       s=document.getElementById('status'), l=document.getElementById('link');
+  var btnLabel=b.textContent;
   b.onclick=async function(){
-    b.disabled=true; box.classList.remove('hidden'); box.className='result okbox';
-    s.textContent='Đang tạo…'; l.textContent='';
+    if(b.disabled) return;
+    b.disabled=true;
+    b.classList.add('loading');
+    b.textContent='…';
+    if(box){ box.classList.add('hidden'); box.className='result hidden'; }
+    if(s) s.textContent='';
+    if(l) l.textContent='';
     try{
       if(typeof BDZ==='undefined') throw Error('Chưa tải cấu hình. Refresh trang.');
       var v=BDZ.visitorId();
       var x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
       if(!x||!x.ok||!x.shortenedUrl) throw Error(viErr(x&&x.error));
-      s.textContent='Đang chuyển hướng…';
-      l.textContent='';
+      b.textContent='…';
       window.location.href=x.shortenedUrl;
       return;
-    }catch(e){ box.className='result err'; s.textContent=e.message||'Lỗi'; }
-    finally{ b.disabled=false; }
+    }catch(e){
+      b.disabled=false;
+      b.classList.remove('loading');
+      b.textContent=btnLabel;
+      if(box){ box.classList.remove('hidden'); box.className='result err'; }
+      if(s) s.textContent=e.message||'Lỗi';
+    }
   };
 })();
 </script>
