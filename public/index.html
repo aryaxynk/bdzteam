@@ -2,12 +2,12 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Nhận Key · BDZ</title>
-<link rel="stylesheet" href="./style.css?v=102">
-<link rel="stylesheet" href="./shop.css?v=102">
+<link rel="stylesheet" href="./style.css?v=103">
+<link rel="stylesheet" href="./shop.css?v=103">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
@@ -48,7 +48,7 @@
         <h2>Tạo phiên nhận key</h2>
       </div>
     </div>
-    <p class="panel-desc">Nhấn bắt đầu để mở link rút gọn. Sau khi vượt xong, key sẽ sẵn sàng copy vào menu.</p>
+    <p class="panel-desc">Nhấn bắt đầu — hệ thống tự chuyển sang trang vượt link. Xong sẽ nhận key.</p>
     <button id="start" class="btn primary lg">Bắt đầu nhận key</button>
     <div id="result" class="result hidden">
       <div id="status"></div>
@@ -61,8 +61,8 @@
 <footer class="site-foot">
   <span>BDZ Team</span>
 </footer>
-<script src="./config.js?v=102"></script>
-<script src="./supabase-api.js?v=102"></script>
+<script src="./config.js?v=103"></script>
+<script src="./supabase-api.js?v=103"></script>
 <script>
 (function(){
   function viErr(err){
@@ -84,6 +84,20 @@
     if(/[àáạảãâăèéêìíòóôơùúýăđ]/i.test(err)) return err;
     return 'Không tạo được. Thử lại sau.';
   }
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
+  var lastTouch=0;
+  document.addEventListener('touchend', function(e){
+    var now=Date.now();
+    if(now-lastTouch<=300){ e.preventDefault(); }
+    lastTouch=now;
+  }, {passive:false});
+  document.addEventListener('wheel', function(e){
+    if(e.ctrlKey){ e.preventDefault(); }
+  }, {passive:false});
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey||e.metaKey)&&(e.key==='+'||e.key==='-'||e.key==='='||e.key==='0')) e.preventDefault();
+  });
   document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   document.addEventListener('keydown', function(e){
     if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')) e.preventDefault();
@@ -112,10 +126,10 @@
       var v=BDZ.visitorId();
       var x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
       if(!x||!x.ok||!x.shortenedUrl) throw Error(viErr(x&&x.error));
-      s.textContent='Link sẵn sàng — mở và vượt xong để nhận key';
-      var a=document.createElement('a'); a.href=x.shortenedUrl; a.target='_blank'; a.rel='noopener noreferrer';
-      a.textContent='Mở liên kết →'; a.className='result-cta';
-      l.append(a);
+      s.textContent='Đang chuyển hướng…';
+      l.textContent='';
+      window.location.href=x.shortenedUrl;
+      return;
     }catch(e){ box.className='result err'; s.textContent=e.message||'Lỗi'; }
     finally{ b.disabled=false; }
   };
