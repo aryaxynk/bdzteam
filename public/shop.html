@@ -2,12 +2,12 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Shop · BDZ</title>
-<link rel="stylesheet" href="./style.css?v=102">
-<link rel="stylesheet" href="./shop.css?v=102">
+<link rel="stylesheet" href="./style.css?v=103">
+<link rel="stylesheet" href="./shop.css?v=103">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 </head>
 <body>
@@ -47,9 +47,8 @@
 <footer class="site-foot">
   <span>BDZ Team</span>
 </footer>
-
-<script src="./config.js?v=102"></script>
-<script src="./supabase-api.js?v=102"></script>
+<script src="./config.js?v=103"></script>
+<script src="./supabase-api.js?v=103"></script>
 <script>
 (function(){
   var $=function(id){return document.getElementById(id)};
@@ -109,6 +108,16 @@
   }
   if($('shopQ'))$('shopQ').oninput=render;
   load();
+})();
+</script>
+<script>
+(function(){
+  document.addEventListener('gesturestart',function(e){e.preventDefault()},{passive:false});
+  document.addEventListener('gesturechange',function(e){e.preventDefault()},{passive:false});
+  var lt=0;
+  document.addEventListener('touchend',function(e){var n=Date.now();if(n-lt<=300)e.preventDefault();lt=n},{passive:false});
+  document.addEventListener('wheel',function(e){if(e.ctrlKey)e.preventDefault()},{passive:false});
+  document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&(e.key==='+'||e.key==='-'||e.key==='='||e.key==='0'))e.preventDefault()});
 })();
 </script>
 </body>
