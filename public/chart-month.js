@@ -20,7 +20,7 @@ function ensureChartLayout(x){
     return;
   }
   card.dataset.monthChart='1';
-  card.innerHTML='<div class="section-head"><div><h2>Thống kê theo tháng <span id="chartMonthLabel" style="font-weight:600;color:var(--muted);font-size:14px"></span></h2><p class="hint">Mỗi chấm = 1 ngày · Hover/chạm để xem số key lấy thành công</p></div></div><div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap"><div style="flex:1;min-width:260px;position:relative"><svg id="chart" viewBox="0 0 640 240" width="100%" height="240" style="display:block"></svg><div id="chartTip" style="display:none;position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12px;box-shadow:var(--shadow);z-index:5;white-space:nowrap"></div></div><div style="width:140px;display:flex;flex-direction:column;gap:10px;justify-content:center"><div class="stat" style="margin:0;text-align:center"><b>Hôm nay</b><strong id="sTodayKeys" style="font-size:28px;display:block;margin-top:4px">0</strong><span style="font-size:11px;color:var(--muted)">key đã lấy</span></div><div class="stat" style="margin:0;text-align:center"><b>Cả tháng</b><strong id="sMonthKeys" style="font-size:22px;display:block;margin-top:4px">0</strong><span style="font-size:11px;color:var(--muted)">key</span></div></div></div>';
+  card.innerHTML='<div class="section-head"><div><h2>Thống kê theo tháng <span id="chartMonthLabel" style="font-weight:600;color:var(--muted);font-size:14px"></span></h2><p class="hint">Mỗi chấm = 1 ngày · Hover/chạm để xem số key lấy thành công</p></div></div><div style="position:relative;width:100%;margin-bottom:14px"><svg id="chart" viewBox="0 0 640 240" width="100%" height="220" style="display:block"></svg><div id="chartTip" style="display:none;position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px;box-shadow:var(--shadow);z-index:5;white-space:nowrap"></div></div><div class="chart-mini-stats"><div class="stat chart-mini"><b>Hôm nay</b><strong id="sTodayKeys">0</strong><span class="meta-item">key đã lấy</span></div><div class="stat chart-mini"><b>Cả tháng</b><strong id="sMonthKeys">0</strong><span class="meta-item">key</span></div></div>';
   $('chartMonthLabel').textContent=x.month_label||'';
   $('sTodayKeys').textContent=String(x.today||0);
   $('sMonthKeys').textContent=String(x.month_total||0);
@@ -30,28 +30,33 @@ function drawMonthChart(series, meta){
   const tip=$('chartTip');
   const W=640, H=240, padL=36, padR=16, padT=24, padB=40;
   const data=(series||[]).map(s=>({day:s.day, keys:Number(s.keys||0)}));
-  if(!data.length){ svg.innerHTML='<text x="320" y="120" text-anchor="middle" fill="currentColor" font-size="13" opacity=".45">Chưa có dữ liệu</text>'; return; }
-  const max=Math.max(1, ...data.map(d=>d.keys));
+  if(!data.length){ svg.innerHTML='<text x="320" y="120" text-anchor="middle" fill="currentColor" opacity=".45" font-size="13">Chưa có dữ liệu</text>'; return; }
   const n=data.length;
-  const xAt=i=>padL+(n<=1?0:i*(W-padL-padR)/(n-1));
-  const yAt=v=>padT+(H-padT-padB)*(1-v/max);
+  const maxV=Math.max(1, ...data.map(d=>d.keys));
+  const pts=data.map((d,i)=>{
+    const x=padL+(W-padL-padR)*(n===1?0.5:i/(n-1));
+    const y=padT+(H-padT-padB)*(1-d.keys/maxV);
+    return [x,y];
+  });
   let html='';
-  for(let g=0;g<=4;g++){
-    const val=Math.round(max*g/4);
-    const y=yAt(val);
-    html+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>';
-    html+='<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".5">'+val+'</text>';
+  const gridN=4;
+  for(let g=0;g<=gridN;g++){
+    const y=padT+(H-padT-padB)*(g/gridN);
+    const val=Math.round(maxV*(1-g/gridN));
+    html+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="currentColor" opacity=".08"/>';
+    html+='<text x="'+(padL-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".45">'+val+'</text>';
   }
-  const pts=data.map((d,i)=>[xAt(i), yAt(d.keys)]);
   let line='';
-  for(let i=0;i<pts.length;i++) line+=(i?'L':'M')+pts[i][0].toFixed(1)+','+pts[i][1].toFixed(1);
+  for(let i=0;i<pts.length;i++){
+    line+=(i?' L':'M')+pts[i][0].toFixed(1)+','+pts[i][1].toFixed(1);
+  }
   const last=pts[pts.length-1], first=pts[0];
   const area=line+' L'+last[0].toFixed(1)+','+(H-padB)+' L'+first[0].toFixed(1)+','+(H-padB)+' Z';
-  html+='<path d="'+area+'" fill="#5b8cff" opacity=".12"/>';
-  html+='<path d="'+line+'" fill="none" stroke="#5b8cff" stroke-width="2.5" stroke-linejoin="round"/>';
+  html+='<path d="'+area+'" fill="#c41e3a" opacity=".1"/>';
+  html+='<path d="'+line+'" fill="none" stroke="#c41e3a" stroke-width="2.5" stroke-linejoin="round"/>';
   for(let i=0;i<data.length;i++){
     const cx=pts[i][0], cy=pts[i][1];
-    html+='<circle class="chart-dot" data-i="'+i+'" cx="'+cx+'" cy="'+cy+'" r="5" fill="#5b8cff" stroke="var(--card)" stroke-width="2" style="cursor:pointer"/>';
+    html+='<circle class="chart-dot" data-i="'+i+'" cx="'+cx+'" cy="'+cy+'" r="5" fill="#c41e3a" stroke="var(--card)" stroke-width="2" style="cursor:pointer"/>';
     html+='<circle class="chart-hit" data-i="'+i+'" cx="'+cx+'" cy="'+cy+'" r="14" fill="transparent" style="cursor:pointer"/>';
     if(i% Math.max(1, Math.floor(n/8))===0 || i===n-1){
       const label=String(data[i].day).slice(8);
