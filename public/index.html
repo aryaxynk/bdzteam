@@ -4,73 +4,66 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
+<meta name="description" content="BDZ Key System — nhận key nhanh, bảo mật và gắn với thiết bị.">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Nhận Key · BDZ</title>
-<link rel="stylesheet" href="./style.css?v=112">
+<link rel="stylesheet" href="./style.css?v=115">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
 <body>
 <script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
-
 <header class="site-nav">
-  <a class="nav-brand" href="./">
-    <img src="https://263.org.vn/logo?v=20261003" alt="" width="32" height="32" referrerpolicy="no-referrer" style="width:32px;height:32px;object-fit:cover;border-radius:10px">
-    <span>BDZ Key</span>
+  <a class="nav-brand" href="./" aria-label="BDZ Key — Trang chủ">
+    <img src="https://263.org.vn/logo?v=20261003" alt="" width="36" height="36" referrerpolicy="no-referrer">
+    <span class="brand-copy"><b>BDZ</b><small>KEY SYSTEM</small></span>
   </a>
-  <nav class="nav-links">
-    <a href="./" class="active">Nhận key</a>
+  <nav class="nav-links" aria-label="Điều hướng chính">
+    <a href="./" class="active"><span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg></span>Trang chủ</a>
   </nav>
   <div class="nav-actions">
-    <a href="./admin.html" class="btn sm ghost">Admin</a>
-    <button type="button" class="btn sm" id="themeBtn" title="Sáng / Tối">◐</button>
+    <span class="status-pill"><span class="status-pulse"></span> Hệ thống hoạt động</span>
+    <a href="./admin.html" class="btn sm outline-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg> Admin</a>
+    <button type="button" class="btn sm icon-btn theme-btn" id="themeBtn" title="Sáng / Tối" aria-label="Chuyển giao diện sáng tối"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
   </div>
 </header>
-
-<main class="studio">
-  <section class="studio-hero">
-    <p class="eyebrow">Key system</p>
-    <h1>Nhận Key</h1>
-    <p class="lead">Vượt link một lần · gắn thiết bị · dùng trong app.</p>
-    <div class="chips">
-      <span class="chip" id="durLine">Thời hạn · —</span>
-      <span class="chip">Bind device</span>
-      <span class="chip">Secure API</span>
-    </div>
-  </section>
-
-  <section class="studio-panel">
-    <div class="panel-head">
-      <div>
-        <p class="eyebrow">Bước tiếp theo</p>
-        <h2>Tạo phiên nhận key</h2>
+<main class="studio home-shell">
+  <section class="home-hero">
+    <div class="hero-copy">
+      <div class="hero-kicker"><span class="hero-kicker-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3Z"/><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></svg></span> BDZ KEY SYSTEM <span class="new-pill">NEW EXPERIENCE</span></div>
+      <h1>Nhận key.<br><span>Nhanh, gọn, an toàn.</span></h1>
+      <p class="hero-lead">Khởi tạo phiên nhận key trong vài giây. Mỗi phiên được xác thực riêng và gắn với thiết bị theo cài đặt của hệ thống.</p>
+      <div class="hero-features">
+        <div class="feature-chip"><span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span><b>Bảo mật</b><small>Phiên xác thực riêng</small></span></div>
+        <div class="feature-chip"><span class="feature-icon color-cyan" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5h4m-3 13h2"/></svg></span><span><b>Gắn thiết bị</b><small>Theo cấu hình admin</small></span></div>
+        <div class="feature-chip"><span class="feature-icon color-pink" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Nhanh chóng</b><small>Quy trình rõ ràng</small></span></div>
+      </div>
+      <div class="home-steps" aria-label="Quy trình nhận key">
+        <div class="home-step"><span>01</span><div><b>Tạo phiên</b><small>Bắt đầu từ nút nhận key</small></div></div>
+        <div class="home-step"><span>02</span><div><b>Hoàn tất liên kết</b><small>Làm theo bước chuyển tiếp</small></div></div>
+        <div class="home-step"><span>03</span><div><b>Nhận key</b><small>Quay lại trên cùng thiết bị</small></div></div>
       </div>
     </div>
-    <p class="panel-desc">Nhấn nút bên dưới để nhận key.</p>
-    <button id="start" class="btn primary lg">Bắt đầu nhận key</button>
-    <div id="result" class="result hidden">
-      <div id="status"></div>
-      <div id="link" class="result-link"></div>
-    </div>
-    <p class="hint foot-hint">Không chia sẻ key công khai.</p>
+    <section class="studio-panel shine-surface" aria-labelledby="receiveTitle">
+      <div class="panel-topline"><span class="panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></svg></span><span class="security-chip"><span class="status-pulse"></span> SECURE SESSION</span></div>
+      <p class="eyebrow">Bước tiếp theo</p>
+      <h2 id="receiveTitle">Tạo phiên nhận key</h2>
+      <p class="panel-desc">Nhấn nút bên dưới để tạo liên kết xác thực. Hãy hoàn thành trên cùng thiết bị để phiên được nhận diện chính xác.</p>
+      <div class="duration-banner"><span class="duration-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span id="durLine">Thời hạn · —</span><span class="duration-note">Key session</span></div>
+      <button id="start" type="button" class="btn primary lg cta-btn"><span id="startLabel">Bắt đầu nhận key</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+      <div id="result" class="result hidden" role="status" aria-live="polite"><div id="status"></div><div id="link" class="result-link"></div></div>
+      <p class="hint foot-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg> Không chia sẻ key công khai.</p>
+      <div class="panel-footer"><span class="panel-footer-mark"></span> Powered by BDZ Team <span>·</span> Key management</div>
+    </section>
   </section>
 </main>
-
-<footer class="site-foot">
-  <span>BDZ Team</span>
-</footer>
+<footer class="site-foot"><span class="foot-brand">BDZ</span><span>KEY SYSTEM</span><span class="foot-sep">·</span><span>Secure by design</span></footer>
 <script src="./config.js?v=111"></script>
 <script src="./supabase-api.js?v=111"></script>
 <script>
 (function(){
   function viErr(err){
-    var m={
-      MAINTENANCE:'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
-      BANNED:'Bạn đã bị khóa tạm thời. Vui lòng thử lại sau.',
-      RATE_LIMITED:'Thao tác quá nhiều. Thử lại sau.',
-      NO_KEYS:'Hết key. Vui lòng quay lại sau.',
-      ERR:'Không tạo được phiên. Thử lại.'
-    };
+    var m={MAINTENANCE:'Hệ thống đang bảo trì. Vui lòng thử lại sau.',BANNED:'Bạn đã bị khóa tạm thời. Vui lòng thử lại sau.',RATE_LIMITED:'Thao tác quá nhiều. Thử lại sau.',NO_KEYS:'Hết key. Vui lòng quay lại sau.',ERR:'Không tạo được phiên. Thử lại.'};
     return m[err]||m.ERR;
   }
   document.getElementById('themeBtn').onclick=function(){
@@ -81,37 +74,33 @@
   (async function(){
     var el=document.getElementById('durLine');
     try{
-      if(typeof BDZ==='undefined'||!BDZ.rpc){ el.textContent='Thời hạn · 5 giờ'; return; }
+      if(typeof BDZ==='undefined'||!BDZ.rpc){el.textContent='Thời hạn · 5 giờ';return;}
       var x=await BDZ.rpc('bdz_public_key_info',{});
       var h=(x&&x.duration_hours)||5;
       el.textContent='Thời hạn · '+h+' giờ';
-    }catch(e){ el.textContent='Thời hạn · 5 giờ'; }
+    }catch(e){el.textContent='Thời hạn · 5 giờ';}
   })();
-  var b=document.getElementById('start'), box=document.getElementById('result'),
-      s=document.getElementById('status'), l=document.getElementById('link');
-  var btnLabel=b.textContent;
+  var b=document.getElementById('start'),label=document.getElementById('startLabel'),box=document.getElementById('result'),s=document.getElementById('status'),l=document.getElementById('link');
+  var btnLabel=label?label.textContent:b.textContent;
   b.onclick=async function(){
-    if(b.disabled) return;
-    b.disabled=true;
-    b.classList.add('loading');
-    b.textContent='…';
-    if(box){ box.classList.add('hidden'); box.className='result hidden'; }
-    if(s) s.textContent='';
-    if(l) l.textContent='';
+    if(b.disabled)return;
+    b.disabled=true;b.classList.add('loading');
+    if(label)label.textContent='Đang chuẩn bị…';else b.textContent='…';
+    if(box){box.classList.add('hidden');box.className='result hidden';}
+    if(s)s.textContent='';if(l)l.textContent='';
     try{
-      if(typeof BDZ==='undefined') throw Error('Chưa tải cấu hình. Refresh trang.');
+      if(typeof BDZ==='undefined')throw Error('Chưa tải cấu hình. Refresh trang.');
       var v=BDZ.visitorId();
       var x=await BDZ.edge('web-get-key',{action:'start',ip:v,visitor_id:v});
-      if(!x||!x.ok||!x.shortenedUrl) throw Error(viErr(x&&x.error));
-      b.textContent='…';
+      if(!x||!x.ok||!x.shortenedUrl)throw Error(viErr(x&&x.error));
+      if(label)label.textContent='Đang chuyển tiếp…';else b.textContent='…';
       window.location.href=x.shortenedUrl;
       return;
     }catch(e){
-      b.disabled=false;
-      b.classList.remove('loading');
-      b.textContent=btnLabel;
-      if(box){ box.classList.remove('hidden'); box.className='result err'; }
-      if(s) s.textContent=e.message||'Lỗi';
+      b.disabled=false;b.classList.remove('loading');
+      if(label)label.textContent=btnLabel;else b.textContent=btnLabel;
+      if(box){box.classList.remove('hidden');box.className='result err';}
+      if(s)s.textContent=e.message||'Lỗi';
     }
   };
 })();
