@@ -372,3 +372,58 @@ tr:hover td{background:color-mix(in srgb,var(--accent-soft) 45%,var(--card))}
 @media(prefers-reduced-motion:reduce){
   .btn.primary::after,.studio-panel::after,.card::after,.stat::after,.login-box::after,.key-card::after,.admin-card::after{animation:none!important}
 }
+
+
+/* BDZ SMOOTH MOTION PASS — lower paint cost, calmer pacing */
+:root{
+  --motion-fast:220ms;
+  --motion-ui:320ms;
+  --motion-enter:620ms;
+  --motion-ease:cubic-bezier(.2,.75,.25,1);
+}
+/* Keep the light sweep on the main receive panel only; avoid many cards repainting together. */
+.card::after,.stat::after,.login-box::after,.key-card::after,.admin-card::after{content:none!important;animation:none!important}
+.studio-panel::after{
+  opacity:.24;
+  background:linear-gradient(105deg,transparent 45%,rgba(255,255,255,.42) 50%,rgba(173,205,255,.13) 52%,transparent 58%);
+  animation:bdzLightSweep 13s var(--motion-ease) infinite;
+}
+.btn.primary::after{animation-duration:10s;opacity:.7}
+@keyframes bdzLightSweep{
+  0%,68%{transform:translate3d(-70%,0,0)}
+  88%,100%{transform:translate3d(70%,0,0)}
+}
+@keyframes bdzBtnShine{
+  0%,68%{transform:translate3d(-220%,0,0) skewX(-22deg)}
+  88%,100%{transform:translate3d(620%,0,0) skewX(-22deg)}
+}
+.btn.primary::after{left:0;transform:translate3d(-220%,0,0) skewX(-22deg)}
+.btn,.side-item,.nav-icon,.input,.select,a,.icon-btn{
+  transition-duration:var(--motion-ui);
+  transition-timing-function:var(--motion-ease);
+}
+.btn:active{transition-duration:100ms}
+.btn:hover{box-shadow:0 5px 14px rgba(46,54,120,.065)}
+.btn.primary:hover{box-shadow:0 8px 20px rgba(91,84,244,.22)}
+.hero-copy{animation:fadeUp 760ms var(--motion-ease) both}
+.studio-panel{animation:fadeUp 820ms 100ms var(--motion-ease) both}
+.studio,.login-page{animation-duration:680ms}
+.login-box{animation:scaleIn 680ms var(--motion-ease) both}
+.view.active{animation:fadeUp 480ms var(--motion-ease) both}
+.side-nav{transition-duration:380ms;transition-timing-function:var(--motion-ease)}
+.side-mask{transition-duration:300ms}
+.card,.stat,.key-card,.admin-card,.feature-chip{
+  transition:transform var(--motion-ui) var(--motion-ease),border-color var(--motion-ui) ease,box-shadow var(--motion-ui) ease;
+}
+.feature-chip:hover{transform:translateY(-2px)}
+@media(hover:none){
+  .feature-chip:hover,.side-item:hover,.btn:hover{transform:none;box-shadow:var(--shadow)}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+}
