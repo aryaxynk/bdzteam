@@ -52,11 +52,11 @@ function drawMonthChart(series, meta){
   }
   const last=pts[pts.length-1], first=pts[0];
   const area=line+' L'+last[0].toFixed(1)+','+(H-padB)+' L'+first[0].toFixed(1)+','+(H-padB)+' Z';
-  html+='<path d="'+area+'" fill="#c41e3a" opacity=".1"/>';
-  html+='<path d="'+line+'" fill="none" stroke="#c41e3a" stroke-width="2.5" stroke-linejoin="round"/>';
+  html+='<path d="'+area+'" fill="var(--md-primary)" opacity=".1"/>';
+  html+='<path d="'+line+'" fill="none" stroke="var(--md-primary)" stroke-width="2.5" stroke-linejoin="round"/>';
   for(let i=0;i<data.length;i++){
     const cx=pts[i][0], cy=pts[i][1];
-    html+='<circle class="chart-dot" data-i="'+i+'" cx="'+cx+'" cy="'+cy+'" r="5" fill="#c41e3a" stroke="var(--card)" stroke-width="2" style="cursor:pointer"/>';
+    html+='<circle class="chart-dot" data-i="'+i+'" cx="'+cx+'" cy="'+cy+'" r="5" fill="var(--md-primary)" stroke="var(--card)" stroke-width="2" style="cursor:pointer"/>';
     html+='<circle class="chart-hit" data-i="'+i+'" cx="'+cx+'" cy="'+cy+'" r="14" fill="transparent" style="cursor:pointer"/>';
     if(i% Math.max(1, Math.floor(n/8))===0 || i===n-1){
       const label=String(data[i].day).slice(8);
