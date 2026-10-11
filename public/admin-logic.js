@@ -46,7 +46,7 @@ async function page(name){
 function showApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden')}
 async function doLogin(){
 const e=$('loginErr'); if(e) e.classList.add('hidden');
-const btn=$('loginBtn'); if(btn) btn.disabled=true;
+const btn=$('loginBtn'); if(btn){btn.disabled=true;btn.classList.add('loading');}
 try{
   if(typeof BDZ==='undefined'||!BDZ.rpc) throw Error('Chưa tải cấu hình API. Refresh trang.');
   const u=($('u')&&$('u').value||'').trim();
@@ -62,7 +62,7 @@ try{
   await load(true);
 }catch(err){
   if(e){ e.textContent=err&&err.message?err.message:'Sai tài khoản hoặc mật khẩu.'; e.classList.remove('hidden'); }
-}finally{ if(btn) btn.disabled=false; }
+}finally{ if(btn){btn.disabled=false;btn.classList.remove('loading');} }
 }
 async function doLogout(){try{await BDZ.rpc('bdz_admin_logout',{p_token:tok()})}catch{}sessionStorage.clear();location.reload()}
 async function rpcAction(action,payload){const x=await BDZ.rpc('bdz_admin_key_action',{p_token:tok(),p_action:action,p_payload:payload});if(!x?.ok)throw Error(x?.error||'Lỗi');return x}
