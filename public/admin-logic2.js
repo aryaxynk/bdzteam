@@ -76,7 +76,42 @@ function renderAdmins(){
   }
 }
 function modalAdmin(u){const edit=!!u;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa admin':'Tạo admin phụ'}</h3><div class="field"><label>Username</label><input id="maUser" class="input" value="${esc(u&&u.username||'')}"></div><div class="field"><label>Password ${edit?'(để trống = giữ)':''}</label><input id="maPass" class="input" type="password"></div><div class="modal-actions"><button class="btn ghost" id="maCancel">Hủy</button><button class="btn primary" id="maSave">Lưu</button></div></div></div>`;$('maCancel').onclick=()=>root.innerHTML='';$('maSave').onclick=async()=>{try{const payload={username:($('maUser').value||'').trim(),password:$('maPass').value||''};if(edit)payload.id=u.id;const x=await BDZ.rpc('bdz_admin_admins',{p_token:tok(),p_action:edit?'update':'create',p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');root.innerHTML='';loadAdmins()}catch(e){alert(e.message)}}}
-function modalPerms(u){alert('Phân quyền admin ID '+u.id)}
+async function modalPerms(u){
+  if(String(role).toUpperCase()!=='OWNER'){alert('Chỉ OWNER được thay đổi phân quyền.');return}
+  const root=$('modalRoot');if(!root)return;
+  const labels=[
+    ['can_keys','Xem và quản lý danh sách key'],
+    ['can_create_key','Tạo key'],
+    ['can_edit_key','Sửa key'],
+    ['can_delete_key','Xóa key'],
+    ['can_api_keys','Quản lý API key'],
+    ['can_settings','Thay đổi cài đặt hệ thống'],
+    ['can_admins','Quản lý tài khoản admin']
+  ];
+  const defaults={can_keys:true,can_create_key:true,can_edit_key:true,can_delete_key:false,can_api_keys:false,can_settings:false,can_admins:false};
+  try{
+    const x=await BDZ.rpc('bdz_admin_perms',{p_token:tok(),p_action:'get',p_admin_id:u.id});
+    if(!x||!x.ok)throw Error(x&&x.error||'Không tải được phân quyền');
+    const current=x.perms||{};
+    root.innerHTML=`<div class="modal-bg"><div class="modal">
+      <h3>Phân quyền: ${esc(u.username||('Admin #'+u.id))}</h3>
+      <p class="hint">Chỉ OWNER có thể lưu thay đổi quyền.</p>
+      <div class="perm-list">${labels.map(([key,label])=>`<label style="display:flex;align-items:center;gap:10px;margin:12px 0"><input type="checkbox" id="perm-${key}" ${(current[key]===undefined?defaults[key]:current[key]===true)?'checked':''}><span>${label}</span></label>`).join('')}</div>
+      <div class="modal-actions"><button class="btn ghost" id="mpCancel">Hủy</button><button class="btn primary" id="mpSave">Lưu quyền</button></div>
+    </div></div>`;
+    $('mpCancel').onclick=()=>root.innerHTML='';
+    $('mpSave').onclick=async()=>{
+      const btn=$('mpSave');if(btn)btn.disabled=true;
+      try{
+        const payload={};labels.forEach(([key])=>{payload[key]=!!$('perm-'+key)?.checked});
+        const saved=await BDZ.rpc('bdz_admin_perms',{p_token:tok(),p_action:'set',p_admin_id:u.id,p_payload:payload});
+        if(!saved||!saved.ok)throw Error(saved&&saved.error||'Không lưu được phân quyền');
+        root.innerHTML='';
+        await loadAdmins();
+      }catch(err){alert(err.message||'Không lưu được phân quyền');if(btn)btn.disabled=false}
+    };
+  }catch(err){alert(err.message||'Không tải được phân quyền')}
+}
 function modalKey(k){const edit=!!k;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa key':'Tạo key'}</h3><div class="field"><label>Key code</label><input id="mkCode" class="input" value="${esc(k&&k.key_code||'')}" ${edit?'readonly':''}></div><div class="grid2"><div class="field"><label>Max devices</label><input id="mkDev" class="input" type="number" min="1" value="${k&&k.max_devices||1}"></div><div class="field"><label>Thời hạn (giờ)</label><input id="mkDur" class="input" type="number" min="1" value="${k&&k.duration_hours||settings.duration_hours||5}"></div></div><div class="modal-actions"><button class="btn ghost" id="mkCancel">Hủy</button><button class="btn primary" id="mkSave">Lưu</button></div></div></div>`;$('mkCancel').onclick=()=>root.innerHTML='';$('mkSave').onclick=async()=>{try{const payload={key_code:($('mkCode').value||'').trim(),max_devices:+$('mkDev').value||1,duration_hours:+$('mkDur').value||5};if(edit)payload.id=k.id;const action=edit?'update':'create';const x=await BDZ.rpc('bdz_admin_key_action',{p_token:tok(),p_action:action,p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');root.innerHTML='';if(typeof load==='function')load(true)}catch(e){alert(e.message)}}}
 async function loadSettings(){try{const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'get'});if(!x||!x.ok)return;settings=x.settings||x;if($('setDur'))$('setDur').value=settings.duration_hours||settings.key_duration_hours||5;if($('setDev'))$('setDev').value=settings.max_devices||1;if($('setLim'))$('setLim').value=settings.get_limit||settings.max_gets_per_visitor||3;if($('setIp'))$('setIp').value=String(settings.bind_ip!==false);if($('setBind'))$('setBind').value=String(settings.bind_device!==false)}catch(e){console.warn(e)}}
 async function saveSettings(){const msg=$('saveMsg');if(msg)msg.textContent='Đang lưu…';try{const payload={duration_hours:+($('setDur')&&$('setDur').value||5),max_devices:+($('setDev')&&$('setDev').value||1),get_limit:+($('setLim')&&$('setLim').value||3),bind_ip:($('setIp')&&$('setIp').value)==='true',bind_device:($('setBind')&&$('setBind').value)==='true'};const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'save',p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');if(msg)msg.textContent='Đã lưu';setTimeout(()=>{if(msg)msg.textContent=''},1500)}catch(e){if(msg)msg.textContent=e.message||'Lỗi'}}

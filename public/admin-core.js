@@ -1,5 +1,5 @@
 var $=id=>document.getElementById(id);
-var esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'}[c]));
+var esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 var tok=()=>sessionStorage.getItem('bdz_t')||'';
 var LOGO='https://263.org.vn/logo?v=20261003';
 var rows=[],admins=[],settings={},perms={can_keys:true,can_create_key:true,can_edit_key:true,can_delete_key:true,can_api_keys:true,can_settings:true,can_admins:true},role='OWNER',timer=null;

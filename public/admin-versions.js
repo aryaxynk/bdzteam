@@ -1,4 +1,9 @@
 var versionRows=[];
+async function versionAction(action,payload={}){
+  const x=await BDZ.rpc('bdz_admin_versions',{p_token:tok(),p_action:action,p_payload:payload});
+  if(!x||!x.ok)throw Error(x&&x.error||('Không thể thực hiện thao tác version: '+action));
+  return x;
+}
 async function loadVersions(){
   try{
     const x=await BDZ.rpc('bdz_admin_versions',{p_token:tok(),p_action:'list'});
@@ -41,13 +46,13 @@ function renderVersions(){
       try{
         if(m.dataset.a==='edit')return modalVersion(v);
         if(m.dataset.a==='toggle'){
-          await BDZ.rpc('bdz_admin_versions',{p_token:tok(),p_action:'update',p_payload:{id:v.id,enabled:!v.enabled}});
-          loadVersions();
+          await versionAction('update',{id:v.id,enabled:!v.enabled});
+          await loadVersions();
         }
         if(m.dataset.a==='del'){
           if(!confirm('Xóa version '+v.version+'?'))return;
-          await BDZ.rpc('bdz_admin_versions',{p_token:tok(),p_action:'delete',p_payload:{id:v.id}});
-          loadVersions();
+          await versionAction('delete',{id:v.id});
+          await loadVersions();
         }
       }catch(err){alert(err.message)}
     });
@@ -78,9 +83,9 @@ function modalVersion(v){
         note:$('vNote').value.trim()
       };
       if(!payload.version)throw Error('Nhập version');
-      if(isEdit){payload.id=v.id;await BDZ.rpc('bdz_admin_versions',{p_token:tok(),p_action:'update',p_payload:payload})}
-      else{await BDZ.rpc('bdz_admin_versions',{p_token:tok(),p_action:'create',p_payload:payload})}
-      root.innerHTML='';loadVersions();
+      if(isEdit){payload.id=v.id;await versionAction('update',payload)}
+      else{await versionAction('create',payload)}
+      root.innerHTML='';await loadVersions();
     }catch(e){alert(e.message)}
   };
 }
