@@ -80,6 +80,87 @@ function modalPerms(u){alert('Phân quyền admin ID '+u.id)}
 function modalKey(k){const edit=!!k;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa key':'Tạo key'}</h3><div class="field"><label>Key code</label><input id="mkCode" class="input" value="${esc(k&&k.key_code||'')}" ${edit?'readonly':''}></div><div class="grid2"><div class="field"><label>Max devices</label><input id="mkDev" class="input" type="number" min="1" value="${k&&k.max_devices||1}"></div><div class="field"><label>Thời hạn (giờ)</label><input id="mkDur" class="input" type="number" min="1" value="${k&&k.duration_hours||settings.duration_hours||5}"></div></div><div class="modal-actions"><button class="btn ghost" id="mkCancel">Hủy</button><button class="btn primary" id="mkSave">Lưu</button></div></div></div>`;$('mkCancel').onclick=()=>root.innerHTML='';$('mkSave').onclick=async()=>{try{const payload={key_code:($('mkCode').value||'').trim(),max_devices:+$('mkDev').value||1,duration_hours:+$('mkDur').value||5};if(edit)payload.id=k.id;const action=edit?'update':'create';const x=await BDZ.rpc('bdz_admin_key_action',{p_token:tok(),p_action:action,p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');root.innerHTML='';if(typeof load==='function')load(true)}catch(e){alert(e.message)}}}
 async function loadSettings(){try{const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'get'});if(!x||!x.ok)return;settings=x.settings||x;if($('setDur'))$('setDur').value=settings.duration_hours||settings.key_duration_hours||5;if($('setDev'))$('setDev').value=settings.max_devices||1;if($('setLim'))$('setLim').value=settings.get_limit||settings.max_gets_per_visitor||3;if($('setIp'))$('setIp').value=String(settings.bind_ip!==false);if($('setBind'))$('setBind').value=String(settings.bind_device!==false)}catch(e){console.warn(e)}}
 async function saveSettings(){const msg=$('saveMsg');if(msg)msg.textContent='Đang lưu…';try{const payload={duration_hours:+($('setDur')&&$('setDur').value||5),max_devices:+($('setDev')&&$('setDev').value||1),get_limit:+($('setLim')&&$('setLim').value||3),bind_ip:($('setIp')&&$('setIp').value)==='true',bind_device:($('setBind')&&$('setBind').value)==='true'};const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'save',p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');if(msg)msg.textContent='Đã lưu';setTimeout(()=>{if(msg)msg.textContent=''},1500)}catch(e){if(msg)msg.textContent=e.message||'Lỗi'}}
-function showLang(lang){document.querySelectorAll('.tab-lang').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));const s=$('apiSample');const p=$('apiSpec');if(typeof SAMPLES!=='undefined'&&s)s.textContent=SAMPLES[lang]||'';if(typeof API_SPEC!=='undefined'&&p)p.textContent=API_SPEC}
-const SAMPLES={java:'// Java — check key\n// POST check-key {key, device_id}',native:'// Native POST check-key',chung:'POST /functions/v1/check-key\n{ "key": "...", "device_id": "..." }'};
-const API_SPEC='CHECK KEY\nPOST /functions/v1/check-key\nBody: key, device_id';
+function showLang(lang){document.querySelectorAll('.tab-lang').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));const s=$('apiSample');const p=$('apiSpec');if(s)s.textContent=SAMPLES[lang]||'';if(p)p.textContent=API_SPEC}
+const SAMPLES={
+java:`// Java (OkHttp) — check key
+String url = SUPABASE_URL + "/functions/v1/check-key";
+JSONObject body = new JSONObject();
+body.put("key", keyCode);
+body.put("device_id", deviceId);
+
+Request req = new Request.Builder()
+  .url(url)
+  .addHeader("apikey", PUBLISHABLE_KEY)
+  .addHeader("Content-Type", "application/json")
+  .post(RequestBody.create(body.toString(), MediaType.parse("application/json")))
+  .build();
+
+Response res = client.newCall(req).execute();
+JSONObject json = new JSONObject(res.body().string());
+if (json.optBoolean("ok")) {
+  // cho chơi
+} else {
+  String err = json.optString("error"); // EXPIRED, DEVICE_LIMIT...
+}`,
+native:`// Native C++ / IL2CPP
+// POST {SUPABASE_URL}/functions/v1/check-key
+// Headers: apikey, Content-Type: application/json
+// Body: {"key":"<key>","device_id":"<id>"}
+//
+// ok == true → vào game
+// error: EXPIRED | DISABLED | DEVICE_LIMIT | INVALID_KEY
+//
+// Check version:
+// POST .../check-version
+// {"app_id":"myapp","version":"1.0.0"}
+// allowed=false → force update + download_url`,
+chung:`// curl — check key
+curl -X POST "$SUPABASE_URL/functions/v1/check-key" \\
+  -H "apikey: $PUBLISHABLE_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"key":"YOUR_KEY","device_id":"DEVICE_1"}'
+
+// check version
+curl -X POST "$SUPABASE_URL/functions/v1/check-version" \\
+  -H "apikey: $PUBLISHABLE_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"app_id":"bdz","version":"1"}'
+
+// web get key
+curl -X POST "$SUPABASE_URL/functions/v1/web-get-key" \\
+  -H "apikey: $PUBLISHABLE_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"action":"start","visitor_id":"abc"}'`
+};
+const API_SPEC=`API KEY SYSTEM — BDZ
+
+1) CHECK KEY
+POST {SUPABASE_URL}/functions/v1/check-key
+Header: Content-Type: application/json
+        apikey: <publishable_key>
+Body JSON:
+  key        string  — mã key
+  device_id  string  — id thiết bị (bắt buộc nếu bind device)
+
+Response OK:
+  { "ok": true, "status": "ACTIVE", "expires_at": "...", "max_devices": 1 }
+
+Response lỗi:
+  INVALID_KEY | EXPIRED | DISABLED | DEVICE_LIMIT | BANNED | MAINTENANCE
+
+2) CHECK VERSION
+POST {SUPABASE_URL}/functions/v1/check-version
+Body: { "app_id": "...", "version": "..." }
+Response:
+  { "ok": true, "allowed": true/false, "force_update": true/false,
+    "latest": "1.0.2", "download_url": "..." }
+
+3) WEB GET KEY (public)
+POST {SUPABASE_URL}/functions/v1/web-get-key
+Body: { "action": "start", "visitor_id": "..." }
+→ shortenedUrl để vượt link nhận key
+
+Ghi chú:
+- HTTPS only
+- device_id nên stable theo máy
+- Không lộ service_role trong app`;
