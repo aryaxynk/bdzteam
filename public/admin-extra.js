@@ -8,7 +8,7 @@ function injectBanTab(){
   const nav=$('navTabs'); if(!nav) return;
   if(nav.querySelector('[data-p="bans"]')) return;
   const b=document.createElement('button');
-  b.className='tab'; b.dataset.p='bans'; b.textContent='Ban';
+  b.className='side-item'; b.dataset.p='bans'; b.textContent='Ban';
   b.onclick=()=>{if(typeof page==='function')page('bans');else{document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-bans'));loadBans();}};
   const setBtn=[...nav.querySelectorAll('.tab')].find(t=>t.dataset.p==='settings');
   if(setBtn) nav.insertBefore(b,setBtn); else nav.appendChild(b);
