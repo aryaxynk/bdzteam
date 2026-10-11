@@ -6,8 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Nhận Key · BDZ</title>
-<link rel="stylesheet" href="./style.css?v=104">
-<link rel="stylesheet" href="./shop.css?v=104">
+<link rel="stylesheet" href="./style.css?v=111">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
@@ -21,7 +20,6 @@
   </a>
   <nav class="nav-links">
     <a href="./" class="active">Nhận key</a>
-    <a href="./shop.html">Shop</a>
   </nav>
   <div class="nav-actions">
     <a href="./admin.html" class="btn sm ghost">Admin</a>
@@ -61,28 +59,19 @@
 <footer class="site-foot">
   <span>BDZ Team</span>
 </footer>
-<script src="./config.js?v=104"></script>
-<script src="./supabase-api.js?v=104"></script>
+<script src="./config.js?v=111"></script>
+<script src="./supabase-api.js?v=111"></script>
 <script>
 (function(){
   function viErr(err){
     var m={
       MAINTENANCE:'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
       BANNED:'Bạn đã bị khóa tạm thời. Vui lòng thử lại sau.',
-      RATE_LIMITED:'Thao tác quá nhiều. Vui lòng thử lại sau.',
-      START_UNAVAILABLE:'Không thể tạo phiên. Thử lại sau.',
-      SHORTENER_NOT_CONFIGURED:'Hệ thống link chưa sẵn sàng.',
-      SHORTENER_UPSTREAM:'Lỗi tạo link. Thử lại sau.',
-      SHORTENER_INVALID_RESPONSE:'Lỗi tạo link. Thử lại sau.',
-      SERVER_ERROR:'Lỗi máy chủ. Thử lại sau.',
-      SERVER_CONFIG:'Lỗi cấu hình máy chủ.',
-      METHOD_NOT_ALLOWED:'Yêu cầu không hợp lệ.',
-      INVALID_ACTION:'Yêu cầu không hợp lệ.'
+      RATE_LIMITED:'Thao tác quá nhiều. Thử lại sau.',
+      NO_KEYS:'Hết key. Vui lòng quay lại sau.',
+      ERR:'Không tạo được phiên. Thử lại.'
     };
-    if(!err) return 'Không tạo được. Thử lại sau.';
-    if(m[err]) return m[err];
-    if(/[àáạảãâăèéêìíòóôơùúýăđ]/i.test(err)) return err;
-    return 'Không tạo được. Thử lại sau.';
+    return m[err]||m.ERR;
   }
   document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
   document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
