@@ -374,3 +374,5 @@ tbody tr:last-child td{border-bottom:0}tr:hover td{background:var(--md-surface-l
   .side-nav{transform:translateX(0)!important}
   #btnMenu,#btnCloseSide{display:none!important}
 }
+
+body.side-open,html:has(body.side-open){overflow:hidden}
