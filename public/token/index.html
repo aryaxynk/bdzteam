@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Nhận Key</title>
-<link rel="stylesheet" href="../style.css?v=116">
+<link rel="stylesheet" href="../style.css?v=117">
 <link rel="icon" href="https://263.org.vn/logo">
 </head>
 <body>
@@ -17,7 +17,7 @@
     </div>
     <h1>Nhận Key</h1>
     <p class="sub" id="intro">Đang xác nhận phiên…</p>
-    <div id="status" class="okbox" style="margin-bottom:12px">Đang xử lý…</div>
+    <div id="status" class="okbox loading-status" style="margin-bottom:12px">Đang xử lý…</div>
     <div id="out" class="hidden">
       <div class="field" style="margin-bottom:10px">
         <label>KEY</label>
@@ -72,7 +72,7 @@
       if(!d||!d.ok||!d.key||!d.key.key_code) throw Error(viErr(d&&d.error));
       k.textContent=d.key.key_code;
       o.classList.remove('hidden');
-      s.className='okbox';
+      s.className='okbox done';
       s.textContent='Nhận key thành công';
       i.textContent='Key đã được cấp.';
       c.onclick=function(){

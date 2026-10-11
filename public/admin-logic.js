@@ -18,8 +18,13 @@ function buildNav(){
   nav.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{page(b.dataset.p);if(typeof closeSide==='function')closeSide()});
   page(keep&&tabs.some(t=>t[0]===keep)?keep:'dash');
 }
-function page(name){
+let pageLoadSeq=0,pageLoadTimer=null;
+async function page(name){
   if(!name)name='dash';
+  const seq=++pageLoadSeq;
+  if(pageLoadTimer){clearTimeout(pageLoadTimer);pageLoadTimer=null;}
+  const loader=$('viewLoader');
+  if(loader)loader.classList.add('hidden');
   document.querySelectorAll('.side-item,.tab').forEach(b=>b.classList.toggle('active',b.dataset.p===name));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-'+name));
   const el=$('pg-'+name);if(el)el.classList.add('active');
@@ -27,14 +32,21 @@ function page(name){
     showLang((document.querySelector('.tab-lang.active')||{}).dataset?.lang||'java');
     document.querySelectorAll('.tab-lang').forEach(b=>b.onclick=()=>showLang(b.dataset.lang));
   }
-  if(name==='versions'&&typeof loadVersions==='function')loadVersions();
+  const tasks=[];
+  if(name==='versions'&&typeof loadVersions==='function')tasks.push(loadVersions());
   if(name==='versions'&&!$('pg-versions'))console.error('pg-versions missing');
-  if(name==='bans'&&typeof loadBans==='function')loadBans();
+  if(name==='bans'&&typeof loadBans==='function')tasks.push(loadBans());
+  if(tasks.length&&loader){
+    pageLoadTimer=setTimeout(()=>{if(seq===pageLoadSeq)loader.classList.remove('hidden');},110);
+    await Promise.allSettled(tasks);
+    if(pageLoadTimer){clearTimeout(pageLoadTimer);pageLoadTimer=null;}
+    if(seq===pageLoadSeq)loader.classList.add('hidden');
+  }
 }
 function showApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden')}
 async function doLogin(){
 const e=$('loginErr'); if(e) e.classList.add('hidden');
-const btn=$('loginBtn'); if(btn) btn.disabled=true;
+const btn=$('loginBtn'); if(btn){btn.disabled=true;btn.classList.add('loading');}
 try{
   if(typeof BDZ==='undefined'||!BDZ.rpc) throw Error('Chưa tải cấu hình API. Refresh trang.');
   const u=($('u')&&$('u').value||'').trim();
@@ -50,7 +62,7 @@ try{
   await load(true);
 }catch(err){
   if(e){ e.textContent=err&&err.message?err.message:'Sai tài khoản hoặc mật khẩu.'; e.classList.remove('hidden'); }
-}finally{ if(btn) btn.disabled=false; }
+}finally{ if(btn){btn.disabled=false;btn.classList.remove('loading');} }
 }
 async function doLogout(){try{await BDZ.rpc('bdz_admin_logout',{p_token:tok()})}catch{}sessionStorage.clear();location.reload()}
 async function rpcAction(action,payload){const x=await BDZ.rpc('bdz_admin_key_action',{p_token:tok(),p_action:action,p_payload:payload});if(!x?.ok)throw Error(x?.error||'Lỗi');return x}
