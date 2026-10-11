@@ -2,11 +2,11 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Nhận Key · BDZ</title>
-<link rel="stylesheet" href="./style.css?v=111">
+<link rel="stylesheet" href="./style.css?v=112">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
@@ -73,24 +73,6 @@
     };
     return m[err]||m.ERR;
   }
-  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
-  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
-  var lastTouch=0;
-  document.addEventListener('touchend', function(e){
-    var now=Date.now();
-    if(now-lastTouch<=300){ e.preventDefault(); }
-    lastTouch=now;
-  }, {passive:false});
-  document.addEventListener('wheel', function(e){
-    if(e.ctrlKey){ e.preventDefault(); }
-  }, {passive:false});
-  document.addEventListener('keydown', function(e){
-    if((e.ctrlKey||e.metaKey)&&(e.key==='+'||e.key==='-'||e.key==='='||e.key==='0')) e.preventDefault();
-  });
-  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
-  document.addEventListener('keydown', function(e){
-    if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')) e.preventDefault();
-  });
   document.getElementById('themeBtn').onclick=function(){
     var n=document.documentElement.dataset.theme==='dark'?'light':'dark';
     document.documentElement.dataset.theme=n;
