@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const tok=()=>sessionStorage.getItem('bdz_t')||'';
 async function loadMonthChart(){
-  if(!tok()||!$('pg-dash')) return;
+  if(!tok()||document.hidden||!$('pg-dash')||!$('pg-dash').classList.contains('active')) return;
   try{
     const x=await BDZ.rpc('bdz_admin_chart',{p_token:tok()});
     if(!x?.ok) return;
@@ -85,7 +85,8 @@ function drawMonthChart(series, meta){
     el.addEventListener('click', e=>showTip(+el.dataset.i));
   });
 }
-setInterval(loadMonthChart, 5000);
+setInterval(loadMonthChart, 30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadMonthChart()});
 (async()=>{
   for(let i=0;i<40;i++){ if($('pg-dash')&&$('chart')) break; await new Promise(r=>setTimeout(r,100)); }
   if(tok()) loadMonthChart();
