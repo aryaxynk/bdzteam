@@ -76,6 +76,8 @@ end;
 $$;
 
 -- 4) Admin CRUD versions
+-- Validate a real, active admin session before reading or mutating versions.
+-- Only OWNER can manage app versions because no version permission exists in admin_permissions.
 create or replace function public.bdz_admin_versions(
   p_token text,
   p_action text default 'list',
@@ -84,18 +86,42 @@ create or replace function public.bdz_admin_versions(
 returns json
 language plpgsql
 security definer
-set search_path = public
+set search_path = pg_catalog, public, extensions
 as $$
 declare
   v_id bigint;
   v_app text;
   v_row record;
+  v_admin_id bigint;
+  v_role text;
+  v_deleted integer;
+  v_token text := nullif(trim(p_token), '');
+  v_action text := coalesce(nullif(trim(p_action), ''), 'list');
+  v_payload jsonb := coalesce(p_payload, '{}'::jsonb);
 begin
-  if p_token is null or length(trim(p_token)) < 8 then
+  if v_token is null then
     return json_build_object('ok', false, 'error', 'UNAUTHORIZED');
   end if;
 
-  if p_action = 'list' then
+  select a.id, a.role
+    into v_admin_id, v_role
+  from public.admin_sessions s
+  join public.admins a on a.id = s.admin_id
+  where s.session_hash = public.bdz_hash(v_token)
+    and s.revoked_at is null
+    and s.expires_at > now()
+    and a.active = true
+  limit 1;
+
+  if v_admin_id is null then
+    return json_build_object('ok', false, 'error', 'UNAUTHORIZED');
+  end if;
+
+  if v_role <> 'OWNER' then
+    return json_build_object('ok', false, 'error', 'FORBIDDEN');
+  end if;
+
+  if v_action = 'list' then
     return json_build_object('ok', true, 'rows', coalesce((
       select json_agg(x order by x.id desc) from (
         select id, app_id, version, enabled, download_url, note, created_at, updated_at
@@ -104,31 +130,34 @@ begin
     ), '[]'::json));
   end if;
 
-  if p_action = 'create' then
-    v_app := coalesce(nullif(trim(p_payload->>'app_id'), ''), 'default');
-    if nullif(trim(p_payload->>'version'), '') is null then
+  if v_action = 'create' then
+    v_app := coalesce(nullif(trim(v_payload->>'app_id'), ''), 'default');
+    if nullif(trim(v_payload->>'version'), '') is null then
       return json_build_object('ok', false, 'error', 'MISSING_VERSION');
     end if;
     insert into public.app_versions (app_id, version, enabled, download_url, note)
     values (
       v_app,
-      trim(p_payload->>'version'),
-      coalesce((p_payload->>'enabled')::boolean, true),
-      nullif(trim(p_payload->>'download_url'), ''),
-      nullif(trim(p_payload->>'note'), '')
+      trim(v_payload->>'version'),
+      coalesce((v_payload->>'enabled')::boolean, true),
+      nullif(trim(v_payload->>'download_url'), ''),
+      nullif(trim(v_payload->>'note'), '')
     )
     returning * into v_row;
     return json_build_object('ok', true, 'row', row_to_json(v_row));
   end if;
 
-  if p_action = 'update' then
-    v_id := (p_payload->>'id')::bigint;
+  if v_action = 'update' then
+    if coalesce(v_payload->>'id', '') !~ '^[0-9]+$' then
+      return json_build_object('ok', false, 'error', 'BAD_ID');
+    end if;
+    v_id := (v_payload->>'id')::bigint;
     update public.app_versions set
-      version = coalesce(nullif(trim(p_payload->>'version'), ''), version),
-      app_id = coalesce(nullif(trim(p_payload->>'app_id'), ''), app_id),
-      enabled = coalesce((p_payload->>'enabled')::boolean, enabled),
-      download_url = case when p_payload ? 'download_url' then nullif(trim(p_payload->>'download_url'), '') else download_url end,
-      note = case when p_payload ? 'note' then nullif(trim(p_payload->>'note'), '') else note end,
+      version = coalesce(nullif(trim(v_payload->>'version'), ''), version),
+      app_id = coalesce(nullif(trim(v_payload->>'app_id'), ''), app_id),
+      enabled = coalesce((v_payload->>'enabled')::boolean, enabled),
+      download_url = case when v_payload ? 'download_url' then nullif(trim(v_payload->>'download_url'), '') else download_url end,
+      note = case when v_payload ? 'note' then nullif(trim(v_payload->>'note'), '') else note end,
       updated_at = now()
     where id = v_id
     returning * into v_row;
@@ -138,8 +167,15 @@ begin
     return json_build_object('ok', true, 'row', row_to_json(v_row));
   end if;
 
-  if p_action = 'delete' then
-    delete from public.app_versions where id = (p_payload->>'id')::bigint;
+  if v_action = 'delete' then
+    if coalesce(v_payload->>'id', '') !~ '^[0-9]+$' then
+      return json_build_object('ok', false, 'error', 'BAD_ID');
+    end if;
+    delete from public.app_versions where id = (v_payload->>'id')::bigint;
+    get diagnostics v_deleted = row_count;
+    if v_deleted = 0 then
+      return json_build_object('ok', false, 'error', 'NOT_FOUND');
+    end if;
     return json_build_object('ok', true);
   end if;
 
@@ -149,6 +185,7 @@ $$;
 
 -- 5) Quyền gọi
 grant execute on function public.bdz_check_version(text, text) to anon, authenticated, service_role;
+revoke all on function public.bdz_admin_versions(text, text, jsonb) from public;
 grant execute on function public.bdz_admin_versions(text, text, jsonb) to anon, authenticated, service_role;
 
 -- 6) Reload schema cache PostgREST (quan trọng)
