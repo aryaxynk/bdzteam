@@ -4,60 +4,91 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="BDZ Key System — nhận key nhanh, bảo mật và gắn với thiết bị.">
+<meta name="description" content="BDZ Key Center — trung tâm nhận key với phiên xác thực an toàn.">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Nhận Key · BDZ</title>
-<link rel="stylesheet" href="./style.css?v=118">
+<title>BDZ Key Center</title>
+<link rel="stylesheet" href="./style.css?v=119">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
-<body>
+<body class="md-public-app">
 <script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
-<header class="site-nav">
-  <a class="nav-brand" href="./" aria-label="BDZ Key — Trang chủ">
-    <img src="https://263.org.vn/logo?v=20261003" alt="" width="36" height="36" referrerpolicy="no-referrer">
-    <span class="brand-copy"><b>BDZ</b><small>KEY SYSTEM</small></span>
+<header class="md-app-bar" id="overview">
+  <a class="md-brand" href="./" aria-label="BDZ Key Center">
+    <img src="https://263.org.vn/logo?v=20261003" alt="" width="40" height="40" referrerpolicy="no-referrer">
+    <span class="md-brand-copy"><strong>BDZ Key Center</strong><small>SECURE ACCESS</small></span>
   </a>
-  <nav class="nav-links" aria-label="Điều hướng chính">
-    <a href="./" class="active"><span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg></span>Trang chủ</a>
-  </nav>
-  <div class="nav-actions">
-    <span class="status-pill"><span class="status-pulse"></span> Hệ thống hoạt động</span>
-    <a href="./admin.html" class="btn sm outline-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg> Admin</a>
-    <button type="button" class="btn sm icon-btn theme-btn" id="themeBtn" title="Sáng / Tối" aria-label="Chuyển giao diện sáng tối"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
+  <span class="status-pill"><span class="status-pulse"></span> Hệ thống hoạt động</span>
+  <div class="md-app-actions">
+    <a href="./admin.html" class="btn outline-btn md-admin-link" aria-label="Mở Admin">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg><span>Admin</span>
+    </a>
+    <button type="button" class="btn icon-btn theme-btn" id="themeBtn" title="Sáng / Tối" aria-label="Chuyển giao diện sáng tối">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+    </button>
   </div>
 </header>
-<main class="studio home-shell">
-  <section class="home-hero">
-    <div class="hero-copy">
-      <div class="hero-kicker"><span class="hero-kicker-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3Z"/><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></svg></span> BDZ KEY SYSTEM <span class="new-pill">NEW EXPERIENCE</span></div>
-      <h1>Nhận key.<br><span>Nhanh, gọn, an toàn.</span></h1>
-      <p class="hero-lead">Khởi tạo phiên nhận key trong vài giây. Mỗi phiên được xác thực riêng và gắn với thiết bị theo cài đặt của hệ thống.</p>
-      <div class="hero-features">
-        <div class="feature-chip"><span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span><b>Bảo mật</b><small>Phiên xác thực riêng</small></span></div>
-        <div class="feature-chip"><span class="feature-icon color-cyan" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5h4m-3 13h2"/></svg></span><span><b>Gắn thiết bị</b><small>Theo cấu hình admin</small></span></div>
-        <div class="feature-chip"><span class="feature-icon color-pink" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><b>Nhanh chóng</b><small>Quy trình rõ ràng</small></span></div>
+<div class="md-app-layout">
+  <nav class="md-navigation-rail" aria-label="Điều hướng">
+    <a class="md-nav-item active" href="#overview" aria-current="page"><span class="md-nav-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg></span><span>Tổng quan</span></a>
+    <a class="md-nav-item" href="#receive"><span class="md-nav-icon"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m12 12 8-8 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg></span><span>Nhận key</span></a>
+    <a class="md-nav-item" href="#steps"><span class="md-nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><span>Quy trình</span></a>
+    <a class="md-nav-item" href="#security"><span class="md-nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Bảo mật</span></a>
+  </nav>
+  <main class="md-content">
+    <section class="md-page-heading">
+      <div>
+        <div class="md-overline">BDZ WORKSPACE</div>
+        <h1>Trung tâm nhận key</h1>
+        <p>Tạo một phiên xác thực, hoàn thành liên kết và nhận key trên cùng thiết bị.</p>
       </div>
-      <div class="home-steps" aria-label="Quy trình nhận key">
-        <div class="home-step"><span>01</span><div><b>Tạo phiên</b><small>Bắt đầu từ nút nhận key</small></div></div>
-        <div class="home-step"><span>02</span><div><b>Hoàn tất liên kết</b><small>Làm theo bước chuyển tiếp</small></div></div>
-        <div class="home-step"><span>03</span><div><b>Nhận key</b><small>Quay lại trên cùng thiết bị</small></div></div>
-      </div>
-    </div>
-    <section class="studio-panel shine-surface" aria-labelledby="receiveTitle">
-      <div class="panel-topline"><span class="panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></svg></span><span class="security-chip"><span class="status-pulse"></span> SECURE SESSION</span></div>
-      <p class="eyebrow">Bước tiếp theo</p>
-      <h2 id="receiveTitle">Tạo phiên nhận key</h2>
-      <p class="panel-desc">Nhấn nút bên dưới để tạo liên kết xác thực. Hãy hoàn thành trên cùng thiết bị để phiên được nhận diện chính xác.</p>
-      <div class="duration-banner"><span class="duration-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span id="durLine">Thời hạn · —</span><span class="duration-note">Key session</span></div>
-      <button id="start" type="button" class="btn primary lg cta-btn"><span id="startLabel">Bắt đầu nhận key</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
-      <div id="result" class="result hidden" role="status" aria-live="polite"><div id="status"></div><div id="link" class="result-link"></div></div>
-      <p class="hint foot-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg> Không chia sẻ key công khai.</p>
-      <div class="panel-footer"><span class="panel-footer-mark"></span> Powered by BDZ Team <span>·</span> Key management</div>
+      <span class="chip"><span class="status-pulse"></span> Dịch vụ đang hoạt động</span>
     </section>
-  </section>
-</main>
-<footer class="site-foot"><span class="foot-brand">BDZ</span><span>KEY SYSTEM</span><span class="foot-sep">·</span><span>Secure by design</span></footer>
+    <div class="md-content-grid">
+      <section id="receive" class="md-card md-receive-card" aria-labelledby="receiveTitle">
+        <div class="md-card-top">
+          <span class="md-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m12 12 8-8 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg></span>
+          <div>
+            <p class="eyebrow">Phiên truy cập</p>
+            <h2 id="receiveTitle">Tạo phiên nhận key</h2>
+            <p>Liên kết được tạo riêng cho phiên hiện tại. Hãy hoàn tất trên chính thiết bị này.</p>
+          </div>
+        </div>
+        <div class="md-session-details">
+          <div class="md-detail"><span>Thời hạn key</span><strong id="durLine">Đang kiểm tra…</strong></div>
+          <div class="md-detail"><span>Liên kết thiết bị</span><strong>Cùng thiết bị</strong></div>
+        </div>
+        <button id="start" type="button" class="btn primary md-cta">
+          <span id="startLabel">Bắt đầu nhận key</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </button>
+        <div id="result" class="result hidden" role="status" aria-live="polite"><div id="status"></div><div id="link" class="result-link"></div></div>
+        <div class="md-assurance"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg><span>Không chia sẻ key công khai. Key được cấp theo chính sách và giới hạn do hệ thống thiết lập.</span></div>
+        <div class="md-card-footer"><span class="status-pulse"></span> BDZ Key Service <span>·</span> Phiên xác thực riêng</div>
+      </section>
+      <aside class="md-aside-stack">
+        <section id="steps" class="md-card">
+          <div class="md-card-heading">
+            <span class="md-card-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5h12M8 12h12M8 19h12"/><circle cx="4" cy="5" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="19" r="1"/></svg></span>
+            <h2>Cách nhận key</h2>
+          </div>
+          <div class="md-steps">
+            <div class="md-step"><span class="md-step-number">1</span><div><strong>Tạo phiên</strong><p>Nhấn “Bắt đầu nhận key” để khởi tạo liên kết riêng.</p></div></div>
+            <div class="md-step"><span class="md-step-number">2</span><div><strong>Hoàn thành liên kết</strong><p>Làm theo hướng dẫn và không đổi thiết bị giữa chừng.</p></div></div>
+            <div class="md-step"><span class="md-step-number">3</span><div><strong>Nhận key</strong><p>Quay lại trang này trên cùng thiết bị để hoàn tất.</p></div></div>
+          </div>
+        </section>
+        <section id="security" class="md-card md-security-card">
+          <div class="md-security-row">
+            <span class="md-card-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <div><h2>Phiên bảo mật</h2><p>Phiên xác thực gắn với thiết bị theo cấu hình quản trị. Không chuyển tiếp key cho người khác.</p></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+<footer class="md-footer"><span><strong>BDZ</strong> · Key Center</span><span>Secure access management</span></footer>
 <script src="./config.js?v=111"></script>
 <script src="./supabase-api.js?v=111"></script>
 <script>
@@ -71,6 +102,13 @@
     document.documentElement.dataset.theme=n;
     localStorage.setItem('bdz_theme',n);
   };
+  document.querySelectorAll('.md-nav-item').forEach(function(item){
+    item.addEventListener('click',function(){
+      document.querySelectorAll('.md-nav-item').forEach(function(nav){nav.classList.remove('active');nav.removeAttribute('aria-current');});
+      item.classList.add('active');
+      item.setAttribute('aria-current','page');
+    });
+  });
   (async function(){
     var el=document.getElementById('durLine');
     try{
@@ -105,5 +143,6 @@
   };
 })();
 </script>
+
 </body>
 </html>
