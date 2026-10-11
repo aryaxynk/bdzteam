@@ -18,8 +18,13 @@ function buildNav(){
   nav.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{page(b.dataset.p);if(typeof closeSide==='function')closeSide()});
   page(keep&&tabs.some(t=>t[0]===keep)?keep:'dash');
 }
-function page(name){
+let pageLoadSeq=0,pageLoadTimer=null;
+async function page(name){
   if(!name)name='dash';
+  const seq=++pageLoadSeq;
+  if(pageLoadTimer){clearTimeout(pageLoadTimer);pageLoadTimer=null;}
+  const loader=$('viewLoader');
+  if(loader)loader.classList.add('hidden');
   document.querySelectorAll('.side-item,.tab').forEach(b=>b.classList.toggle('active',b.dataset.p===name));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-'+name));
   const el=$('pg-'+name);if(el)el.classList.add('active');
@@ -27,9 +32,16 @@ function page(name){
     showLang((document.querySelector('.tab-lang.active')||{}).dataset?.lang||'java');
     document.querySelectorAll('.tab-lang').forEach(b=>b.onclick=()=>showLang(b.dataset.lang));
   }
-  if(name==='versions'&&typeof loadVersions==='function')loadVersions();
+  const tasks=[];
+  if(name==='versions'&&typeof loadVersions==='function')tasks.push(loadVersions());
   if(name==='versions'&&!$('pg-versions'))console.error('pg-versions missing');
-  if(name==='bans'&&typeof loadBans==='function')loadBans();
+  if(name==='bans'&&typeof loadBans==='function')tasks.push(loadBans());
+  if(tasks.length&&loader){
+    pageLoadTimer=setTimeout(()=>{if(seq===pageLoadSeq)loader.classList.remove('hidden');},110);
+    await Promise.allSettled(tasks);
+    if(pageLoadTimer){clearTimeout(pageLoadTimer);pageLoadTimer=null;}
+    if(seq===pageLoadSeq)loader.classList.add('hidden');
+  }
 }
 function showApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden')}
 async function doLogin(){
