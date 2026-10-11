@@ -1,5 +1,27 @@
-function buildNav(){const tabs=[['dash','Tổng quan'],['keys','Key'],['apikeys','API'],['versions','Version'],['admins','Admin'],['settings','Cài đặt']];const nav=$('navTabs');if(!nav)return;const cur=nav.querySelector('.side-item.active');const keep=cur&&cur.dataset.p;nav.innerHTML=tabs.map(t=>`<button type="button" class="side-item" data-p="${t[0]}"><span class="side-dot"></span>${t[1]}</button>`).join('');nav.querySelectorAll('.side-item').forEach(b=>b.onclick=()=>{page(b.dataset.p);if(typeof closeSide==='function')closeSide()});const first=keep||'dash';page(first)}
-function page(name){if(!name)name='dash';document.querySelectorAll('.side-item,.tab').forEach(b=>b.classList.toggle('active',b.dataset.p===name));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-'+name));const el=$('pg-'+name);if(el)el.classList.add('active');if(name==='apikeys'&&typeof showLang==='function'){showLang((document.querySelector('.tab-lang.active')||{}).dataset?.lang||'java');document.querySelectorAll('.tab-lang').forEach(b=>b.onclick=()=>showLang(b.dataset.lang))}if(name==='versions'){if(typeof loadVersions==='function')loadVersions();var sec=$('pg-versions');if(!sec){console.error('pg-versions missing');}else if(!sec.innerHTML.trim()){sec.innerHTML='<div class="card"><h2>Version</h2><p class="hint">Đang tải…</p></div>';}}}
+function buildNav(){
+  const tabs=[['dash','Tổng quan'],['keys','Key'],['apikeys','API'],['versions','Version'],['admins','Admin'],['settings','Cài đặt']];
+  const nav=$('navTabs');
+  if(!nav)return;
+  if($('pg-bans'))tabs.splice(tabs.length-1,0,['bans','Ban']);
+  const active=nav.querySelector('.side-item.active, .tab.active');
+  const keep=active&&active.dataset.p;
+  nav.innerHTML=tabs.map(t=>`<button type="button" class="side-item" data-p="${t[0]}"><span class="side-dot"></span>${t[1]}</button>`).join('');
+  nav.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{page(b.dataset.p);if(typeof closeSide==='function')closeSide()});
+  page(keep&&tabs.some(t=>t[0]===keep)?keep:'dash');
+}
+function page(name){
+  if(!name)name='dash';
+  document.querySelectorAll('.side-item,.tab').forEach(b=>b.classList.toggle('active',b.dataset.p===name));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-'+name));
+  const el=$('pg-'+name);if(el)el.classList.add('active');
+  if(name==='apikeys'&&typeof showLang==='function'){
+    showLang((document.querySelector('.tab-lang.active')||{}).dataset?.lang||'java');
+    document.querySelectorAll('.tab-lang').forEach(b=>b.onclick=()=>showLang(b.dataset.lang));
+  }
+  if(name==='versions'&&typeof loadVersions==='function')loadVersions();
+  if(name==='versions'&&!$('pg-versions'))console.error('pg-versions missing');
+  if(name==='bans'&&typeof loadBans==='function')loadBans();
+}
 function showApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden')}
 async function doLogin(){
 const e=$('loginErr'); if(e) e.classList.add('hidden');
