@@ -9,11 +9,11 @@ function themeToggle(){const n=document.documentElement.dataset.theme==='dark'?'
 function openSide(){const s=$('sideNav'),m=$('sideMask');if(s)s.classList.add('open');if(m)m.classList.add('open');document.body.classList.add('side-open')}
 function closeSide(){const s=$('sideNav'),m=$('sideMask');if(s)s.classList.remove('open');if(m)m.classList.remove('open');document.body.classList.remove('side-open')}
 function shell(){
-$('root').innerHTML=\`<div id="login" class="login-page">
+$('root').innerHTML=`<div id="login" class="login-page">
 <a href="./" class="btn sm ghost login-back" id="btnBackLogin">← Trang chủ</a>
 <div class="login-layout">
   <section class="login-intro">
-    <div class="login-brand"><img src="\${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZ Console</strong><small>KEY MANAGEMENT</small></span></div>
+    <div class="login-brand"><img src="${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZ Console</strong><small>KEY MANAGEMENT</small></span></div>
     <div class="md-overline">ADMIN WORKSPACE</div>
     <h2>Quản lý hệ thống<br>trong một nơi.</h2>
     <p>Theo dõi key, quản lý phiên thiết bị, cấu hình và quyền truy cập từ một giao diện thống nhất.</p>
@@ -38,7 +38,7 @@ $('root').innerHTML=\`<div id="login" class="login-page">
 <main id="app" class="hidden admin-shell">
   <header class="topbar">
     <button type="button" class="btn icon-btn" id="btnMenu" aria-label="Mở menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <img class="logo-img" src="\${LOGO}" alt="" referrerpolicy="no-referrer">
+    <img class="logo-img" src="${LOGO}" alt="" referrerpolicy="no-referrer">
     <div class="topbar-brand"><span class="brand">BDZ Console</span><span class="topbar-subtitle">Key management workspace</span></div>
     <span class="grow"></span><span class="topbar-status"><span class="status-pulse"></span> Admin workspace</span>
     <button id="themeBtn" class="btn icon-btn" aria-label="Chuyển giao diện" title="Sáng / Tối"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
@@ -53,8 +53,8 @@ $('root').innerHTML=\`<div id="login" class="login-page">
   </aside>
   <div id="pages"></div>
 </main>
-<div id="modalRoot"></div><div id="menuRoot"></div>\`;
-$('pages').innerHTML=\`<section id="pg-dash" class="view active">
+<div id="modalRoot"></div><div id="menuRoot"></div>`;
+$('pages').innerHTML=`<section id="pg-dash" class="view active">
 <header class="md-admin-heading"><div><p class="md-overline">WORKSPACE OVERVIEW</p><h1>Tổng quan</h1><p class="hint">Tình hình key và hoạt động hệ thống của bạn.</p></div><span class="md-heading-chip"><span class="status-pulse"></span> Tổng quan hệ thống</span></header>
 <div class="bento-dash">
   <div class="stat"><div class="stat-top"><b>Tổng key</b><span class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m12 12 8-8 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg></span></div><strong id="sTotal">0</strong><p class="stat-caption">Đã tạo trong hệ thống</p></div>
@@ -79,7 +79,7 @@ $('pages').innerHTML=\`<section id="pg-dash" class="view active">
 <section id="pg-settings" class="view">
 <header class="md-admin-heading"><div><p class="md-overline">SYSTEM PREFERENCES</p><h1>Cài đặt</h1><p class="hint">Quản lý thời hạn key, giới hạn thiết bị và chính sách liên kết.</p></div></header>
 <div class="card"><div class="grid2"><div class="field"><label for="setDur">Thời hạn (giờ)</label><input id="setDur" class="input" type="number" min="1"></div><div class="field"><label for="setDev">Max devices</label><input id="setDev" class="input" type="number" min="1"></div><div class="field"><label for="setLim">Get / visitor</label><input id="setLim" class="input" type="number" min="1"></div><div class="field"><label for="setIp">Bind IP</label><select id="setIp" class="select"><option value="true">Bật</option><option value="false">Tắt</option></select></div><div class="field"><label for="setBind">Bind device</label><select id="setBind" class="select"><option value="true">Bật</option><option value="false">Tắt</option></select></div></div><button id="saveSet" class="btn primary">Lưu cài đặt</button><span id="saveMsg" role="status"></span></div></section>
-<div id="viewLoader" class="view-loader hidden" role="status" aria-live="polite"><span class="loader-ring" aria-hidden="true"></span><span>Đang tải nội dung…</span></div>\`;
+<div id="viewLoader" class="view-loader hidden" role="status" aria-live="polite"><span class="loader-ring" aria-hidden="true"></span><span>Đang tải nội dung…</span></div>`;
 if(typeof buildNav==='function')buildNav();
 if($('loginBtn'))$('loginBtn').onclick=function(){if(typeof doLogin==='function')doLogin()};
 if($('logout'))$('logout').onclick=function(){if(typeof doLogout==='function')doLogout()};
