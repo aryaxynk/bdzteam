@@ -1,15 +1,15 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tok=()=>sessionStorage.getItem('bdz_t')||'';
 let bans=[];
 
 function injectBanTab(){
   const nav=$('navTabs'); if(!nav) return;
-  if([...nav.querySelectorAll('.tab')].some(t=>t.dataset.p==='bans')) return;
+  if(nav.querySelector('[data-p="bans"]')) return;
   const b=document.createElement('button');
   b.className='tab'; b.dataset.p='bans'; b.textContent='Ban';
-  b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.p==='bans'));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-bans'));if(typeof loadBans==='function')loadBans();};
+  b.onclick=()=>{if(typeof page==='function')page('bans');else{document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-bans'));loadBans();}};
   const setBtn=[...nav.querySelectorAll('.tab')].find(t=>t.dataset.p==='settings');
   if(setBtn) nav.insertBefore(b,setBtn); else nav.appendChild(b);
   if(!$('pg-bans')){
@@ -78,6 +78,8 @@ window.saveSettings=async function(){
     if($('saveMsg'))$('saveMsg').textContent='Đã lưu';
   }catch(e){if($('saveMsg'))$('saveMsg').textContent=e.message}
 };
+
+window.loadBans=loadBans;
 
 async function bootExtra(){
   for(let i=0;i<50;i++){ if($('navTabs')&&$('pg-settings')) break; await new Promise(r=>setTimeout(r,100)); }
