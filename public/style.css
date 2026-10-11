@@ -1,4 +1,4 @@
-/* BDZ v112 */
+/* BDZ v113 */
 :root{
   --bg:#f7f4f6;--bg-soft:#fdecef;--card:#ffffff;--card-2:#f8f4f6;
   --ink:#1a1520;--ink-2:#4f4656;--muted:#6b6271;--line:#ebe4ea;
@@ -156,3 +156,9 @@ tr:hover td{background:var(--card-2)}
   .meta-item{font-size:12px;color:var(--muted);white-space:nowrap}
   #pages{padding:14px 12px 32px}
 }
+
+/* Catbox upload panel */
+.upload-result{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.upload-result .input{flex:1 1 240px;min-width:0}
+.upload-file-info{margin:8px 0 14px;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.upload-warning{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card-2);color:var(--ink-2);font-size:13px;margin:12px 0 16px}
