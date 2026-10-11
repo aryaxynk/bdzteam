@@ -1,5 +1,6 @@
 function buildNav(){
   const tabs=[['dash','Tổng quan'],['keys','Key'],['apikeys','API'],['versions','Version'],['admins','Admin'],['settings','Cài đặt']];
+  if(String(role).toUpperCase()==='OWNER')tabs.splice(tabs.length-1,0,['upload','Upload file']);
   const nav=$('navTabs');
   if(!nav)return;
   if($('pg-bans'))tabs.splice(tabs.length-1,0,['bans','Ban']);
@@ -21,6 +22,7 @@ function page(name){
   if(name==='versions'&&typeof loadVersions==='function')loadVersions();
   if(name==='versions'&&!$('pg-versions'))console.error('pg-versions missing');
   if(name==='bans'&&typeof loadBans==='function')loadBans();
+  if(name==='upload'&&typeof window.initCatboxUploadPage==='function')window.initCatboxUploadPage();
 }
 function showApp(){$('login').classList.add('hidden');$('app').classList.remove('hidden')}
 async function doLogin(){
