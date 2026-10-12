@@ -38,7 +38,6 @@ $('root').innerHTML=`<div id="login" class="login-page">
   <section class="login-box">
     <div class="login-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m11.7 12.3 8.1-8.1 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg></div>
     <h1>Đăng nhập</h1>
-    <p class="sub">Đăng nhập BDZ Console để tiếp tục đến không gian quản trị.</p>
     <div class="field"><label for="u">Email / Tên đăng nhập</label><input id="u" class="input" autocomplete="username" placeholder="Tài khoản admin"></div>
     <div class="field"><label for="p">Mật khẩu</label><input id="p" class="input" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu"></div>
     <button id="loginBtn" class="btn primary lg">Đăng nhập <svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
