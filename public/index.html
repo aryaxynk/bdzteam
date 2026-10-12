@@ -43,7 +43,7 @@
           <h1>Điều khiển tương lai bằng <span>Trí Tuệ Nhân Tạo.</span></h1>
           <p class="hero-subtitle">AuraMind tự động hóa quy trình làm việc của bạn chỉ bằng một câu lệnh. Tốc độ vượt trội. Bảo mật tối đa.</p>
           <div class="hero-footer">
-            <button id="start" type="button" class="btn hero-cta"><span class="cta-beam" aria-hidden="true"></span><span class="cta-label" id="startLabel">Trải nghiệm miễn phí</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <button id="start" type="button" class="btn hero-cta"><span class="cta-surface" aria-hidden="true"></span><span class="cta-beam" aria-hidden="true"></span><span class="cta-label" id="startLabel">Trải nghiệm miễn phí</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
             <div class="hero-proof"><span class="proof-avatars"><i>A</i><i>M</i><i>✳</i></span><span><strong>AI-powered</strong><small>Made for momentum</small></span></div>
           </div>
           <div id="result" class="result hidden" role="status" aria-live="polite"><div id="status"></div><div id="link" class="result-link"></div></div>
@@ -117,6 +117,7 @@
   document.getElementById('themeBtn').onclick=function(){
     var n=document.documentElement.dataset.theme==='dark'?'light':'dark';
     document.documentElement.dataset.theme=n;
+    localStorage.setItem('auramind_theme',n);
     localStorage.setItem('bdz_theme',n);
   };
   document.querySelectorAll('.md-nav-item').forEach(function(item){
