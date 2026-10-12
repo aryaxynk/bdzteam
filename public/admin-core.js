@@ -18,16 +18,7 @@ function closeModalSmooth(root){
 }
 
 
-function closeModalSmooth(root){
-  if(!root)return;
-  const overlay=root.querySelector('.modal-bg');
-  if(!overlay){root.innerHTML='';return;}
-  if(overlay.classList.contains('modal-leaving'))return;
-  overlay.classList.add('modal-leaving');
-  window.setTimeout(function(){
-    if(root.contains(overlay))root.innerHTML='';
-  },180);
-}
+
 
 function shell(){
 $('root').innerHTML=`<div id="login" class="login-page">
