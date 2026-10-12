@@ -608,3 +608,63 @@ table { max-width: 100%; }
   .side-nav, .side-mask, .btn, .top-nav a, .side-item, .input,
   .select, textarea.input, .bento-card { transition: none !important; }
 }
+
+
+/* Motion polish: deliberate transitions and consistent inline SVG sizing. */
+@keyframes viewEnter {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes viewExit {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(0, -5px, 0); }
+}
+@keyframes overlayEnter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes overlayExit { from { opacity: 1; } to { opacity: 0; } }
+@keyframes modalEnter {
+  from { opacity: 0; transform: translate3d(0, 12px, 0) scale(.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes modalExit {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, 5px, 0) scale(.99); }
+}
+@keyframes menuEnter {
+  from { opacity: 0; transform: translate3d(0, 5px, 0) scale(.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+.view { display: none; opacity: 0; transform: translate3d(0, 8px, 0); }
+.view.active { display: block; animation: viewEnter .38s cubic-bezier(.22,1,.36,1) both; }
+.view.active.view-leaving { animation: viewExit .18s ease-in both; pointer-events: none; }
+.admin-shell:not(.hidden) { animation: viewEnter .38s cubic-bezier(.22,1,.36,1) both; }
+.btn { transition-duration: .26s; }
+.top-nav a { transition-duration: .26s; }
+.side-item { transition-duration: .25s; }
+.input, .select, textarea.input { transition-duration: .22s; }
+.bento-card { transition-duration: .32s; }
+.side-mask { transition: opacity .38s cubic-bezier(.22,1,.36,1); }
+.side-nav { transition: transform .42s cubic-bezier(.22,1,.36,1); will-change: transform; }
+.side-nav.open { box-shadow: 0 22px 65px rgba(0,0,0,.42); }
+.modal-bg { animation: overlayEnter .24s ease-out both; }
+.modal-bg .modal { animation: modalEnter .34s cubic-bezier(.22,1,.36,1) both; transform-origin: center; }
+.modal-bg.modal-leaving { animation: overlayExit .18s ease-in both; pointer-events: none; }
+.modal-bg.modal-leaving .modal { animation: modalExit .18s ease-in both; }
+.menu { animation: menuEnter .24s cubic-bezier(.22,1,.36,1) both; transform-origin: top left; }
+.btn svg, .btn-icon svg, .icon-btn svg { display: block; width: 16px; height: 16px; flex: 0 0 auto; }
+.inline-icon { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.badge-sparkle { display: inline-flex; align-items: center; justify-content: center; }
+.badge-sparkle svg, .tiny-spark svg { display: block; width: 14px; height: 14px; fill: currentColor; }
+.proof-avatars i svg { display: block; width: 11px; height: 11px; fill: currentColor; }
+.tiny-spark { display: inline-flex; align-items: center; justify-content: center; }
+.integration-check { display: grid; place-items: center; width: 18px; height: 18px; flex: 0 0 18px; margin-left: auto; font-size: 0; }
+.integration-check svg { display: block; width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.footer-mark { display: inline-flex; align-items: center; vertical-align: middle; }
+.footer-mark svg { display: block; width: 13px; height: 13px; fill: currentColor; }
+.admin-shell .view-loader { animation: overlayEnter .2s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .view.active, .view.active.view-leaving, .admin-shell:not(.hidden),
+  .modal-bg, .modal-bg .modal, .modal-bg.modal-leaving,
+  .modal-bg.modal-leaving .modal, .menu { animation: none !important; }
+  .side-nav, .side-mask, .btn, .top-nav a, .side-item, .input,
+  .select, textarea.input, .bento-card { transition: none !important; }
+}
