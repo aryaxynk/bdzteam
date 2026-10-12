@@ -455,3 +455,105 @@ tbody tr:last-child td{border-bottom:0}tr:hover td{background:#141419}
   *,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
   body.is-loading .bento-card::after{animation:none!important;opacity:0}
 }
+
+/* AuraMind v121 — responsive hardening for every workspace/admin/token view */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+@supports (overflow: clip) {
+  html, body { overflow-x: clip; }
+}
+body, #root, #app, .admin-shell, #pages, .view, main,
+.page-shell, .bento-grid, .bento-dash, .aurora-stage,
+.card, .bento-card, .login-page, .login-layout, .login-box,
+.keys-layout, .keys-card, .side-nav, .modal, .modal-bg {
+  min-width: 0;
+  max-width: 100%;
+}
+img, svg, video, canvas, iframe { max-width: 100%; }
+input, select, textarea, button { max-width: 100%; }
+p, a, label, small, strong, code, .hint, .stat-caption, .meta-item,
+.mono, .key-code, .tag, .version-url-cell, .version-meta-value,
+.hero-subtitle, .intro-meta, .integration-logo, .login-points li {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+pre, .code { max-width: 100%; overflow-wrap: anywhere; white-space: pre-wrap; }
+.table-wrap { max-width: 100%; min-width: 0; overscroll-behavior-x: contain; }
+table { max-width: 100%; }
+#pg-versions .table-wrap table { min-width: 650px; }
+.version-cards { display: none; }
+.version-card {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.version-card + .version-card { margin-top: 9px; }
+.version-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+.version-card-title { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.version-card-title strong { font-size: 15px; overflow-wrap: anywhere; }
+.version-app { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.version-card-meta {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.version-meta-label { color: var(--muted); font-size: 10px; }
+.version-meta-value { min-width: 0; font-size: 11px; overflow-wrap: anywhere; }
+.version-empty { padding: 16px 4px; color: var(--muted); font-size: 12px; }
+.key-card, .admin-card, .stat, .card { min-width: 0; }
+.md-admin-heading > *, .section-head > *, .toolbar > *, .head-actions > * { min-width: 0; }
+.admin-shell .input, .admin-shell .select, .admin-shell textarea { min-width: 0; }
+
+@media (max-width: 880px) {
+  .login-layout { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .bento-dash { grid-template-columns: repeat(6, minmax(0,1fr)); }
+  .bento-dash .stat { grid-column: span 3; }
+  .bento-dash .tile-chart, .bento-dash .tile-note,
+  .bento-dash .tile-7, .bento-dash .tile-5,
+  .bento-dash .tile-wide { grid-column: 1 / -1; }
+  #pg-versions .table-wrap table { min-width: 650px; }
+}
+@media (max-width: 600px) {
+  .versions-table-wrap { display: none !important; }
+  .version-cards { display: block; }
+  #pg-versions .card > .toolbar { margin-bottom: 12px; }
+  #pg-versions #verQ { width: 100%; max-width: none !important; }
+  .bento-dash { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
+  .bento-dash .stat { grid-column: span 1; }
+  .bento-dash .tile-chart, .bento-dash .tile-note,
+  .bento-dash .tile-7, .bento-dash .tile-5,
+  .bento-dash .tile-wide { grid-column: 1 / -1; }
+  .md-heading-actions, .md-heading-actions .btn { max-width: 100%; }
+  .md-heading-actions { width: 100%; display: flex; flex-wrap: wrap; }
+  .md-heading-actions .btn { flex: 1 1 auto; }
+  .login-layout { grid-template-columns: minmax(0,1fr); }
+  .side-nav { max-width: 88vw; }
+  .menu { max-width: calc(100vw - 16px); overflow-wrap: anywhere; }
+  .modal-bg { padding: 10px; }
+  .modal { width: 100%; max-width: 540px; }
+  #saveMsg { margin: 10px 0 0; display: block; }
+}
+@media (max-width: 420px) {
+  .topbar:not(.app-topbar) .topbar-subtitle { display: none; }
+  .topbar:not(.app-topbar) { gap: 6px; }
+  .topbar:not(.app-topbar) #logout { min-width: 0; padding-inline: 9px; }
+  .topbar:not(.app-topbar) .icon-btn { width: 33px; min-width: 33px; height: 34px; min-height: 34px; }
+  .md-admin-heading h1 { font-size: clamp(1.45rem, 7vw, 1.7rem); }
+  .login-box { padding: 20px 15px; }
+  .hero-card { overflow: hidden; }
+  .hero-card h1 { font-size: clamp(1.9rem, 9vw, 2.5rem); }
+}
