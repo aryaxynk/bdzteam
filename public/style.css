@@ -115,11 +115,13 @@ body.is-loading .bento-card::after{content:"";display:block;position:absolute;z-
 .hero-card h1 span{background:linear-gradient(105deg,#fff 5%,#d9c1ff 48%,#80fff4 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero-subtitle{max-width:500px;margin:0;color:#a7a5b0;font-size:13px;line-height:1.8}
 .hero-footer{display:flex;align-items:center;gap:21px;flex-wrap:wrap;margin-top:26px}
-.hero-cta{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;gap:24px;min-height:47px;height:47px;padding:0 17px;border:0;border-radius:10px;background:#fff;color:#09080c;font-size:12px;font-weight:700}
-.hero-cta:hover{background:#f0e7ff;color:#0d0816;box-shadow:0 0 32px rgba(121,40,202,.22)}
+.hero-cta{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;gap:24px;min-height:47px;height:47px;padding:1.5px 17px;border:0;border-radius:10px;background:transparent;color:#09080c;font-size:12px;font-weight:700}
+.hero-cta:hover{background:transparent;color:#0d0816;box-shadow:0 0 32px rgba(121,40,202,.22)}
 .hero-cta:active{transform:scale(.99)}
-.hero-cta .cta-beam{position:absolute;z-index:-1;inset:-1px;padding:1.5px;border-radius:inherit;background:conic-gradient(from 0deg,transparent 0 65%,#7928CA 74%,#00DFD8 81%,transparent 91%);animation:beam-spin 3.8s linear infinite;pointer-events:none;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
-.hero-cta .cta-label,.hero-cta svg{position:relative;z-index:1}
+.hero-cta .cta-surface{position:absolute;z-index:0;inset:1.5px;border-radius:8.5px;background:#fff;transition:background .18s var(--ease)}
+.hero-cta .cta-beam{position:absolute;z-index:1;inset:0;padding:1.5px;border-radius:inherit;background:conic-gradient(from 0deg,transparent 0 65%,#7928CA 74%,#00DFD8 81%,transparent 91%);animation:beam-spin 3.8s linear infinite;pointer-events:none;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+.hero-cta:hover .cta-surface{background:#f0e7ff}
+.hero-cta .cta-label,.hero-cta svg{position:relative;z-index:2}
 .hero-cta svg{width:17px;height:17px;stroke-width:2}
 .hero-proof{display:flex;align-items:center;gap:9px}
 .proof-avatars{display:flex;align-items:center;padding-left:4px}
