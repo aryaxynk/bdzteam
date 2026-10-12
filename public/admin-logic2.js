@@ -65,7 +65,7 @@ function renderAdmins(){
           <strong>${esc(u.username)}</strong>
           <span class="meta-item">${esc(u.role||'ADMIN')}</span>
         </div>
-        <button type="button" class="btn sm icon-btn" data-menu="admin" data-id="${u.id}">⋮</button>
+        <button type="button" class="btn sm icon-btn" data-menu="admin" data-id="${u.id}" aria-label="Tùy chọn admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button>
       </div>
       <div class="admin-card-meta">
         <span class="tag ${u.enabled!==false?'on':'off'}">${u.enabled!==false?'Bật':'Tắt'}</span>
