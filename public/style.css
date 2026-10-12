@@ -772,7 +772,7 @@ body.token-page {
 .token-status.err::before { content:"!"; display:grid; place-items:center; border:0; border-radius:50%; background:rgba(255,116,116,.13); color:#ff9292; font-size:12px; font-weight:700; animation:none; }
 .token-output { min-width:0; margin-top:17px; animation:tokenReveal .42s cubic-bezier(.22,1,.36,1) both; }
 .token-key-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
-.token-key-heading label { color:#a19faa; font-size:9px; font-weight:700; letter-spacing:.12em; }
+.token-key-heading .token-key-label { color:#a19faa; font-size:9px; font-weight:700; letter-spacing:.12em; }
 .token-key-heading>span { color:#6be0da; font-size:8px; letter-spacing:.1em; }
 #key.token-key-box { width:100%; min-width:0; padding:15px; border:1px solid #35323e; border-radius:10px; background:#08080b; color:#f2eefb; font-size:clamp(12px,1.3vw,14px); line-height:1.7; overflow-wrap:anywhere; word-break:break-all; box-shadow:inset 0 1px 0 rgba(255,255,255,.025); }
 .token-copy { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; height:44px; margin-top:11px; border-color:#fff; border-radius:10px; background:#fff; color:#08080b; }
