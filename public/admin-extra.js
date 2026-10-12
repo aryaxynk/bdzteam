@@ -51,12 +51,12 @@ function renderBans(){
 function modalBan(){
   const root=$('modalRoot'); if(!root)return;
   root.innerHTML='<div class="modal-bg"><div class="modal"><h3>Ban visitor / IP</h3><div class="field"><label>Visitor ID</label><input id="bVis" class="input"></div><div class="field"><label>IP / fingerprint</label><input id="bIp" class="input"></div><div class="field"><label>Lý do</label><input id="bReason" class="input" value="manual"></div><div class="field"><label>Giờ ban</label><input id="bHours" class="input" type="number" value="24" min="1"></div><div class="field"><label>Ghi chú</label><input id="bNote" class="input"></div><div class="modal-actions"><button class="btn" id="mCancel">Hủy</button><button class="btn primary" id="mOk">Ban</button></div></div></div>';
-  $('mCancel').onclick=()=>root.innerHTML='';
+  $('mCancel').onclick=()=>closeModalSmooth(root);
   $('mOk').onclick=async()=>{
     try{
       const payload={visitor_id:$('bVis').value.trim(),ip_hash:$('bIp').value.trim(),reason:$('bReason').value.trim()||'manual',hours:+$('bHours').value||24,note:$('bNote').value.trim()};
       const x=await BDZ.rpc('bdz_admin_bans',{p_token:tok(),p_action:'ban',p_payload:payload});
-      if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');root.innerHTML='';loadBans();
+      if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');closeModalSmooth(root);loadBans();
     }catch(e){alert(e.message)}
   };
 }
