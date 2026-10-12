@@ -4,8 +4,8 @@ var tok=()=>sessionStorage.getItem('bdz_t')||'';
 var LOGO='https://263.org.vn/logo?v=20261003';
 var rows=[],admins=[],settings={},perms={can_keys:true,can_create_key:true,can_edit_key:true,can_delete_key:true,can_api_keys:true,can_settings:true,can_admins:true},role='OWNER',timer=null;
 var ST_LABEL={ACTIVE:'Hoạt động',DISABLED:'Tắt',EXPIRED:'Hết hạn',TIME_EXPIRED:'Hết hạn',DEVICE_LIMIT:'Giới hạn máy',LIMIT_REACHED:'Hết lượt',REACTIVATED:'Hoạt động',CREATED:'Mới tạo'};
-function themeInit(){document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light'}
-function themeToggle(){const n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;localStorage.setItem('bdz_theme',n)}
+function themeInit(){document.documentElement.dataset.theme=localStorage.getItem('auramind_theme')||'dark'}
+function themeToggle(){const n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;localStorage.setItem('auramind_theme',n);localStorage.setItem('bdz_theme',n)}
 function openSide(){const s=$('sideNav'),m=$('sideMask');if(s)s.classList.add('open');if(m)m.classList.add('open');document.body.classList.add('side-open')}
 function closeSide(){const s=$('sideNav'),m=$('sideMask');if(s)s.classList.remove('open');if(m)m.classList.remove('open');document.body.classList.remove('side-open')}
 function shell(){
