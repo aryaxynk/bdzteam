@@ -17,6 +17,18 @@ function closeModalSmooth(root){
   },180);
 }
 
+
+function closeModalSmooth(root){
+  if(!root)return;
+  const overlay=root.querySelector('.modal-bg');
+  if(!overlay){root.innerHTML='';return;}
+  if(overlay.classList.contains('modal-leaving'))return;
+  overlay.classList.add('modal-leaving');
+  window.setTimeout(function(){
+    if(root.contains(overlay))root.innerHTML='';
+  },180);
+}
+
 function shell(){
 $('root').innerHTML=`<div id="login" class="login-page">
 <a href="./" class="btn sm ghost login-back" id="btnBackLogin"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Trang chủ</a>
