@@ -25,8 +25,8 @@ $('root').innerHTML=`<div id="login" class="login-page">
 <a href="./" class="btn sm ghost login-back" id="btnBackLogin"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Trang chủ</a>
 <div class="login-layout">
   <section class="login-intro">
-    <div class="login-brand"><img src="${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZ Console</strong><small>KEY MANAGEMENT</small></span></div>
-    <div class="md-overline">ADMIN WORKSPACE</div>
+    <div class="login-brand"><img src="${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZ MOD</strong><small>KEY MANAGEMENT</small></span></div>
+    <div class="md-overline">ADMIN</div>
     <h2>Quản lý hệ thống<br>trong một nơi.</h2>
     <p>Theo dõi key, quản lý phiên thiết bị, cấu hình và quyền truy cập từ một giao diện thống nhất.</p>
     <ul class="login-points">
@@ -50,7 +50,7 @@ $('root').innerHTML=`<div id="login" class="login-page">
   <header class="topbar">
     <button type="button" class="btn icon-btn" id="btnMenu" aria-label="Mở menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <img class="logo-img" src="${LOGO}" alt="" referrerpolicy="no-referrer">
-    <div class="topbar-brand"><span class="brand">BDZ Console</span><span class="topbar-subtitle">Key management workspace</span></div>
+    <div class="topbar-brand"><span class="brand">BDZ MOD</span></div>
     <span class="grow"></span><span class="topbar-status"><span class="status-pulse"></span> Admin workspace</span>
     
     <button id="refresh" class="btn icon-btn" aria-label="Làm mới" title="Làm mới dữ liệu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M20 12a8 8 0 0 0-14-5L4 9m0 8v-5h5"/><path d="M4 12a8 8 0 0 0 14 5l2-2"/></svg></button>
