@@ -4,91 +4,108 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="BDZ Key Center — trung tâm nhận key với phiên xác thực an toàn.">
+<meta name="description" content="AuraMind — nền tảng AI tự động hóa quy trình làm việc.">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>BDZ Key Center</title>
-<link rel="stylesheet" href="./style.css?v=119">
+<title>AuraMind — AI Workspace</title>
+<link rel="stylesheet" href="./style.css?v=120">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 <link rel="apple-touch-icon" href="https://263.org.vn/logo?v=20261003">
 </head>
-<body class="md-public-app">
-<script>document.documentElement.dataset.theme=localStorage.getItem('bdz_theme')||'light';</script>
-<header class="md-app-bar" id="overview">
-  <a class="md-brand" href="./" aria-label="BDZ Key Center">
-    <img src="https://263.org.vn/logo?v=20261003" alt="" width="40" height="40" referrerpolicy="no-referrer">
-    <span class="md-brand-copy"><strong>BDZ Key Center</strong><small>SECURE ACCESS</small></span>
+<body class="is-loading">
+<script>document.documentElement.dataset.theme=localStorage.getItem('auramind_theme')||'dark';</script>
+<header class="topbar app-topbar" id="overview">
+  <a href="./" class="app-brand" aria-label="AuraMind home">
+    <span class="app-brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 3.5 19 12l8.5 3-8.5 3-3 8.5L13 18l-8.5-3L13 12 16 3.5Z"/><path d="m25 3 .9 3.1L29 7l-3.1.9L25 11l-.9-3.1L21 7l3.1-.9L25 3Z"/></svg></span>
+    <span class="app-brand-copy"><strong>AuraMind</strong><small>INTELLIGENCE, IN MOTION</small></span>
   </a>
-  <span class="status-pill"><span class="status-pulse"></span> Hệ thống hoạt động</span>
-  <div class="md-app-actions">
-    <a href="./admin.html" class="btn outline-btn md-admin-link" aria-label="Mở Admin">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg><span>Admin</span>
-    </a>
-    <button type="button" class="btn icon-btn theme-btn" id="themeBtn" title="Sáng / Tối" aria-label="Chuyển giao diện sáng tối">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
-    </button>
+  <nav class="top-nav" aria-label="Main navigation">
+    <a class="active" href="#overview">Workspace</a><a href="#ai-feature">AI Studio</a><a href="#integrations">Integrations</a>
+  </nav>
+  <div class="top-actions">
+    <span class="system-pill"><span class="live-dot"></span> All systems normal</span>
+    <a class="btn btn-quiet admin-link" href="./admin.html" aria-label="Mở Admin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg><span>Admin</span></a>
+    <button type="button" class="btn btn-icon" id="themeBtn" title="Sáng / Tối" aria-label="Chuyển giao diện sáng tối"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
   </div>
 </header>
-<div class="md-app-layout">
-  <nav class="md-navigation-rail" aria-label="Điều hướng">
-    <a class="md-nav-item active" href="#overview" aria-current="page"><span class="md-nav-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></svg></span><span>Tổng quan</span></a>
-    <a class="md-nav-item" href="#receive"><span class="md-nav-icon"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m12 12 8-8 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg></span><span>Nhận key</span></a>
-    <a class="md-nav-item" href="#steps"><span class="md-nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><span>Quy trình</span></a>
-    <a class="md-nav-item" href="#security"><span class="md-nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Bảo mật</span></a>
-  </nav>
-  <main class="md-content">
-    <section class="md-page-heading">
-      <div>
-        <div class="md-overline">BDZ WORKSPACE</div>
-        <h1>Trung tâm nhận key</h1>
-        <p>Tạo một phiên xác thực, hoàn thành liên kết và nhận key trên cùng thiết bị.</p>
-      </div>
-      <span class="chip"><span class="status-pulse"></span> Dịch vụ đang hoạt động</span>
+<main class="page-shell">
+  <section class="page-intro">
+    <div><div class="section-eyebrow"><span class="eyebrow-line"></span> PERSONAL AI WORKSPACE <span class="eyebrow-version">V.02</span></div><p class="intro-copy">Một không gian duy nhất. <span>Khả năng vô hạn.</span></p></div>
+    <div class="intro-meta"><span class="system-led"></span><span>Private workspace</span><span class="meta-separator"></span><span>Được bảo vệ bởi AuraMind</span></div>
+  </section>
+
+  <div class="aurora-stage">
+    <div class="aurora-glow" aria-hidden="true"></div>
+    <section class="bento-grid" aria-label="AuraMind features">
+      <article class="bento-card hero-card" data-spotlight>
+        <div class="hero-card-grid" aria-hidden="true"></div>
+        <div class="hero-content">
+          <div class="hero-badge"><span class="badge-sparkle">✳</span> YOUR AI, SUPERCHARGED <span class="badge-pill">BETA</span></div>
+          <h1>Điều khiển tương lai bằng <span>Trí Tuệ Nhân Tạo.</span></h1>
+          <p class="hero-subtitle">AuraMind tự động hóa quy trình làm việc của bạn chỉ bằng một câu lệnh. Tốc độ vượt trội. Bảo mật tối đa.</p>
+          <div class="hero-footer">
+            <button id="start" type="button" class="btn hero-cta"><span class="cta-beam" aria-hidden="true"></span><span class="cta-label" id="startLabel">Trải nghiệm miễn phí</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+            <div class="hero-proof"><span class="proof-avatars"><i>A</i><i>M</i><i>✳</i></span><span><strong>AI-powered</strong><small>Made for momentum</small></span></div>
+          </div>
+          <div id="result" class="result hidden" role="status" aria-live="polite"><div id="status"></div><div id="link" class="result-link"></div></div>
+          <div class="hero-session"><span class="session-dot"></span><span id="durLine">Đang kiểm tra thời hạn…</span><span class="session-divider"></span><span>Phiên xác thực riêng</span></div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="orbital orbital-one"></div><div class="orbital orbital-two"></div><div class="orbital orbital-three"></div>
+          <div class="hero-orb"><span class="orb-core"></span><span class="orb-ring ring-a"></span><span class="orb-ring ring-b"></span><span class="orb-cross cross-a"></span><span class="orb-cross cross-b"></span></div>
+          <span class="float-tag tag-top"><span class="tiny-spark">✳</span> Neural engine</span>
+          <span class="float-tag tag-bottom"><span class="live-dot"></span> Processing context</span>
+        </div>
+      </article>
+
+      <article class="bento-card processing-card" data-spotlight>
+        <div class="card-topline"><span class="card-kicker">PERFORMANCE</span><span class="live-status"><span class="live-dot"></span> LIVE</span></div>
+        <div class="card-heading"><div><h2>Tốc độ xử lý</h2><p>Phản hồi trong thời gian thực</p></div><span class="mini-icon"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z"/></svg></span></div>
+        <div class="latency-readout"><strong id="latencyValue">142</strong><span>ms</span><span class="latency-trend"><svg viewBox="0 0 24 24"><path d="m4 15 5-5 4 3 7-8"/><path d="M14 5h6v6"/></svg> <b>ultra-low</b></span></div>
+        <div class="wave-wrap" aria-label="Biểu đồ xử lý thời gian thực">
+          <div class="wave-grid"></div>
+          <svg class="waveform" viewBox="0 0 360 96" preserveAspectRatio="none" role="img" aria-label="Waveform"><defs><linearGradient id="waveStroke" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#7928CA"/><stop offset="1" stop-color="#00DFD8"/></linearGradient><linearGradient id="waveFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7928CA" stop-opacity=".22"/><stop offset="1" stop-color="#00DFD8" stop-opacity="0"/></linearGradient></defs><path class="wave-area" d="M0 55 C10 55 10 40 20 40 S30 72 40 57 S50 19 60 44 S70 82 80 53 S90 32 100 45 S110 69 120 53 S130 16 140 42 S150 76 160 54 S170 35 180 48 S190 67 200 51 S210 25 220 45 S230 77 240 53 S250 34 260 47 S270 65 280 51 S290 22 300 44 S310 74 320 54 S340 35 360 49 L360 96 L0 96 Z"/><path class="wave-line" d="M0 55 C10 55 10 40 20 40 S30 72 40 57 S50 19 60 44 S70 82 80 53 S90 32 100 45 S110 69 120 53 S130 16 140 42 S150 76 160 54 S170 35 180 48 S190 67 200 51 S210 25 220 45 S230 77 240 53 S250 34 260 47 S270 65 280 51 S290 22 300 44 S310 74 320 54 S340 35 360 49"/></svg>
+        </div>
+        <div class="processing-foot"><span>AVERAGE RESPONSE</span><span><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><strong>Optimized</strong></div>
+      </article>
+
+      <article id="ai-feature" class="bento-card ai-card" data-spotlight>
+        <div class="card-topline"><span class="card-kicker">AI CORE</span><span class="mini-chip purple-chip">NEURAL 3D</span></div>
+        <div class="ai-mesh-stage">
+          <div class="mesh-halo"></div>
+          <svg class="mesh-art" viewBox="0 0 240 180" role="img" aria-label="Lưới AI ba chiều"><defs><linearGradient id="meshGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7928CA"/><stop offset="1" stop-color="#00DFD8"/></linearGradient></defs><g class="mesh-lines" fill="none" stroke="url(#meshGradient)" stroke-width="1"><ellipse cx="120" cy="90" rx="78" ry="29"/><ellipse cx="120" cy="90" rx="78" ry="47" transform="rotate(32 120 90)"/><ellipse cx="120" cy="90" rx="78" ry="47" transform="rotate(-32 120 90)"/><ellipse cx="120" cy="90" rx="29" ry="78"/><ellipse cx="120" cy="90" rx="47" ry="78" transform="rotate(55 120 90)"/><ellipse cx="120" cy="90" rx="47" ry="78" transform="rotate(-55 120 90)"/><path d="M42 90h156M53 60c44 27 90 27 134 0M53 120c44-27 90-27 134 0M120 12v156M84 20c33 44 33 96 0 140M156 20c-33 44-33 96 0 140"/></g><circle cx="120" cy="90" r="5" fill="#e5d1ff"/><circle cx="120" cy="90" r="13" fill="#7928CA" opacity=".25"/></svg>
+          <span class="mesh-node node-one"></span><span class="mesh-node node-two"></span><span class="mesh-node node-three"></span>
+        </div>
+        <div class="feature-copy"><div class="card-heading"><div><h2>Tự động hóa thông minh</h2><p>Nhận diện và xử lý hơn 500 tác vụ phức tạp cùng lúc.</p></div></div><span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></svg></span></div>
+      </article>
+
+      <article id="security" class="bento-card security-card" data-spotlight>
+        <div class="card-topline"><span class="card-kicker">SECURITY LAYER</span><span class="secure-label"><span></span> AES-256</span></div>
+        <div class="security-graphic" aria-hidden="true"><div class="radar-rings"><span class="radar-sweep"></span><span class="radar-center"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><rect x="9" y="10" width="6" height="6" rx="1"/><path d="M10 10V8.5a2 2 0 0 1 4 0V10"/></svg></span></div></div>
+        <div class="feature-copy"><div class="card-heading"><div><h2>Mã hóa đầu cuối</h2><p>Đạt tiêu chuẩn bảo mật quân đội toàn cầu.</p></div></div><span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></svg></span></div>
+      </article>
+
+      <article id="integrations" class="bento-card integration-card" data-spotlight>
+        <div class="card-topline"><span class="card-kicker">CONNECTED WORKFLOW</span><span class="integration-count">03 APPS</span></div>
+        <div class="feature-copy integration-copy"><div class="card-heading"><div><h2>Tích hợp đa nền tảng</h2><p>Đồng bộ hóa dữ liệu với Figma, GitHub, Slack trong 1 chạm.</p></div></div><span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></svg></span></div>
+        <div class="integration-window" aria-label="Figma, GitHub và Slack integrations">
+          <div class="integration-track">
+            <div class="integration-set">
+              <div class="integration-logo figma-logo"><span class="brand-symbol"><svg viewBox="0 0 24 36" aria-hidden="true"><path fill="#F24E1E" d="M12 0h0a6 6 0 0 1 0 12H0V6a6 6 0 0 1 6-6h6Z"/><path fill="#FF7262" d="M0 12h12a6 6 0 1 1-6 6H0Z"/><path fill="#A259FF" d="M0 24a6 6 0 0 1 6-6h6v12H6a6 6 0 0 1-6-6Z"/><path fill="#1ABCFE" d="M12 18h0a6 6 0 1 1 0 12h-6V24a6 6 0 0 1 6-6Z"/><path fill="#0ACF83" d="M12 0h6a6 6 0 0 1 0 12h-6Z"/></svg></span><span>Figma</span><span class="integration-check">↗</span></div>
+              <div class="integration-logo github-logo"><span class="brand-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .9a11.1 11.1 0 0 0-3.51 21.63c.55.1.76-.24.76-.54v-2.1c-3.1.67-3.76-1.31-3.76-1.31-.5-1.28-1.22-1.62-1.22-1.62-1-.69.08-.68.08-.68 1.1.08 1.68 1.13 1.68 1.13.98 1.68 2.57 1.2 3.2.92.1-.72.38-1.21.7-1.49-2.47-.28-5.07-1.24-5.07-5.5 0-1.22.43-2.22 1.14-3-.12-.28-.5-1.42.11-2.95 0 0 .93-.3 3.05 1.14a10.6 10.6 0 0 1 5.55 0c2.12-1.44 3.05-1.14 3.05-1.14.61 1.53.23 2.67.11 2.95.71.78 1.14 1.78 1.14 3.01 0 4.27-2.6 5.21-5.08 5.49.4.34.75 1.01.75 2.04v3.02c0 .3.2.65.77.54A11.1 11.1 0 0 0 12 .9Z"/></svg></span><span>GitHub</span><span class="integration-check">↗</span></div>
+              <div class="integration-logo slack-logo"><span class="brand-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#36C5F0" d="M9.1 14.4a1.8 1.8 0 1 1-3.6 0V9.1a1.8 1.8 0 0 1 3.6 0v5.3Z"/><path fill="#2EB67D" d="M9.6 9.1a1.8 1.8 0 1 1 0-3.6h5.3a1.8 1.8 0 1 1 0 3.6H9.6Z"/><path fill="#E01E5A" d="M14.9 9.6a1.8 1.8 0 1 1 3.6 0v5.3a1.8 1.8 0 0 1-3.6 0V9.6Z"/><path fill="#ECB22E" d="M14.4 14.9a1.8 1.8 0 1 1 0 3.6H9.1a1.8 1.8 0 1 1 0-3.6h5.3Z"/></svg></span><span>Slack</span><span class="integration-check">↗</span></div>
+            </div>
+            <div class="integration-set" aria-hidden="true">
+              <div class="integration-logo figma-logo"><span class="brand-symbol"><svg viewBox="0 0 24 36"><path fill="#F24E1E" d="M12 0h0a6 6 0 0 1 0 12H0V6a6 6 0 0 1 6-6h6Z"/><path fill="#FF7262" d="M0 12h12a6 6 0 1 1-6 6H0Z"/><path fill="#A259FF" d="M0 24a6 6 0 0 1 6-6h6v12H6a6 6 0 0 1-6-6Z"/><path fill="#1ABCFE" d="M12 18a6 6 0 1 1 0 12h-6V24a6 6 0 0 1 6-6Z"/><path fill="#0ACF83" d="M12 0h6a6 6 0 0 1 0 12h-6Z"/></svg></span><span>Figma</span><span class="integration-check">↗</span></div>
+              <div class="integration-logo github-logo"><span class="brand-symbol"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 .9a11.1 11.1 0 0 0-3.51 21.63c.55.1.76-.24.76-.54v-2.1c-3.1.67-3.76-1.31-3.76-1.31-.5-1.28-1.22-1.62-1.22-1.62-1-.69.08-.68.08-.68 1.1.08 1.68 1.13 1.68 1.13.98 1.68 2.57 1.2 3.2.92.1-.72.38-1.21.7-1.49-.12-.72.38-1.21.7-1.49-2.47-.28-5.07-1.24-5.07-5.5 0-1.22.43-2.22 1.14-3-.12-.28-.5-1.42.11-2.95 0 0 .93-.3 3.05 1.14a10.6 10.6 0 0 1 5.55 0c2.12-1.44 3.05-1.14 3.05-1.14.61 1.53.23 2.67.11 2.95.71.78 1.14 1.78 1.14 3.01 0 4.27-2.6 5.21-5.08 5.49.4.34.75 1.01.75 2.04v3.02c0 .3.2.65.77.54A11.1 11.1 0 0 0 12 .9Z"/></svg></span><span>GitHub</span><span class="integration-check">↗</span></div>
+              <div class="integration-logo slack-logo"><span class="brand-symbol"><svg viewBox="0 0 24 24"><path fill="#36C5F0" d="M9.1 14.4a1.8 1.8 0 1 1-3.6 0V9.1a1.8 1.8 0 0 1 3.6 0v5.3Z"/><path fill="#2EB67D" d="M9.6 9.1a1.8 1.8 0 1 1 0-3.6h5.3a1.8 1.8 0 1 1 0 3.6H9.6Z"/><path fill="#E01E5A" d="M14.9 9.6a1.8 1.8 0 1 1 3.6 0v5.3a1.8 1.8 0 0 1-3.6 0V9.6Z"/><path fill="#ECB22E" d="M14.4 14.9a1.8 1.8 0 1 1 0 3.6H9.1a1.8 1.8 0 1 1 0-3.6h5.3Z"/></svg></span><span>Slack</span><span class="integration-check">↗</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
     </section>
-    <div class="md-content-grid">
-      <section id="receive" class="md-card md-receive-card" aria-labelledby="receiveTitle">
-        <div class="md-card-top">
-          <span class="md-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m12 12 8-8 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg></span>
-          <div>
-            <p class="eyebrow">Phiên truy cập</p>
-            <h2 id="receiveTitle">Tạo phiên nhận key</h2>
-            <p>Liên kết được tạo riêng cho phiên hiện tại. Hãy hoàn tất trên chính thiết bị này.</p>
-          </div>
-        </div>
-        <div class="md-session-details">
-          <div class="md-detail"><span>Thời hạn key</span><strong id="durLine">Đang kiểm tra…</strong></div>
-          <div class="md-detail"><span>Liên kết thiết bị</span><strong>Cùng thiết bị</strong></div>
-        </div>
-        <button id="start" type="button" class="btn primary md-cta">
-          <span id="startLabel">Bắt đầu nhận key</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-        </button>
-        <div id="result" class="result hidden" role="status" aria-live="polite"><div id="status"></div><div id="link" class="result-link"></div></div>
-        <div class="md-assurance"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg><span>Không chia sẻ key công khai. Key được cấp theo chính sách và giới hạn do hệ thống thiết lập.</span></div>
-        <div class="md-card-footer"><span class="status-pulse"></span> BDZ Key Service <span>·</span> Phiên xác thực riêng</div>
-      </section>
-      <aside class="md-aside-stack">
-        <section id="steps" class="md-card">
-          <div class="md-card-heading">
-            <span class="md-card-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5h12M8 12h12M8 19h12"/><circle cx="4" cy="5" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="19" r="1"/></svg></span>
-            <h2>Cách nhận key</h2>
-          </div>
-          <div class="md-steps">
-            <div class="md-step"><span class="md-step-number">1</span><div><strong>Tạo phiên</strong><p>Nhấn “Bắt đầu nhận key” để khởi tạo liên kết riêng.</p></div></div>
-            <div class="md-step"><span class="md-step-number">2</span><div><strong>Hoàn thành liên kết</strong><p>Làm theo hướng dẫn và không đổi thiết bị giữa chừng.</p></div></div>
-            <div class="md-step"><span class="md-step-number">3</span><div><strong>Nhận key</strong><p>Quay lại trang này trên cùng thiết bị để hoàn tất.</p></div></div>
-          </div>
-        </section>
-        <section id="security" class="md-card md-security-card">
-          <div class="md-security-row">
-            <span class="md-card-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-            <div><h2>Phiên bảo mật</h2><p>Phiên xác thực gắn với thiết bị theo cấu hình quản trị. Không chuyển tiếp key cho người khác.</p></div>
-          </div>
-        </section>
-      </aside>
-    </div>
-  </main>
-</div>
-<footer class="md-footer"><span><strong>BDZ</strong> · Key Center</span><span>Secure access management</span></footer>
+  </div>
+  <footer class="page-footer"><span><span class="footer-mark">✳</span> AuraMind <span class="footer-dot">/</span> AI Workspace</span><span>Built for focus. Designed for momentum.</span><span class="footer-status"><span class="live-dot"></span> Operational</span></footer>
+</main>
 <script src="./config.js?v=111"></script>
 <script src="./supabase-api.js?v=111"></script>
 <script>
@@ -144,5 +161,33 @@
 })();
 </script>
 
+
+<script>
+(function(){
+  var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced){document.body.classList.remove('is-loading');}
+  else{window.setTimeout(function(){document.body.classList.remove('is-loading');},840);}
+  document.querySelectorAll('[data-spotlight]').forEach(function(card){
+    card.addEventListener('pointermove',function(event){
+      if(event.pointerType&&event.pointerType!=='mouse')return;
+      var rect=card.getBoundingClientRect();
+      card.style.setProperty('--spot-x',(event.clientX-rect.left)+'px');
+      card.style.setProperty('--spot-y',(event.clientY-rect.top)+'px');
+      card.classList.add('spot-active');
+    },{passive:true});
+    card.addEventListener('pointerleave',function(){card.classList.remove('spot-active');});
+  });
+  var values=[142,139,144,141,146,140,143,142,138,145],index=0;
+  var counter=document.getElementById('latencyValue');
+  window.setInterval(function(){
+    if(document.hidden||!counter)return;
+    index=(index+1)%values.length;
+    counter.textContent=String(values[index]);
+    counter.classList.remove('counter-tick');
+    void counter.offsetWidth;
+    counter.classList.add('counter-tick');
+  },1450);
+})();
+</script>
 </body>
 </html>
