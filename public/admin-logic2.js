@@ -15,7 +15,7 @@ function renderKeys(){
       <td><span class="tag ${on}">${esc(st)}</span></td>
       <td class="nowrap">${used}/${k.max_devices||1}</td>
       <td class="nowrap muted-sm">${k.expires_at?new Date(k.expires_at).toLocaleString('vi-VN'):'—'}</td>
-      <td><button type="button" class="btn sm icon-btn" data-menu="key" data-id="${k.id}" aria-label="Menu">⋮</button></td>
+      <td><button type="button" class="btn sm icon-btn" data-menu="key" data-id="${k.id}" aria-label="Tùy chọn key"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button></td>
     </tr>`;
   }).join('')||empty;
   $('keyRows').querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>openRowMenu(e,+b.dataset.id,'key'));
@@ -34,7 +34,7 @@ function renderKeys(){
             <span class="mono key-code">${esc(k.key_code)}</span>
             ${badge}
           </div>
-          <button type="button" class="btn sm icon-btn" data-menu="key" data-id="${k.id}">⋮</button>
+          <button type="button" class="btn sm icon-btn" data-menu="key" data-id="${k.id}" aria-label="Tùy chọn key"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button>
         </div>
         <div class="key-card-meta">
           <span class="tag ${on}">${esc(st)}</span>
@@ -54,7 +54,7 @@ function renderAdmins(){
     <td>${esc(u.role||'')}</td>
     <td><span class="tag ${u.enabled!==false?'on':'off'}">${u.enabled!==false?'Bật':'Tắt'}</span></td>
     <td class="muted-sm">${u.last_login?new Date(u.last_login).toLocaleString('vi-VN'):'—'}</td>
-    <td><button type="button" class="btn sm icon-btn" data-menu="admin" data-id="${u.id}">⋮</button></td>
+    <td><button type="button" class="btn sm icon-btn" data-menu="admin" data-id="${u.id}" aria-label="Tùy chọn admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button></td>
   </tr>`).join(''):'<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px">Chưa có admin phụ</td></tr>';
   t.querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>openRowMenu(e,+b.dataset.id,'admin'));
   const cards=$('adminCards');
@@ -75,7 +75,7 @@ function renderAdmins(){
     cards.querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>openRowMenu(e,+b.dataset.id,'admin'));
   }
 }
-function modalAdmin(u){const edit=!!u;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa admin':'Tạo admin phụ'}</h3><div class="field"><label>Username</label><input id="maUser" class="input" value="${esc(u&&u.username||'')}"></div><div class="field"><label>Password ${edit?'(để trống = giữ)':''}</label><input id="maPass" class="input" type="password"></div><div class="modal-actions"><button class="btn ghost" id="maCancel">Hủy</button><button class="btn primary" id="maSave">Lưu</button></div></div></div>`;$('maCancel').onclick=()=>root.innerHTML='';$('maSave').onclick=async()=>{try{const payload={username:($('maUser').value||'').trim(),password:$('maPass').value||''};if(edit)payload.id=u.id;const x=await BDZ.rpc('bdz_admin_admins',{p_token:tok(),p_action:edit?'update':'create',p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');root.innerHTML='';loadAdmins()}catch(e){alert(e.message)}}}
+function modalAdmin(u){const edit=!!u;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa admin':'Tạo admin phụ'}</h3><div class="field"><label>Username</label><input id="maUser" class="input" value="${esc(u&&u.username||'')}"></div><div class="field"><label>Password ${edit?'(để trống = giữ)':''}</label><input id="maPass" class="input" type="password"></div><div class="modal-actions"><button class="btn ghost" id="maCancel">Hủy</button><button class="btn primary" id="maSave">Lưu</button></div></div></div>`;$('maCancel').onclick=()=>closeModalSmooth(root);$('maSave').onclick=async()=>{try{const payload={username:($('maUser').value||'').trim(),password:$('maPass').value||''};if(edit)payload.id=u.id;const x=await BDZ.rpc('bdz_admin_admins',{p_token:tok(),p_action:edit?'update':'create',p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');closeModalSmooth(root);loadAdmins()}catch(e){alert(e.message)}}}
 async function modalPerms(u){
   if(String(role).toUpperCase()!=='OWNER'){alert('Chỉ OWNER được thay đổi phân quyền.');return}
   const root=$('modalRoot');if(!root)return;
@@ -99,20 +99,20 @@ async function modalPerms(u){
       <div class="perm-list">${labels.map(([key,label])=>`<label style="display:flex;align-items:center;gap:10px;margin:12px 0"><input type="checkbox" id="perm-${key}" ${(current[key]===undefined?defaults[key]:current[key]===true)?'checked':''}><span>${label}</span></label>`).join('')}</div>
       <div class="modal-actions"><button class="btn ghost" id="mpCancel">Hủy</button><button class="btn primary" id="mpSave">Lưu quyền</button></div>
     </div></div>`;
-    $('mpCancel').onclick=()=>root.innerHTML='';
+    $('mpCancel').onclick=()=>closeModalSmooth(root);
     $('mpSave').onclick=async()=>{
       const btn=$('mpSave');if(btn)btn.disabled=true;
       try{
         const payload={};labels.forEach(([key])=>{payload[key]=!!$('perm-'+key)?.checked});
         const saved=await BDZ.rpc('bdz_admin_perms',{p_token:tok(),p_action:'set',p_admin_id:u.id,p_payload:payload});
         if(!saved||!saved.ok)throw Error(saved&&saved.error||'Không lưu được phân quyền');
-        root.innerHTML='';
+        closeModalSmooth(root);
         await loadAdmins();
       }catch(err){alert(err.message||'Không lưu được phân quyền');if(btn)btn.disabled=false}
     };
   }catch(err){alert(err.message||'Không tải được phân quyền')}
 }
-function modalKey(k){const edit=!!k;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa key':'Tạo key'}</h3><div class="field"><label>Key code</label><input id="mkCode" class="input" value="${esc(k&&k.key_code||'')}" ${edit?'readonly':''}></div><div class="grid2"><div class="field"><label>Max devices</label><input id="mkDev" class="input" type="number" min="1" value="${k&&k.max_devices||1}"></div><div class="field"><label>Thời hạn (giờ)</label><input id="mkDur" class="input" type="number" min="1" value="${k&&k.duration_hours||settings.duration_hours||5}"></div></div><div class="modal-actions"><button class="btn ghost" id="mkCancel">Hủy</button><button class="btn primary" id="mkSave">Lưu</button></div></div></div>`;$('mkCancel').onclick=()=>root.innerHTML='';$('mkSave').onclick=async()=>{try{const payload={key_code:($('mkCode').value||'').trim(),max_devices:+$('mkDev').value||1,duration_hours:+$('mkDur').value||5};if(edit)payload.id=k.id;const action=edit?'update':'create';const x=await BDZ.rpc('bdz_admin_key_action',{p_token:tok(),p_action:action,p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');root.innerHTML='';if(typeof load==='function')load(true)}catch(e){alert(e.message)}}}
+function modalKey(k){const edit=!!k;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa key':'Tạo key'}</h3><div class="field"><label>Key code</label><input id="mkCode" class="input" value="${esc(k&&k.key_code||'')}" ${edit?'readonly':''}></div><div class="grid2"><div class="field"><label>Max devices</label><input id="mkDev" class="input" type="number" min="1" value="${k&&k.max_devices||1}"></div><div class="field"><label>Thời hạn (giờ)</label><input id="mkDur" class="input" type="number" min="1" value="${k&&k.duration_hours||settings.duration_hours||5}"></div></div><div class="modal-actions"><button class="btn ghost" id="mkCancel">Hủy</button><button class="btn primary" id="mkSave">Lưu</button></div></div></div>`;$('mkCancel').onclick=()=>closeModalSmooth(root);$('mkSave').onclick=async()=>{try{const payload={key_code:($('mkCode').value||'').trim(),max_devices:+$('mkDev').value||1,duration_hours:+$('mkDur').value||5};if(edit)payload.id=k.id;const action=edit?'update':'create';const x=await BDZ.rpc('bdz_admin_key_action',{p_token:tok(),p_action:action,p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');closeModalSmooth(root);if(typeof load==='function')load(true)}catch(e){alert(e.message)}}}
 async function loadSettings(){try{const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'get'});if(!x||!x.ok)return;settings=x.settings||x;if($('setDur'))$('setDur').value=settings.duration_hours||settings.key_duration_hours||5;if($('setDev'))$('setDev').value=settings.max_devices||1;if($('setLim'))$('setLim').value=settings.get_limit||settings.max_gets_per_visitor||3;if($('setIp'))$('setIp').value=String(settings.bind_ip!==false);if($('setBind'))$('setBind').value=String(settings.bind_device!==false)}catch(e){console.warn(e)}}
 async function saveSettings(){const msg=$('saveMsg');if(msg)msg.textContent='Đang lưu…';try{const payload={duration_hours:+($('setDur')&&$('setDur').value||5),max_devices:+($('setDev')&&$('setDev').value||1),get_limit:+($('setLim')&&$('setLim').value||3),bind_ip:($('setIp')&&$('setIp').value)==='true',bind_device:($('setBind')&&$('setBind').value)==='true'};const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'save',p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');if(msg)msg.textContent='Đã lưu';setTimeout(()=>{if(msg)msg.textContent=''},1500)}catch(e){if(msg)msg.textContent=e.message||'Lỗi'}}
 function showLang(lang){document.querySelectorAll('.tab-lang').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));const s=$('apiSample');const p=$('apiSpec');if(s)s.textContent=SAMPLES[lang]||'';if(p)p.textContent=API_SPEC}
