@@ -30,7 +30,11 @@ function renderVersions(){
     <td style="font-size:12px;color:var(--muted)">${esc(v.note||'—')}</td>
     <td><button class="btn sm" data-vid="${v.id}">⋮</button></td>
   </tr>`).join('')||'<tr><td colspan="6" style="color:var(--muted)">Chưa có version — bấm + Thêm version</td></tr>';
-  tb.querySelectorAll('[data-vid]').forEach(b=>b.onclick=e=>{
+  const cards=$('versionCards');
+  if(cards) cards.innerHTML=r.map(function(v){
+    return '<article class="version-card"><div class="version-card-head"><div class="version-card-title"><span class="version-app">'+esc(v.app_id)+'</span><strong>'+esc(v.version)+'</strong></div><button class="btn sm" data-vid="'+v.id+'" aria-label="Tùy chọn version '+esc(v.version)+'">Tùy chọn</button></div><div class="version-card-meta"><span class="tag '+(v.enabled?'on':'off')+'">'+(v.enabled?'Đang bật':'Đã tắt')+'</span><span class="version-meta-label">Link tải</span><span class="version-meta-value">'+(v.download_url?esc(v.download_url):'—')+'</span><span class="version-meta-label">Ghi chú</span><span class="version-meta-value">'+esc(v.note||'—')+'</span></div></article>';
+  }).join('')||'<div class="version-empty">Chưa có version — bấm “Thêm version”.</div>';
+  document.querySelectorAll('#pg-versions [data-vid]').forEach(b=>b.onclick=e=>{
     e.stopPropagation();
     const id=+b.dataset.vid;
     const v=versionRows.find(x=>x.id===id);
