@@ -4,13 +4,22 @@ var tok=()=>sessionStorage.getItem('bdz_t')||'';
 var LOGO='https://263.org.vn/logo?v=20261003';
 var rows=[],admins=[],settings={},perms={can_keys:true,can_create_key:true,can_edit_key:true,can_delete_key:true,can_api_keys:true,can_settings:true,can_admins:true},role='OWNER',timer=null;
 var ST_LABEL={ACTIVE:'Hoạt động',DISABLED:'Tắt',EXPIRED:'Hết hạn',TIME_EXPIRED:'Hết hạn',DEVICE_LIMIT:'Giới hạn máy',LIMIT_REACHED:'Hết lượt',REACTIVATED:'Hoạt động',CREATED:'Mới tạo'};
-function themeInit(){document.documentElement.dataset.theme=localStorage.getItem('auramind_theme')||'dark'}
-function themeToggle(){const n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;localStorage.setItem('auramind_theme',n);localStorage.setItem('bdz_theme',n)}
 function openSide(){const s=$('sideNav'),m=$('sideMask');if(s)s.classList.add('open');if(m)m.classList.add('open');document.body.classList.add('side-open')}
 function closeSide(){const s=$('sideNav'),m=$('sideMask');if(s)s.classList.remove('open');if(m)m.classList.remove('open');document.body.classList.remove('side-open')}
+function closeModalSmooth(root){
+  if(!root)return;
+  const overlay=root.querySelector('.modal-bg');
+  if(!overlay){root.innerHTML='';return;}
+  if(overlay.classList.contains('modal-leaving'))return;
+  overlay.classList.add('modal-leaving');
+  window.setTimeout(function(){
+    if(root.contains(overlay))root.innerHTML='';
+  },180);
+}
+
 function shell(){
 $('root').innerHTML=`<div id="login" class="login-page">
-<a href="./" class="btn sm ghost login-back" id="btnBackLogin">← Trang chủ</a>
+<a href="./" class="btn sm ghost login-back" id="btnBackLogin"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Trang chủ</a>
 <div class="login-layout">
   <section class="login-intro">
     <div class="login-brand"><img src="${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZ Console</strong><small>KEY MANAGEMENT</small></span></div>
@@ -29,9 +38,9 @@ $('root').innerHTML=`<div id="login" class="login-page">
     <p class="sub">Đăng nhập BDZ Console để tiếp tục đến không gian quản trị.</p>
     <div class="field"><label for="u">Email / Tên đăng nhập</label><input id="u" class="input" autocomplete="username" placeholder="Tài khoản admin"></div>
     <div class="field"><label for="p">Mật khẩu</label><input id="p" class="input" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu"></div>
-    <button id="loginBtn" class="btn primary lg">Đăng nhập <span aria-hidden="true">→</span></button>
+    <button id="loginBtn" class="btn primary lg">Đăng nhập <svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <div id="loginErr" class="err hidden" role="alert"></div>
-    <p class="hint"><a href="./">← Về trang nhận key</a></p>
+    <p class="hint"><a href="./"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Về trang nhận key</a></p>
   </section>
 </div>
 </div>
@@ -41,15 +50,15 @@ $('root').innerHTML=`<div id="login" class="login-page">
     <img class="logo-img" src="${LOGO}" alt="" referrerpolicy="no-referrer">
     <div class="topbar-brand"><span class="brand">BDZ Console</span><span class="topbar-subtitle">Key management workspace</span></div>
     <span class="grow"></span><span class="topbar-status"><span class="status-pulse"></span> Admin workspace</span>
-    <button id="themeBtn" class="btn icon-btn" aria-label="Chuyển giao diện" title="Sáng / Tối"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
+    
     <button id="refresh" class="btn icon-btn" aria-label="Làm mới" title="Làm mới dữ liệu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M20 12a8 8 0 0 0-14-5L4 9m0 8v-5h5"/><path d="M4 12a8 8 0 0 0 14 5l2-2"/></svg></button>
     <button id="logout" class="btn sm danger">Thoát</button>
   </header>
   <div class="side-mask" id="sideMask"></div>
   <aside class="side-nav" id="sideNav">
-    <div class="side-head"><span>Workspace</span><button type="button" class="btn sm ghost" id="btnCloseSide" aria-label="Đóng menu">✕</button></div>
+    <div class="side-head"><span>Workspace</span><button type="button" class="btn sm ghost" id="btnCloseSide" aria-label="Đóng menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <nav class="side-tabs" id="navTabs" aria-label="Điều hướng quản trị"></nav>
-    <a href="./" class="side-foot-link">← Về trang nhận key</a>
+    <a href="./" class="side-foot-link"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Về trang nhận key</a>
   </aside>
   <div id="pages"></div>
 </main>
@@ -84,7 +93,6 @@ if(typeof buildNav==='function')buildNav();
 if($('loginBtn'))$('loginBtn').onclick=function(){if(typeof doLogin==='function')doLogin()};
 if($('logout'))$('logout').onclick=function(){if(typeof doLogout==='function')doLogout()};
 if($('refresh'))$('refresh').onclick=function(){if(typeof load==='function')load(true)};
-if($('themeBtn'))$('themeBtn').onclick=themeToggle;
 if($('btnMenu'))$('btnMenu').onclick=openSide;
 if($('btnCloseSide'))$('btnCloseSide').onclick=closeSide;
 if($('sideMask'))$('sideMask').onclick=closeSide;
