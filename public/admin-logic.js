@@ -26,8 +26,20 @@ async function page(name){
   const loader=$('viewLoader');
   if(loader)loader.classList.add('hidden');
   document.querySelectorAll('.side-item,.tab').forEach(b=>b.classList.toggle('active',b.dataset.p===name));
-  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-'+name));
-  const el=$('pg-'+name);if(el)el.classList.add('active');
+  const views=[...document.querySelectorAll('.view')];
+  const nextView=$('pg-'+name);
+  if(!nextView)return;
+  const currentView=views.find(v=>v.classList.contains('active'));
+  const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(currentView&&currentView!==nextView&&!reduceMotion){
+    currentView.classList.add('view-leaving');
+    await new Promise(resolve=>window.setTimeout(resolve,180));
+    if(seq!==pageLoadSeq)return;
+  }
+  views.forEach(v=>{
+    v.classList.remove('view-leaving');
+    v.classList.toggle('active',v===nextView);
+  });
   if(name==='apikeys'&&typeof showLang==='function'){
     showLang((document.querySelector('.tab-lang.active')||{}).dataset?.lang||'java');
     document.querySelectorAll('.tab-lang').forEach(b=>b.onclick=()=>showLang(b.dataset.lang));

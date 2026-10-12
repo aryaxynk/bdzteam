@@ -28,7 +28,7 @@ function renderVersions(){
     <td><span class="tag ${v.enabled?'on':'off'}">${v.enabled?'Bật':'Tắt'}</span></td>
     <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;font-size:11px">${v.download_url?esc(v.download_url):'—'}</td>
     <td style="font-size:12px;color:var(--muted)">${esc(v.note||'—')}</td>
-    <td><button class="btn sm" data-vid="${v.id}">⋮</button></td>
+    <td><button class="btn sm icon-btn" data-vid="${v.id}" aria-label="Tùy chọn version ${esc(v.version)}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button></td>
   </tr>`).join('')||'<tr><td colspan="6" style="color:var(--muted)">Chưa có version — bấm + Thêm version</td></tr>';
   const cards=$('versionCards');
   if(cards) cards.innerHTML=r.map(function(v){
@@ -76,7 +76,7 @@ function modalVersion(v){
     <div class="field"><label>Ghi chú</label><input id="vNote" class="input" value="${isEdit?esc(v.note||''):''}" placeholder="vd: Fix lỗi login"></div>
     <div class="modal-actions"><button class="btn" id="vCancel">Hủy</button><button class="btn primary" id="vOk">Lưu</button></div>
   </div></div>`;
-  $('vCancel').onclick=()=>root.innerHTML='';
+  $('vCancel').onclick=()=>closeModalSmooth(root);
   $('vOk').onclick=async()=>{
     try{
       const payload={
@@ -89,7 +89,7 @@ function modalVersion(v){
       if(!payload.version)throw Error('Nhập version');
       if(isEdit){payload.id=v.id;await versionAction('update',payload)}
       else{await versionAction('create',payload)}
-      root.innerHTML='';await loadVersions();
+      closeModalSmooth(root);await loadVersions();
     }catch(e){alert(e.message)}
   };
 }
