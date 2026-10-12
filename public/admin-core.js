@@ -25,7 +25,7 @@ $('root').innerHTML=`<div id="login" class="login-page">
 <a href="./" class="btn sm ghost login-back" id="btnBackLogin"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Trang chủ</a>
 <div class="login-layout">
   <section class="login-intro">
-    <div class="login-brand"><img src="${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZ MOD</strong><small>KEY MANAGEMENT</small></span></div>
+    <div class="login-brand"><img src="${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZ MOD</strong><small>GET KEY</small></span></div>
     <div class="md-overline">ADMIN</div>
     <h2>Quản lý hệ thống<br>trong một nơi.</h2>
     <p>Theo dõi key, quản lý phiên thiết bị, cấu hình và quyền truy cập từ một giao diện thống nhất.</p>
