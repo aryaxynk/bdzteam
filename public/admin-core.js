@@ -25,7 +25,7 @@ $('root').innerHTML=`<div id="login" class="login-page">
 <a href="./" class="btn sm ghost login-back" id="btnBackLogin"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Trang chủ</a>
 <div class="login-layout">
   <section class="login-intro">
-    <div class="login-brand"><img src="${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZ MOD</strong><small>GET KEY</small></span></div>
+    <div class="login-brand"><img src="${LOGO}" alt="" referrerpolicy="no-referrer"><span><strong>BDZMOD</strong><small>GET KEY</small></span></div>
     <div class="md-overline">ADMIN</div>
     <h2>Quản lý hệ thống<br>trong một nơi.</h2>
     <p>Theo dõi key, quản lý phiên thiết bị, cấu hình và quyền truy cập từ một giao diện thống nhất.</p>
@@ -50,15 +50,15 @@ $('root').innerHTML=`<div id="login" class="login-page">
   <header class="topbar">
     <button type="button" class="btn icon-btn" id="btnMenu" aria-label="Mở menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <img class="logo-img" src="${LOGO}" alt="" referrerpolicy="no-referrer">
-    <div class="topbar-brand"><span class="brand">BDZ MOD</span></div>
-    <span class="grow"></span><span class="topbar-status"><span class="status-pulse"></span> Admin workspace</span>
+    <div class="topbar-brand"><span class="brand">BDZMOD</span></div>
+    <span class="grow"></span><span class="topbar-status"><span class="status-pulse"></span> Bảng quản trị BDZMOD</span>
     
     <button id="refresh" class="btn icon-btn" aria-label="Làm mới" title="Làm mới dữ liệu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M20 12a8 8 0 0 0-14-5L4 9m0 8v-5h5"/><path d="M4 12a8 8 0 0 0 14 5l2-2"/></svg></button>
     <button id="logout" class="btn sm danger">Thoát</button>
   </header>
   <div class="side-mask" id="sideMask"></div>
   <aside class="side-nav" id="sideNav">
-    <div class="side-head"><span>Workspace</span><button type="button" class="btn sm ghost" id="btnCloseSide" aria-label="Đóng menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="side-head"><span>Danh mục</span><button type="button" class="btn sm ghost" id="btnCloseSide" aria-label="Đóng menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <nav class="side-tabs" id="navTabs" aria-label="Điều hướng quản trị"></nav>
     <a href="./" class="side-foot-link"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Về trang nhận key</a>
   </aside>
@@ -66,14 +66,14 @@ $('root').innerHTML=`<div id="login" class="login-page">
 </main>
 <div id="modalRoot"></div><div id="menuRoot"></div>`;
 $('pages').innerHTML=`<section id="pg-dash" class="view active">
-<header class="md-admin-heading"><div><p class="md-overline">WORKSPACE OVERVIEW</p><h1>Tổng quan</h1><p class="hint">Tình hình key và hoạt động hệ thống của bạn.</p></div><span class="md-heading-chip"><span class="status-pulse"></span> Tổng quan hệ thống</span></header>
+<header class="md-admin-heading"><div><p class="md-overline">TỔNG QUAN BDZMOD</p><h1>Tổng quan</h1><p class="hint">Tình hình key và hoạt động hệ thống của bạn.</p></div><span class="md-heading-chip"><span class="status-pulse"></span> Tổng quan hệ thống</span></header>
 <div class="bento-dash">
   <div class="stat"><div class="stat-top"><b>Tổng key</b><span class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m12 12 8-8 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg></span></div><strong id="sTotal">0</strong><p class="stat-caption">Đã tạo trong hệ thống</p></div>
   <div class="stat"><div class="stat-top"><b>Hoạt động</b><span class="stat-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span></div><strong id="sActive">0</strong><p class="stat-caption">Key đang được kích hoạt</p></div>
   <div class="stat"><div class="stat-top"><b>Thiết bị</b><span class="stat-icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></svg></span></div><strong id="sDevices">0</strong><p class="stat-caption">Đã liên kết thiết bị</p></div>
   <div class="stat"><div class="stat-top"><b>IP bind</b><span class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></span></div><strong id="sIp">0</strong><p class="stat-caption">Đã gắn IP</p></div>
   <div class="card tile-chart"><div class="section-head"><div><p class="md-overline">ANALYTICS</p><h2>Hoạt động theo ngày</h2><p class="hint">Thống kê sử dụng key trong tháng</p></div><span class="md-heading-chip">Tháng hiện tại</span></div><div id="chartMonth"></div><svg id="chart" viewBox="0 0 640 220" width="100%" height="220" style="display:block"></svg></div>
-  <div class="card tile-note"><p class="md-overline">QUICK NOTE</p><h2>Vận hành hệ thống</h2><p class="hint">Quản lý key, thiết bị, IP và trạng thái truy cập tại mục <b>Key</b>. Sử dụng phần cài đặt để điều chỉnh giới hạn và thời hạn mặc định.</p><div class="md-heading-chip" style="margin-top:12px"><span class="status-pulse"></span> Workspace sẵn sàng</div></div>
+  <div class="card tile-note"><p class="md-overline">GHI CHÚ</p><h2>Vận hành hệ thống</h2><p class="hint">Quản lý key, thiết bị, IP và trạng thái truy cập tại mục <b>Key</b>. Sử dụng phần cài đặt để điều chỉnh giới hạn và thời hạn mặc định.</p><div class="md-heading-chip" style="margin-top:12px"><span class="status-pulse"></span> BDZMOD sẵn sàng</div></div>
 </div></section>
 <section id="pg-keys" class="view">
 <header class="md-admin-heading"><div><p class="md-overline">ACCESS CONTROL</p><h1>Danh sách Key</h1><p class="hint">Tìm kiếm, lọc trạng thái và quản lý key đã phát hành.</p></div><div class="md-heading-actions"><button id="btnBulk" class="btn">Đa nhiệm ▾</button><button id="btnCreateKey" class="btn primary">+ Tạo key</button></div></header>
