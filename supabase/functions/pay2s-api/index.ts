@@ -25,9 +25,18 @@ async function hmacSha256(value: string, secret: string) {
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return hex(new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value))));
 }
-function pay2sOrigin(url: string, environment: string) {
-  try { const u = new URL(url); const expected = environment === "production" ? "payment.pay2s.vn" : "sandbox-payment.pay2s.vn";
-    return u.protocol === "https:" && u.hostname === expected && u.pathname.startsWith("/v2/gateway/pay"); } catch { return false; }
+function inspectPay2sUrl(url: string) {
+  try {
+    const u = new URL(url);
+    const trustedHost = u.hostname === "payment.pay2s.vn" || u.hostname === "sandbox-payment.pay2s.vn";
+    const valid = u.protocol === "https:" && trustedHost && !u.username && !u.password &&
+      (!u.port || u.port === "443") && u.pathname.startsWith("/v2/gateway/pay");
+    return { valid, host: trustedHost ? u.hostname : "untrusted-or-invalid" as string,
+      environment: u.hostname === "payment.pay2s.vn" ? "production" :
+        u.hostname === "sandbox-payment.pay2s.vn" ? "sandbox" : null };
+  } catch {
+    return { valid: false, host: "invalid-url", environment: null as string | null };
+  }
 }
 async function getConfig(sb: ReturnType<typeof supabase>) {
   const { data, error } = await sb.rpc("bdz_pay2s_backend_config");
@@ -108,14 +117,52 @@ Deno.serve(async (req: Request) => {
         await sb.from("pay2s_orders").update({ status: "FAILED", result_message: "Pay2S unavailable" }).eq("order_id", orderId).eq("status", "PENDING");
         return json(req, { ok: false, error: "PAY2S_UNAVAILABLE" }, 502);
       }
+      const resultCode = Number(upstreamBody.resultCode);
       const responseAmount = Number(upstreamBody.amount);
-      if (!upstream.ok || Number(upstreamBody.resultCode) !== 0 || text(upstreamBody.partnerCode) !== cfg.settings.partner_code ||
-          text(upstreamBody.requestId) !== requestId || text(upstreamBody.orderId) !== orderId ||
-          responseAmount !== Number(pack.amount) || !pay2sOrigin(text(upstreamBody.payUrl), cfg.settings.environment)) {
+      const partnerMatches = text(upstreamBody.partnerCode) === cfg.settings.partner_code;
+      const requestMatches = text(upstreamBody.requestId) === requestId;
+      const orderMatches = text(upstreamBody.orderId) === orderId;
+      const amountMatches = responseAmount === Number(pack.amount);
+      const paymentLink = inspectPay2sUrl(text(upstreamBody.payUrl));
+      const markOrderFailed = async (reason: string) => {
         await sb.from("pay2s_orders").update({ status: "FAILED",
-          result_code: Number.isFinite(Number(upstreamBody.resultCode)) ? Number(upstreamBody.resultCode) : null,
-          result_message: "Pay2S declined or returned an invalid response" }).eq("order_id", orderId).eq("status", "PENDING");
+          result_code: Number.isFinite(resultCode) ? resultCode : null,
+          result_message: reason.slice(0, 300) }).eq("order_id", orderId).eq("status", "PENDING");
+      };
+      if (!upstream.ok || resultCode !== 0) {
+        await markOrderFailed("Pay2S create rejected: HTTP " + upstream.status +
+          ", resultCode=" + (Number.isFinite(resultCode) ? resultCode : "missing"));
+        console.warn("Pay2S create rejected", {
+          httpStatus: upstream.status, resultCode: Number.isFinite(resultCode) ? resultCode : null,
+          hasMessage: Boolean(text(upstreamBody.message) || text(upstreamBody.error))
+        });
         return json(req, { ok: false, error: "PAY2S_CREATE_FAILED" }, 502);
+      }
+      if (!partnerMatches || !requestMatches || !orderMatches || !amountMatches || !paymentLink.valid) {
+        const mismatch = [
+          !partnerMatches ? "partnerCode" : "",
+          !requestMatches ? "requestId" : "",
+          !orderMatches ? "orderId" : "",
+          !amountMatches ? "amount" : "",
+          !paymentLink.valid ? "payUrl" : ""
+        ].filter(Boolean);
+        await markOrderFailed("Pay2S response validation failed: " + mismatch.join(", "));
+        console.warn("Pay2S create response validation failed", {
+          httpStatus: upstream.status, resultCode,
+          partnerMatches, requestMatches, orderMatches, amountMatches,
+          payUrlHost: paymentLink.host, configuredEnvironment: cfg.settings.environment
+        });
+        return json(req, { ok: false, error: "PAY2S_RESPONSE_INVALID" }, 502);
+      }
+      if (paymentLink.environment !== cfg.settings.environment) {
+        await markOrderFailed("Pay2S checkout environment mismatch: configured=" +
+          cfg.settings.environment + ", returned=" + paymentLink.environment);
+        console.warn("Pay2S checkout environment mismatch", {
+          configuredEnvironment: cfg.settings.environment,
+          returnedEnvironment: paymentLink.environment,
+          payUrlHost: paymentLink.host
+        });
+        return json(req, { ok: false, error: "PAY2S_ENVIRONMENT_MISMATCH" }, 502);
       }
       return json(req, { ok: true, order_id: orderId, view_token: viewToken, pay_url: text(upstreamBody.payUrl),
         amount: Number(pack.amount), package_name: pack.name, expires_at: expiresAt });
