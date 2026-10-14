@@ -15,5 +15,18 @@
     return x;
   }
   function visitorId(){let id=localStorage.getItem('bdz_v');if(!id){id=(crypto.randomUUID&&crypto.randomUUID())||String(Date.now());localStorage.setItem('bdz_v',id)}return id}
-  window.BDZ={SUPABASE_URL:c.SUPABASE_URL,rpc,edge,visitorId};
+  // 256-bit browser-held bearer secret; never send it in URLs or store it server-side raw.
+  function libraryToken(){
+    const key='bdz_key_vault_v1';
+    let token;
+    try{token=localStorage.getItem(key);}catch(_){throw new Error('KEY_LIBRARY_STORAGE_DISABLED');}
+    if(!/^[a-f0-9]{64}$/.test(token||'')){
+      if(!window.crypto||typeof window.crypto.getRandomValues!=='function')throw new Error('SECURE_RANDOM_UNAVAILABLE');
+      const bytes=new Uint8Array(32);window.crypto.getRandomValues(bytes);
+      token=Array.from(bytes,function(b){return b.toString(16).padStart(2,'0')}).join('');
+      try{localStorage.setItem(key,token);}catch(_){throw new Error('KEY_LIBRARY_STORAGE_DISABLED');}
+    }
+    return token;
+  }
+  window.BDZ={SUPABASE_URL:c.SUPABASE_URL,rpc,edge,visitorId,libraryToken};
 })();
