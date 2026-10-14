@@ -31,22 +31,50 @@ Deno.serve(async (req: Request) => {
     const partnerCode = str(data.partnerCode), payType = str(data.payType), requestId = str(data.requestId);
     const responseTime = str(data.responseTime), resultCodeRaw = str(data.resultCode);
     const transId = str(data.transId), signature = str(data.m2signature);
-    if (!orderId || !requestId || !partnerCode || !amount || !resultCodeRaw || !/^\d+$/.test(amount) ||
-        !/^-?\d+$/.test(resultCodeRaw) || partnerCode !== cfg.settings.partner_code)
+    const amountValid = /^\d+$/.test(amount);
+    const resultCodeValid = /^-?\d+$/.test(resultCodeRaw);
+    const partnerMatches = partnerCode === cfg.settings.partner_code;
+    if (!orderId || !requestId || !partnerCode || !amount || !resultCodeRaw ||
+        !amountValid || !resultCodeValid || !partnerMatches) {
+      console.warn("Pay2S IPN rejected: invalid fields", {
+        hasOrderId: Boolean(orderId), hasRequestId: Boolean(requestId),
+        amountValid, resultCodeValid, partnerMatches
+      });
       return json({ success: false, message: "Invalid payment fields" }, 400);
+    }
     const rawHash = "accessKey=" + cfg.access_key + "&amount=" + amount + "&extraData=" + extraData + "&message=" + message +
       "&orderId=" + orderId + "&orderInfo=" + orderInfo + "&orderType=" + orderType + "&partnerCode=" + partnerCode +
       "&payType=" + payType + "&requestId=" + requestId + "&responseTime=" + responseTime +
       "&resultCode=" + resultCodeRaw + "&transId=" + transId;
     const expectedSignature = await hmacSha256(rawHash, cfg.secret_key);
-    if (!equalHex(signature, expectedSignature)) return json({ success: false, message: "Invalid signature" }, 401);
+    if (!equalHex(signature, expectedSignature)) {
+      console.warn("Pay2S IPN rejected: invalid signature", {
+        orderSuffix: orderId.slice(-6), hasSignature: Boolean(signature),
+        signatureFormatValid: /^[a-f0-9]{64}$/i.test(signature)
+      });
+      return json({ success: false, message: "Invalid signature" }, 401);
+    }
     const numericAmount = Number(amount), resultCode = Number(resultCodeRaw);
     if (!Number.isSafeInteger(numericAmount) || numericAmount <= 0 || !Number.isSafeInteger(resultCode))
       return json({ success: false, message: "Invalid amount/result" }, 400);
     const { data: settled, error: settleError } = await sb.rpc("bdz_pay2s_settle", {
       p_order_id: orderId, p_request_id: requestId, p_partner_code: partnerCode, p_amount: numericAmount,
       p_result_code: resultCode, p_trans_id: transId.slice(0, 100), p_message: message.slice(0, 300) });
-    if (settleError || !settled?.ok) return json({ success: false, message: "Order validation failed" }, 400);
+    if (settleError) {
+      // Log only operational error metadata. Never log the IPN body, keys, or signatures.
+      console.error("Pay2S IPN settlement RPC failed", {
+        orderSuffix: orderId.slice(-6), code: settleError.code || null,
+        detailsPresent: Boolean(settleError.details), hintPresent: Boolean(settleError.hint)
+      });
+      return json({ success: false, message: "Settlement temporarily unavailable" }, 500);
+    }
+    if (!settled?.ok) {
+      const reason = typeof settled?.error === "string" ? settled.error : "UNKNOWN_SETTLEMENT_ERROR";
+      console.warn("Pay2S IPN settlement rejected", {
+        orderSuffix: orderId.slice(-6), reason, resultCode
+      });
+      return json({ success: false, message: "Order validation failed" }, 400);
+    }
     return json({ success: true });
   } catch (e) {
     console.error("pay2s-ipn processing failed", e instanceof Error ? e.name : "unknown");
