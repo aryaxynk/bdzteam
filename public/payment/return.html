@@ -36,12 +36,12 @@
   <p id="returnIntro">Trang này sẽ tự kiểm tra trạng thái đơn từ máy chủ BDZMOD. Chỉ IPN Pay2S đã xác thực mới có thể kích hoạt Key.</p>
   <div id="returnStatus" class="payment-state" role="status" aria-live="polite">Đang kết nối…</div>
   <div id="returnKey" class="payment-key" hidden><label>KEY CỦA BẠN</label><code id="returnKeyCode"></code></div>
-  <div class="payment-actions"><button id="returnCheck" class="btn primary" type="button">Kiểm tra lại</button><button id="returnCopy" class="btn" type="button" hidden>Sao chép Key</button><a class="btn" href="../">Về BDZMOD</a></div>
+  <div class="payment-actions"><button id="returnCheck" class="btn primary" type="button">Kiểm tra lại</button><button id="returnCopy" class="btn" type="button" hidden>Sao chép Key</button><a class="btn" href="../my-keys.html">Key của tôi</a><a class="btn" href="../">Về BDZMOD</a></div>
   <p class="payment-foot">Nếu bạn vừa thanh toán, hãy giữ trang mở để kiểm tra xác nhận từ Pay2S. Không chia sẻ Key với người khác.</p>
 </section>
 </main>
 <script src="../config.js?v=111"></script>
-<script src="../supabase-api.js?v=111"></script>
+<script src="../supabase-api.js?v=112"></script>
 <script>
 (function(){
   var params=new URLSearchParams(location.search);
@@ -60,7 +60,7 @@
     var payment={};
     keys.forEach(function(k){payment[k]=params.get(k)||'';});
     try{
-      var result=await BDZ.edge('pay2s-api',{action:'confirm_redirect',payment:payment});
+      var result=await BDZ.edge('pay2s-api',{action:'confirm_redirect',payment:payment,library_token:BDZ.libraryToken()});
       if(result&&result.ok)return;
       if(result&&result.error==='PAYMENT_SETTLEMENT_UNAVAILABLE')redirectAttempted=false;
     }catch(_){redirectAttempted=false;}
