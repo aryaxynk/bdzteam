@@ -25,6 +25,12 @@ async function hmacSha256(value: string, secret: string) {
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return hex(new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value))));
 }
+function equalHex(a: string, b: string) {
+  if (!/^[a-f0-9]{64}$/i.test(a) || !/^[a-f0-9]{64}$/i.test(b)) return false;
+  let diff = 0;
+  for (let i = 0; i < 64; i++) diff |= a.toLowerCase().charCodeAt(i) ^ b.toLowerCase().charCodeAt(i);
+  return diff === 0;
+}
 function inspectPay2sUrl(url: string) {
   try {
     const u = new URL(url);
@@ -188,6 +194,95 @@ Deno.serve(async (req: Request) => {
       }
       return json(req, { ok: true, order_id: orderId, view_token: viewToken, pay_url: paymentLink.url,
         amount: Number(pack.amount), package_name: pack.name, expires_at: expiresAt });
+    }
+    if (action === "confirm_redirect") {
+      const cfg = await getConfig(sb);
+      if (!cfg.access_key || !cfg.secret_key || !cfg.settings.partner_code)
+        return json(req, { ok: false, error: "PAY2S_NOT_CONFIGURED" }, 503);
+
+      const payment = body?.payment && typeof body.payment === "object" ? body.payment : {};
+      // Preserve each signed query value exactly as decoded from the URL.
+      const field = (v: unknown) => v === null || v === undefined ? "" : String(v);
+      const partnerCode = field(payment.partnerCode);
+      const orderId = field(payment.orderId);
+      const requestId = field(payment.requestId);
+      const amount = field(payment.amount);
+      const orderInfo = field(payment.orderInfo);
+      const orderType = field(payment.orderType);
+      const resultCodeRaw = field(payment.resultCode);
+      const message = field(payment.message);
+      const payType = field(payment.payType);
+      const responseTime = field(payment.responseTime);
+      const transId = field(payment.transId);
+      const signature = field(payment.m2signature);
+
+      if (!/^BDZ[A-F0-9]{32}$/.test(orderId) || !requestId || !partnerCode ||
+          !/^[0-9]+$/.test(amount) || !/^[0-9]+$/.test(resultCodeRaw) ||
+          !orderInfo || !orderType || !message || !payType || !responseTime ||
+          !/^[a-f0-9]{64}$/i.test(signature))
+        return json(req, { ok: false, error: "REDIRECT_FIELDS_INVALID" }, 400);
+
+      // Redirect signatures have a different canonical string than IPN signatures.
+      // This order/amount/partner verification is server-side; query values alone are not trusted.
+      const rawHash = "accessKey=" + cfg.access_key + "&amount=" + amount + "&message=" + message +
+        "&orderId=" + orderId + "&orderInfo=" + orderInfo + "&orderType=" + orderType +
+        "&partnerCode=" + partnerCode + "&payType=" + payType + "&requestId=" + requestId +
+        "&responseTime=" + responseTime + "&resultCode=" + resultCodeRaw;
+      const expectedSignature = await hmacSha256(rawHash, cfg.secret_key);
+      if (!equalHex(signature, expectedSignature)) {
+        console.warn("Pay2S redirect signature rejected", {
+          orderSuffix: orderId.slice(-6), signatureFormatValid: /^[a-f0-9]{64}$/i.test(signature)
+        });
+        return json(req, { ok: false, error: "REDIRECT_SIGNATURE_INVALID" }, 401);
+      }
+
+      if (resultCodeRaw !== "0") {
+        return json(req, { ok: false, error: "PAYMENT_NOT_SUCCESSFUL" }, 409);
+      }
+      const partnerMatches = partnerCode === cfg.settings.partner_code;
+      const numericAmount = Number(amount);
+      if (!partnerMatches || !Number.isSafeInteger(numericAmount) || numericAmount <= 0) {
+        console.warn("Pay2S redirect identity/amount rejected", {
+          orderSuffix: orderId.slice(-6), partnerMatches,
+          amountIsSafePositiveInteger: Number.isSafeInteger(numericAmount) && numericAmount > 0
+        });
+        return json(req, { ok: false, error: "PAYMENT_MISMATCH" }, 409);
+      }
+
+      const { data: order, error: orderError } = await sb.from("pay2s_orders")
+        .select("order_id,amount,status").eq("order_id", orderId).maybeSingle();
+      if (orderError) return json(req, { ok: false, error: "ORDER_LOOKUP_FAILED" }, 500);
+      if (!order) return json(req, { ok: false, error: "ORDER_NOT_FOUND" }, 404);
+      const amountMatches = numericAmount === Number(order.amount);
+      if (!amountMatches) {
+        console.warn("Pay2S redirect amount mismatch", {
+          orderSuffix: orderId.slice(-6), amountMatches: false
+        });
+        return json(req, { ok: false, error: "PAYMENT_MISMATCH" }, 409);
+      }
+
+      const { data: settled, error: settleError } = await sb.rpc("bdz_pay2s_settle", {
+        p_order_id: orderId, p_request_id: requestId, p_partner_code: partnerCode,
+        p_amount: numericAmount, p_result_code: 0, p_trans_id: transId.slice(0, 100),
+        p_message: message.slice(0, 300)
+      });
+      if (settleError) {
+        console.error("Pay2S signed redirect settlement failed", {
+          orderSuffix: orderId.slice(-6), code: settleError.code || null
+        });
+        return json(req, { ok: false, error: "PAYMENT_SETTLEMENT_UNAVAILABLE" }, 503);
+      }
+      if (!settled?.ok) {
+        const reason = typeof settled?.error === "string" ? settled.error : "UNKNOWN_SETTLEMENT_ERROR";
+        console.warn("Pay2S signed redirect settlement rejected", {
+          orderSuffix: orderId.slice(-6), reason
+        });
+        return json(req, { ok: false, error: "PAYMENT_MISMATCH" }, 409);
+      }
+      return json(req, {
+        ok: true, status: "PAID", duplicate: Boolean(settled.duplicate),
+        order_id: orderId
+      });
     }
     if (action === "order_status") {
       const orderId = text(body?.order_id); const viewToken = text(body?.view_token);
