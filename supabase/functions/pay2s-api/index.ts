@@ -186,9 +186,11 @@ Deno.serve(async (req: Request) => {
           !Array.isArray(cfg.settings.bank_accounts) || cfg.settings.bank_accounts.length === 0)
         return json(req, { ok: false, error: "PAY2S_NOT_CONFIGURED" }, 503);
       const libraryToken = text(body?.library_token).toLowerCase();
-      if (!/^[a-f0-9]{64}$/.test(libraryToken))
+      if (libraryToken && !/^[a-f0-9]{64}$/.test(libraryToken))
         return json(req, { ok: false, error: "KEY_LIBRARY_TOKEN_INVALID" }, 401);
-      const ownerTokenHash = await sha256(libraryToken);
+      // Backward-compatible during static-page rollout; the signed return page can bind
+      // the token later. New clients always include it at order creation.
+      const ownerTokenHash = libraryToken ? await sha256(libraryToken) : null;
       const packageId = Number(body?.package_id);
       if (!Number.isSafeInteger(packageId) || packageId <= 0) return json(req, { ok: false, error: "INVALID_PACKAGE" }, 400);
       const visitorId = text(body?.visitor_id).slice(0, 256);
@@ -314,9 +316,9 @@ Deno.serve(async (req: Request) => {
       if (!cfg.access_key || !cfg.secret_key || !cfg.settings.partner_code)
         return json(req, { ok: false, error: "PAY2S_NOT_CONFIGURED" }, 503);
       const libraryToken = text(body?.library_token).toLowerCase();
-      if (!/^[a-f0-9]{64}$/.test(libraryToken))
+      if (libraryToken && !/^[a-f0-9]{64}$/.test(libraryToken))
         return json(req, { ok: false, error: "KEY_LIBRARY_TOKEN_INVALID" }, 401);
-      const ownerTokenHash = await sha256(libraryToken);
+      const ownerTokenHash = libraryToken ? await sha256(libraryToken) : null;
 
       const payment = body?.payment && typeof body.payment === "object" ? body.payment : {};
       // Preserve each signed query value exactly as decoded from the URL.
@@ -378,18 +380,20 @@ Deno.serve(async (req: Request) => {
         });
         return json(req, { ok: false, error: "PAYMENT_MISMATCH" }, 409);
       }
-      if (order.owner_token_hash && order.owner_token_hash !== ownerTokenHash) {
+      if (order.owner_token_hash && ownerTokenHash && order.owner_token_hash !== ownerTokenHash) {
         console.warn("Key Library owner binding mismatch on signed Pay2S return", { orderSuffix: orderId.slice(-6) });
         return json(req, { ok: false, error: "KEY_LIBRARY_OWNER_MISMATCH" }, 409);
       }
-      const { data: boundOrder, error: bindError } = await sb.from("pay2s_orders")
-        .update({ owner_token_hash: ownerTokenHash })
-        .eq("order_id", orderId)
-        .or("owner_token_hash.is.null,owner_token_hash.eq." + ownerTokenHash)
-        .select("order_id")
-        .maybeSingle();
-      if (bindError) return json(req, { ok: false, error: "KEY_LIBRARY_BIND_FAILED" }, 500);
-      if (!boundOrder) return json(req, { ok: false, error: "KEY_LIBRARY_OWNER_MISMATCH" }, 409);
+      if (ownerTokenHash && !order.owner_token_hash) {
+        const { data: boundOrder, error: bindError } = await sb.from("pay2s_orders")
+          .update({ owner_token_hash: ownerTokenHash })
+          .eq("order_id", orderId)
+          .or("owner_token_hash.is.null,owner_token_hash.eq." + ownerTokenHash)
+          .select("order_id")
+          .maybeSingle();
+        if (bindError) return json(req, { ok: false, error: "KEY_LIBRARY_BIND_FAILED" }, 500);
+        if (!boundOrder) return json(req, { ok: false, error: "KEY_LIBRARY_OWNER_MISMATCH" }, 409);
+      }
 
       const { data: settled, error: settleError } = await sb.rpc("bdz_pay2s_settle", {
         p_order_id: orderId, p_request_id: requestId, p_partner_code: partnerCode,
