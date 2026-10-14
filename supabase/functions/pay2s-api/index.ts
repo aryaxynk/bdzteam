@@ -25,6 +25,23 @@ async function hmacSha256(value: string, secret: string) {
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   return hex(new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(value))));
 }
+async function allowLibraryRateLimit(sb: ReturnType<typeof supabase>, scope: string, maxRequests: number) {
+  const scopeHash = await sha256("BDZMOD-KEY-LIBRARY|" + scope);
+  const { data, error } = await sb.rpc("bdz_key_library_rate_limit", {
+    p_scope_hash: scopeHash, p_max_requests: maxRequests
+  });
+  return !error && data === true;
+}
+function clientIp(req: Request) {
+  return text(req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "unknown").slice(0, 128);
+}
+async function auditLibrary(sb: ReturnType<typeof supabase>, ipHash: string, action: "LIST" | "REVEAL" | "DENIED",
+  ownerTokenHash: string | null, allowed: boolean, keyId: number | null = null) {
+  const { error } = await sb.from("key_library_audit").insert({
+    ip_hash: ipHash, action, owner_token_hash: ownerTokenHash, allowed, key_id: keyId
+  });
+  if (error) console.warn("Key Library audit insert failed", { action, allowed });
+}
 function equalHex(a: string, b: string) {
   if (!/^[a-f0-9]{64}$/i.test(a) || !/^[a-f0-9]{64}$/i.test(b)) return false;
   let diff = 0;
@@ -61,6 +78,97 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => ({}));
     const action = text(body?.action);
     const sb = supabase();
+    if (action === "my_keys" || action === "reveal_key") {
+      const rawIp = clientIp(req);
+      const ipHash = await sha256("BDZMOD-KEY-LIBRARY-IP|" + rawIp);
+      const ipLimit = action === "reveal_key" ? 40 : 90;
+      if (!(await allowLibraryRateLimit(sb, "ip:" + ipHash, ipLimit))) {
+        await auditLibrary(sb, ipHash, "DENIED", null, false);
+        return json(req, { ok: false, error: "KEY_LIBRARY_RATE_LIMIT" }, 429);
+      }
+
+      const libraryToken = text(body?.library_token).toLowerCase();
+      if (!/^[a-f0-9]{64}$/.test(libraryToken)) {
+        await auditLibrary(sb, ipHash, "DENIED", null, false);
+        return json(req, { ok: false, error: "KEY_LIBRARY_TOKEN_INVALID" }, 401);
+      }
+      const ownerTokenHash = await sha256(libraryToken);
+      const tokenLimit = action === "reveal_key" ? 12 : 45;
+      if (!(await allowLibraryRateLimit(sb, "owner:" + ownerTokenHash, tokenLimit))) {
+        await auditLibrary(sb, ipHash, "DENIED", ownerTokenHash, false);
+        return json(req, { ok: false, error: "KEY_LIBRARY_RATE_LIMIT" }, 429);
+      }
+
+      if (action === "my_keys") {
+        const { data: accessRows, error: accessError } = await sb.from("key_library_access")
+          .select("key_id,source,order_id,created_at")
+          .eq("owner_token_hash", ownerTokenHash)
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (accessError) return json(req, { ok: false, error: "KEY_LIBRARY_UNAVAILABLE" }, 500);
+        const ids = (accessRows || []).map(row => row.key_id);
+        if (!ids.length) {
+          await auditLibrary(sb, ipHash, "LIST", ownerTokenHash, true);
+          return json(req, { ok: true, keys: [] });
+        }
+        const { data: keyRows, error: keyError } = await sb.from("app_keys")
+          .select("id,status,duration_hours,expires_at,created_at")
+          .in("id", ids);
+        if (keyError) return json(req, { ok: false, error: "KEY_LIBRARY_UNAVAILABLE" }, 500);
+        const orderIds = [...new Set((accessRows || []).map(row => row.order_id).filter(Boolean))];
+        let orderRows: Array<Record<string, unknown>> = [];
+        if (orderIds.length) {
+          const { data, error } = await sb.from("pay2s_orders")
+            .select("order_id,package_name,amount")
+            .in("order_id", orderIds);
+          if (error) return json(req, { ok: false, error: "KEY_LIBRARY_UNAVAILABLE" }, 500);
+          orderRows = data || [];
+        }
+        const keyMap = new Map((keyRows || []).map(row => [String(row.id), row]));
+        const orderMap = new Map(orderRows.map(row => [String(row.order_id), row]));
+        const keys = (accessRows || []).flatMap(access => {
+          const key = keyMap.get(String(access.key_id));
+          if (!key) return [];
+          const order = access.order_id ? orderMap.get(String(access.order_id)) : null;
+          return [{
+            id: key.id,
+            source: access.source,
+            created_at: access.created_at,
+            status: key.status,
+            duration_hours: key.duration_hours,
+            expires_at: key.expires_at,
+            package_name: access.source === "PURCHASE" ? order?.package_name || "Gói đã mua" : null,
+            amount: access.source === "PURCHASE" ? Number(order?.amount || 0) : null
+          }];
+        });
+        await auditLibrary(sb, ipHash, "LIST", ownerTokenHash, true);
+        return json(req, { ok: true, keys });
+      }
+
+      const keyId = Number(body?.key_id);
+      if (!Number.isSafeInteger(keyId) || keyId <= 0) {
+        await auditLibrary(sb, ipHash, "DENIED", ownerTokenHash, false);
+        return json(req, { ok: false, error: "KEY_NOT_FOUND" }, 404);
+      }
+      const { data: access, error: accessError } = await sb.from("key_library_access")
+        .select("key_id,source")
+        .eq("owner_token_hash", ownerTokenHash)
+        .eq("key_id", keyId)
+        .maybeSingle();
+      if (accessError) return json(req, { ok: false, error: "KEY_LIBRARY_UNAVAILABLE" }, 500);
+      if (!access) {
+        await auditLibrary(sb, ipHash, "DENIED", ownerTokenHash, false, keyId);
+        return json(req, { ok: false, error: "KEY_NOT_FOUND" }, 404);
+      }
+      const { data: key, error: keyError } = await sb.from("app_keys")
+        .select("id,key_code")
+        .eq("id", keyId)
+        .maybeSingle();
+      if (keyError || !key?.key_code) return json(req, { ok: false, error: "KEY_LIBRARY_UNAVAILABLE" }, 500);
+      await auditLibrary(sb, ipHash, "REVEAL", ownerTokenHash, true, keyId);
+      return json(req, { ok: true, key_code: key.key_code, key_id: keyId });
+    }
+
     if (action === "packages") {
       const cfg = await getConfig(sb);
       const { data: packages, error } = await sb.from("pay2s_packages").select("id,code,name,description,amount,duration_hours,max_devices")
@@ -75,6 +183,10 @@ Deno.serve(async (req: Request) => {
       if (!cfg.access_key || !cfg.secret_key || !cfg.settings.partner_code ||
           !Array.isArray(cfg.settings.bank_accounts) || cfg.settings.bank_accounts.length === 0)
         return json(req, { ok: false, error: "PAY2S_NOT_CONFIGURED" }, 503);
+      const libraryToken = text(body?.library_token).toLowerCase();
+      if (!/^[a-f0-9]{64}$/.test(libraryToken))
+        return json(req, { ok: false, error: "KEY_LIBRARY_TOKEN_INVALID" }, 401);
+      const ownerTokenHash = await sha256(libraryToken);
       const packageId = Number(body?.package_id);
       if (!Number.isSafeInteger(packageId) || packageId <= 0) return json(req, { ok: false, error: "INVALID_PACKAGE" }, 400);
       const visitorId = text(body?.visitor_id).slice(0, 256);
@@ -103,7 +215,7 @@ Deno.serve(async (req: Request) => {
         order_id: orderId, request_id: requestId, package_id: pack.id, package_code: pack.code,
         package_name: pack.name, amount: pack.amount, duration_hours: pack.duration_hours,
         max_devices: pack.max_devices, status: "PENDING", view_token_hash: viewTokenHash,
-        visitor_hash: visitorHash, expires_at: expiresAt });
+        visitor_hash: visitorHash, owner_token_hash: ownerTokenHash, expires_at: expiresAt });
       if (insertError) return json(req, { ok: false, error: "ORDER_CREATE_FAILED" }, 500);
       const redirectUrl = RETURN_URL + "?order=" + encodeURIComponent(orderId);
       const requestType = "pay2s";
@@ -199,6 +311,10 @@ Deno.serve(async (req: Request) => {
       const cfg = await getConfig(sb);
       if (!cfg.access_key || !cfg.secret_key || !cfg.settings.partner_code)
         return json(req, { ok: false, error: "PAY2S_NOT_CONFIGURED" }, 503);
+      const libraryToken = text(body?.library_token).toLowerCase();
+      if (!/^[a-f0-9]{64}$/.test(libraryToken))
+        return json(req, { ok: false, error: "KEY_LIBRARY_TOKEN_INVALID" }, 401);
+      const ownerTokenHash = await sha256(libraryToken);
 
       const payment = body?.payment && typeof body.payment === "object" ? body.payment : {};
       // Preserve each signed query value exactly as decoded from the URL.
@@ -250,7 +366,7 @@ Deno.serve(async (req: Request) => {
       }
 
       const { data: order, error: orderError } = await sb.from("pay2s_orders")
-        .select("order_id,amount,status").eq("order_id", orderId).maybeSingle();
+        .select("order_id,amount,status,owner_token_hash,key_id").eq("order_id", orderId).maybeSingle();
       if (orderError) return json(req, { ok: false, error: "ORDER_LOOKUP_FAILED" }, 500);
       if (!order) return json(req, { ok: false, error: "ORDER_NOT_FOUND" }, 404);
       const amountMatches = numericAmount === Number(order.amount);
@@ -260,6 +376,18 @@ Deno.serve(async (req: Request) => {
         });
         return json(req, { ok: false, error: "PAYMENT_MISMATCH" }, 409);
       }
+      if (order.owner_token_hash && order.owner_token_hash !== ownerTokenHash) {
+        console.warn("Key Library owner binding mismatch on signed Pay2S return", { orderSuffix: orderId.slice(-6) });
+        return json(req, { ok: false, error: "KEY_LIBRARY_OWNER_MISMATCH" }, 409);
+      }
+      const { data: boundOrder, error: bindError } = await sb.from("pay2s_orders")
+        .update({ owner_token_hash: ownerTokenHash })
+        .eq("order_id", orderId)
+        .or("owner_token_hash.is.null,owner_token_hash.eq." + ownerTokenHash)
+        .select("order_id")
+        .maybeSingle();
+      if (bindError) return json(req, { ok: false, error: "KEY_LIBRARY_BIND_FAILED" }, 500);
+      if (!boundOrder) return json(req, { ok: false, error: "KEY_LIBRARY_OWNER_MISMATCH" }, 409);
 
       const { data: settled, error: settleError } = await sb.rpc("bdz_pay2s_settle", {
         p_order_id: orderId, p_request_id: requestId, p_partner_code: partnerCode,
