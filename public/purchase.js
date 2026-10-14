@@ -20,7 +20,10 @@
       PAY2S_ENVIRONMENT_MISMATCH:'Môi trường của liên kết Pay2S không khớp bộ khóa trong Admin > Pay2S. Hãy kiểm tra Production/Sandbox.',
       PAY2S_RESPONSE_INVALID:'Phản hồi Pay2S không khớp đơn hàng. Hãy kiểm tra Partner Code, số tiền và cấu hình ngân hàng.',
       PAY2S_LINK_MISSING:'Pay2S trả kết quả nhưng không có liên kết QR hợp lệ. Hãy kiểm tra cấu hình trong Admin > Pay2S và log API.',
-      PAY2S_CREATE_FAILED:'Pay2S từ chối tạo liên kết. Hãy kiểm tra đúng bộ khóa và tài khoản ngân hàng trong Admin > Pay2S.'
+      PAY2S_CREATE_FAILED:'Pay2S từ chối tạo liên kết. Hãy kiểm tra đúng bộ khóa và tài khoản ngân hàng trong Admin > Pay2S.',
+      KEY_LIBRARY_TOKEN_INVALID:'Không tạo được mã bảo vệ thư viện Key. Hãy bật lưu trữ trình duyệt rồi thử lại.',
+      KEY_LIBRARY_STORAGE_DISABLED:'Trình duyệt đang chặn localStorage. Hãy bật lưu trữ cho BDZMOD rồi thử lại.',
+      SECURE_RANDOM_UNAVAILABLE:'Trình duyệt không hỗ trợ tạo mã bảo mật. Hãy dùng trình duyệt hiện đại qua HTTPS.'
     };
     return m[code]||'Không thể bắt đầu mua Key lúc này. Vui lòng thử lại sau.';
   }
@@ -68,7 +71,7 @@
     button.disabled=true;button.textContent='Đang tạo đơn…';
     setStatus('Đang tạo đơn thanh toán an toàn…',false);
     try{
-      var data=await BDZ.edge('pay2s-api',{action:'create_order',package_id:Number(id),visitor_id:BDZ.visitorId()});
+      var data=await BDZ.edge('pay2s-api',{action:'create_order',package_id:Number(id),visitor_id:BDZ.visitorId(),library_token:BDZ.libraryToken()});
       if(!data||!data.ok||!data.pay_url||!data.view_token||!data.order_id)throw new Error(data&&data.error||'PAY2S_CREATE_FAILED');
       try{
         sessionStorage.setItem('bdzPay2sOrder',data.order_id);
