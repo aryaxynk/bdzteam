@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Trạng thái thanh toán · BDZMOD</title>
+<link rel="stylesheet" href="../style.css?v=125">
+<link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
+<style>
+.payment-return{min-height:100vh;display:grid;place-items:center;padding:20px;background:#050505;color:#f5f3f8}
+.payment-card{width:min(560px,100%);padding:clamp(22px,5vw,40px);border:1px solid #292832;border-radius:18px;background:linear-gradient(145deg,#121116,#0d0d11);box-shadow:0 25px 90px rgba(0,0,0,.45)}
+.payment-brand{font-size:12px;letter-spacing:.12em;color:#aaa6b5;font-weight:700}
+.payment-mark{display:inline-grid;place-items:center;width:34px;height:34px;margin-right:9px;border:1px solid #35313f;border-radius:10px;color:#d6bdff;vertical-align:middle}
+.payment-mark svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
+.payment-card h1{margin:26px 0 9px;font-size:clamp(25px,5vw,34px);line-height:1.13;letter-spacing:-.04em}
+.payment-card p{margin:0;color:#a6a2af;font-size:13px;line-height:1.75}
+.payment-state{margin:22px 0 15px;padding:14px;border:1px solid #2e2b37;border-radius:11px;background:#141319;color:#bbb7c4;font-size:12px;line-height:1.7}
+.payment-state.ok{color:#91e4da;border-color:rgba(0,223,216,.25);background:rgba(0,223,216,.045)}
+.payment-state.err{color:#ffb1b1;border-color:rgba(255,110,110,.25);background:rgba(255,70,70,.04)}
+.payment-key{margin-top:16px;padding:15px;border:1px solid #393443;border-radius:11px;background:#09090c}
+.payment-key label{display:block;margin-bottom:8px;color:#9f9aa9;font-size:10px;letter-spacing:.12em}
+.payment-key code{display:block;word-break:break-all;color:#fff;font-size:14px;line-height:1.65}
+.payment-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+.payment-actions .btn{min-height:42px}
+.payment-foot{margin-top:20px!important;font-size:10px!important;color:#777380!important}
+</style>
+</head>
+<body>
+<main class="payment-return">
+<section class="payment-card">
+  <div class="payment-brand"><span class="payment-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="4.5"/><path d="m11.2 12.3 8.3-8.3 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-3.1 3.1"/></svg></span> BDZMOD · PAY2S CHECKOUT</div>
+  <h1 id="returnTitle">Đang kiểm tra thanh toán</h1>
+  <p id="returnIntro">Trang này sẽ tự kiểm tra trạng thái đơn từ máy chủ BDZMOD. Chỉ IPN Pay2S đã xác thực mới có thể kích hoạt Key.</p>
+  <div id="returnStatus" class="payment-state" role="status" aria-live="polite">Đang kết nối…</div>
+  <div id="returnKey" class="payment-key" hidden><label>KEY CỦA BẠN</label><code id="returnKeyCode"></code></div>
+  <div class="payment-actions"><button id="returnCheck" class="btn primary" type="button">Kiểm tra lại</button><button id="returnCopy" class="btn" type="button" hidden>Sao chép Key</button><a class="btn" href="../">Về BDZMOD</a></div>
+  <p class="payment-foot">Nếu bạn vừa thanh toán, hãy giữ trang mở để kiểm tra xác nhận từ Pay2S. Không chia sẻ Key với người khác.</p>
+</section>
+</main>
+<script src="../config.js?v=111"></script>
+<script src="../supabase-api.js?v=111"></script>
+<script>
+(function(){
+  var params=new URLSearchParams(location.search);
+  var orderId=params.get('order')||sessionStorage.getItem('bdzPay2sOrder')||'';
+  var viewToken=sessionStorage.getItem('bdzPay2sView')||'';
+  var state=document.getElementById('returnStatus'),title=document.getElementById('returnTitle'),intro=document.getElementById('returnIntro');
+  var keyBox=document.getElementById('returnKey'),keyCode=document.getElementById('returnKeyCode'),copy=document.getElementById('returnCopy');
+  var checkBtn=document.getElementById('returnCheck'),timer=null,busy=false,terminal=false;
+  function setState(message,kind){state.textContent=message;state.className='payment-state'+(kind?' '+kind:'');}
+  function stop(){terminal=true;if(timer){clearTimeout(timer);timer=null;}if(checkBtn)checkBtn.disabled=false;}
+  function showKey(key){
+    keyCode.textContent=key;keyBox.hidden=false;copy.hidden=false;
+    title.textContent='Thanh toán thành công';intro.textContent='Pay2S đã xác nhận thanh toán và BDZMOD đã cấp Key cho đơn hàng.';
+    setState('Đơn hàng đã thanh toán. Hãy sao chép và giữ Key riêng tư.','ok');
+    stop();
+    try{sessionStorage.removeItem('bdzPay2sView');sessionStorage.removeItem('bdzPay2sOrder');}catch(_){}
+  }
+  function msgFor(code){
+    return ({ORDER_NOT_FOUND:'Không tìm thấy đơn. Kiểm tra lại hoặc mở đúng tab đã bắt đầu mua Key.',
+      ORDER_ACCESS_INVALID:'Phiên mua Key không hợp lệ. Hãy trở lại tab nơi bạn tạo đơn.',
+      KEY_DELIVERY_PENDING:'Đã xác nhận thanh toán nhưng Key đang được hoàn tất. Hãy kiểm tra lại sau giây lát.'})[code]||'Chưa kiểm tra được đơn hàng. Vui lòng thử lại.';
+  }
+  async function checkStatus(){
+    if(busy||terminal)return;
+    busy=true;if(checkBtn)checkBtn.disabled=true;
+    try{
+      if(!orderId||!viewToken){setState('Không tìm thấy phiên đơn hàng trong tab này. Hãy quay lại tab bạn đã dùng để bắt đầu mua Key.', 'err');stop();return;}
+      if(!window.BDZ||typeof BDZ.edge!=='function')throw Error('CONFIG');
+      var data=await BDZ.edge('pay2s-api',{action:'order_status',order_id:orderId,view_token:viewToken});
+      if(!data||!data.ok)throw Error(data&&data.error||'STATUS_UNAVAILABLE');
+      if(data.status==='PAID'&&data.key_code){showKey(data.key_code);return;}
+      if(data.status==='FAILED'){title.textContent='Thanh toán không thành công';setState('Đơn hàng không được ghi nhận là đã thanh toán. Bạn có thể tạo đơn mới từ trang chủ.','err');stop();return;}
+      if(data.status==='EXPIRED'){title.textContent='Đơn hàng đã hết hạn';setState('Đơn hàng quá thời hạn thanh toán. Hãy quay lại trang chủ để tạo đơn mới.','err');stop();return;}
+      title.textContent='Đang chờ Pay2S xác nhận';
+      setState('Đơn hàng '+orderId+' đang chờ xác nhận thanh toán. Trang sẽ tự kiểm tra lại sau vài giây.');
+    }catch(e){
+      setState(msgFor(e&&e.message||'STATUS_UNAVAILABLE'),true);
+    }finally{
+      busy=false;if(checkBtn)checkBtn.disabled=false;
+      if(!terminal)timer=setTimeout(checkStatus,4000);
+    }
+  }
+  if(checkBtn)checkBtn.addEventListener('click',function(){if(timer){clearTimeout(timer);timer=null;}checkStatus();});
+  if(copy)copy.addEventListener('click',async function(){
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(keyCode.textContent);copy.textContent='Đã sao chép';}
+      else{window.prompt('Key của bạn:',keyCode.textContent);}
+    }catch(_){window.prompt('Key của bạn:',keyCode.textContent);}
+  });
+  checkStatus();
+})();
+</script>
+</body>
+</html>

@@ -90,6 +90,51 @@ $('pages').innerHTML=`<section id="pg-dash" class="view active">
 <section id="pg-settings" class="view">
 <header class="md-admin-heading"><div><p class="md-overline">SYSTEM PREFERENCES</p><h1>Cài đặt</h1><p class="hint">Quản lý thời hạn key, giới hạn thiết bị và chính sách liên kết.</p></div></header>
 <div class="card"><div class="grid2"><div class="field"><label for="setDur">Thời hạn (giờ)</label><input id="setDur" class="input" type="number" min="1"></div><div class="field"><label for="setDev">Max devices</label><input id="setDev" class="input" type="number" min="1"></div><div class="field"><label for="setLim">Get / visitor</label><input id="setLim" class="input" type="number" min="1"></div><div class="field"><label for="setIp">Bind IP</label><select id="setIp" class="select"><option value="true">Bật</option><option value="false">Tắt</option></select></div><div class="field"><label for="setBind">Bind device</label><select id="setBind" class="select"><option value="true">Bật</option><option value="false">Tắt</option></select></div></div><button id="saveSet" class="btn primary">Lưu cài đặt</button><span id="saveMsg" role="status"></span></div></section>
+
+<section id="pg-pay2s" class="view">
+  <header class="md-admin-heading">
+    <div><p class="md-overline">PAYMENT GATEWAY</p><h1>Pay2S · Bán Key</h1><p class="hint">Cấu hình thanh toán và quản lý các gói Key trên trang chủ.</p></div>
+    <button id="p2Reload" class="btn" type="button">Làm mới</button>
+  </header>
+  <div class="pay2s-grid">
+    <section class="card pay2s-settings-panel">
+      <div class="section-head"><div><h2>Cấu hình kết nối</h2><p class="hint">Thông tin nhạy cảm được lưu trong Supabase Vault và không hiển thị lại.</p></div></div>
+      <div id="p2ConfigStatus" class="p2-config-status" role="status" aria-live="polite">Đang tải trạng thái…</div>
+      <div class="grid2">
+        <div class="field"><label for="p2Environment">Môi trường</label><select id="p2Environment" class="select"><option value="sandbox">Sandbox · thử nghiệm</option><option value="production">Production · thanh toán thật</option></select></div>
+        <div class="field"><label for="p2Enabled">Bán Key qua Pay2S</label><select id="p2Enabled" class="select"><option value="false">Tắt</option><option value="true">Bật</option></select></div>
+        <div class="field"><label for="p2PartnerCode">Partner Code</label><input id="p2PartnerCode" class="input" autocomplete="off" placeholder="Nhập Partner Code"></div>
+        <div class="field"><label for="p2PartnerName">Partner Name</label><input id="p2PartnerName" class="input" autocomplete="organization" placeholder="BDZMOD"></div>
+      </div>
+      <div class="field"><label for="p2BankAccounts">Tài khoản nhận tiền (mỗi dòng: số tài khoản|Bank ID)</label><textarea id="p2BankAccounts" class="input" rows="3" placeholder="123456789|VCB"></textarea><p class="hint">Nhập tài khoản đã liên kết trong Pay2S và dùng đúng mã ngân hàng được hỗ trợ.</p></div>
+      <div class="field"><label for="p2AccessKey">Access Key <span id="p2AccessStatus" class="tag">Chưa kiểm tra</span></label><input id="p2AccessKey" class="input" type="password" autocomplete="new-password" placeholder="Để trống để giữ key đang lưu"></div>
+      <div class="field"><label for="p2SecretKey">Secret Key <span id="p2SecretStatus" class="tag">Chưa kiểm tra</span></label><input id="p2SecretKey" class="input" type="password" autocomplete="new-password" placeholder="Để trống để giữ key đang lưu"></div>
+      <div class="field"><label for="p2IpnUrl">IPN URL · endpoint thông báo</label><input id="p2IpnUrl" class="input" readonly value="https://nklukqriopezsoalnghm.supabase.co/functions/v1/pay2s-ipn"></div>
+      <div class="field"><label for="p2ReturnUrl">Return URL</label><input id="p2ReturnUrl" class="input" readonly value="https://aryaxynk.github.io/bdzteam/payment/return.html"></div>
+      <p class="hint p2-owner-note">Chỉ OWNER được lưu thông tin kết nối và bật cổng thanh toán. Để trống Access Key/Secret Key để giữ thông tin đã lưu.</p>
+      <button id="p2SaveSettings" type="button" class="btn primary">Lưu cấu hình Pay2S</button>
+      <span id="p2SettingsMessage" role="status" class="p2-message"></span>
+    </section>
+    <section class="card pay2s-packages-panel">
+      <div class="section-head"><div><h2>Gói Key</h2><p class="hint">Giá tính bằng VND. Thời hạn và số thiết bị được áp dụng sau khi Pay2S xác nhận thanh toán.</p></div></div>
+      <div id="p2Packages" class="p2-package-list"><p class="hint">Đang tải gói bán…</p></div>
+      <div class="p2-package-editor">
+        <div class="section-head"><div><h3 id="p2PackageFormTitle">Thêm gói mới</h3><p class="hint">Chỉ gói đang bật mới xuất hiện trong cửa sổ Mua Key.</p></div></div>
+        <input id="p2PkgId" type="hidden">
+        <div class="field"><label for="p2PkgName">Tên gói</label><input id="p2PkgName" class="input" maxlength="100" placeholder="Ví dụ: Key 7 ngày"></div>
+        <div class="field"><label for="p2PkgDescription">Mô tả</label><input id="p2PkgDescription" class="input" maxlength="500" placeholder="Thông tin ngắn về gói"></div>
+        <div class="grid2">
+          <div class="field"><label for="p2PkgAmount">Giá (VND)</label><input id="p2PkgAmount" class="input" type="number" min="1" max="1000000000" step="1" placeholder="Ví dụ: 25000"></div>
+          <div class="field"><label for="p2PkgDuration">Thời hạn (giờ)</label><input id="p2PkgDuration" class="input" type="number" min="1" max="8760" step="1" placeholder="168 = 7 ngày"></div>
+          <div class="field"><label for="p2PkgDevices">Số thiết bị tối đa</label><input id="p2PkgDevices" class="input" type="number" min="1" max="100" step="1" value="1"></div>
+          <div class="field"><label for="p2PkgEnabled">Trạng thái gói</label><select id="p2PkgEnabled" class="select"><option value="true">Bật</option><option value="false">Tắt</option></select></div>
+        </div>
+        <div class="md-heading-actions"><button id="p2PkgSave" class="btn primary" type="button">Lưu gói</button><button id="p2PkgReset" class="btn" type="button">Xóa form</button></div>
+        <p id="p2PkgMessage" class="p2-message" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+  </div>
+</section>
 <div id="viewLoader" class="view-loader hidden" role="status" aria-live="polite"><span class="loader-ring" aria-hidden="true"></span><span>Đang tải nội dung…</span></div>`;
 if(typeof buildNav==='function')buildNav();
 if($('loginBtn'))$('loginBtn').onclick=function(){if(typeof doLogin==='function')doLogin()};
@@ -111,4 +156,5 @@ document.querySelectorAll('.tab-lang').forEach(b=>b.onclick=function(){if(typeof
 if(typeof showLang==='function')showLang('java');
 if($('btnCreateVer'))$('btnCreateVer').onclick=function(){if(typeof modalVersion==='function')modalVersion()};
 if($('verQ'))$('verQ').oninput=function(){if(typeof renderVersions==='function')renderVersions()};
+if(typeof initPay2sUi==='function')initPay2sUi();
 }

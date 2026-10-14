@@ -820,3 +820,74 @@ body.token-page {
   .token-status, .token-copy, .token-footer a { transition:none !important; }
   .token-status::before { animation:none !important; }
 }
+
+
+/* BDZMOD purchase CTA and Pay2S checkout */
+.hero-cta-group{display:flex;align-items:center;gap:10px;min-width:0}
+.hero-cta-group #start{flex:1 1 auto;min-width:0;justify-content:space-between}
+.buy-key-btn{height:47px;min-height:47px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 15px;border:1px solid #35333e;border-radius:10px;background:#121116;color:#f3f0f8;font-size:12px;font-weight:650;white-space:nowrap;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s}
+.buy-key-btn:hover{background:#1a1720;border-color:#645071;box-shadow:0 0 24px rgba(121,40,202,.15)}
+.buy-key-btn:active{transform:scale(.99)}
+.buy-key-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.buy-modal{position:fixed;inset:0;z-index:500;display:grid;place-items:center;padding:18px;isolation:isolate}
+.buy-modal.hidden{display:none!important}
+.buy-modal-backdrop{position:absolute;inset:0;z-index:-1;border:0;background:rgba(4,4,7,.8);backdrop-filter:blur(12px);cursor:default}
+.buy-modal-panel{width:min(680px,100%);max-height:min(85dvh,780px);overflow:auto;padding:24px;border:1px solid #302e38;border-radius:18px;background:#0e0e12;color:#f4f2f8;box-shadow:0 28px 100px rgba(0,0,0,.52);animation:buyPanelIn .22s ease-out both}
+.buy-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:18px}
+.buy-modal-head h2{font-size:clamp(21px,3vw,28px);font-weight:650;letter-spacing:-.04em;margin:6px 0}
+.buy-modal-head p:not(.card-kicker){font-size:12px;line-height:1.65;color:#a19eaa;margin:0;max-width:470px}
+.buy-modal-close{flex:0 0 36px;width:36px;height:36px;border:1px solid #302e38;border-radius:10px;background:#17171c;color:#d8d5df;font-size:26px;line-height:1;cursor:pointer}
+.buy-key-status{margin:0 0 14px;padding:11px 12px;border:1px solid #292832;border-radius:9px;background:#131318;color:#aaa7b4;font-size:12px;line-height:1.6}
+.buy-key-status.error{color:#ffaaaa;border-color:rgba(255,110,110,.25);background:rgba(255,70,70,.06)}
+.buy-key-packages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.buy-package{min-width:0;padding:17px;border:1px solid #2b2933;border-radius:13px;background:linear-gradient(145deg,#141319,#101014)}
+.buy-package h3{font-size:14px;font-weight:650;margin:0 0 7px;overflow-wrap:anywhere}
+.buy-package p{margin:0;color:#a5a1ad;font-size:11px;line-height:1.6;min-height:35px;overflow-wrap:anywhere}
+.buy-package-price{font-size:clamp(21px,3vw,27px);font-weight:700;letter-spacing:-.04em;margin:15px 0 5px;color:#fff}
+.buy-package-meta{font-size:10px;color:#97939f;display:flex;gap:8px;flex-wrap:wrap}
+.buy-package .btn{width:100%;margin-top:14px;min-height:40px}
+.buy-package .btn[disabled]{opacity:.6;cursor:wait}
+.buy-packages-empty{padding:18px;border:1px dashed #37343e;border-radius:11px;color:#a7a3af;font-size:12px;line-height:1.6;grid-column:1/-1}
+.buy-modal-footnote{margin:16px 0 0;color:#777481;font-size:10px;line-height:1.65}
+@keyframes buyPanelIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.pay2s-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;align-items:start}
+.pay2s-settings-panel{grid-column:span 5;overflow-wrap:anywhere}
+.pay2s-packages-panel{grid-column:span 7;overflow-wrap:anywhere}
+.pay2s-settings-panel .hint,.pay2s-packages-panel .hint{line-height:1.6}
+.pay2s-settings-panel textarea.input{height:auto;min-height:82px;padding:11px 12px;resize:vertical}
+.p2-config-status{margin-bottom:16px;padding:11px 12px;border:1px solid #292832;border-radius:9px;background:#121216;color:#aaa7b4;font-size:11px;line-height:1.7}
+.p2-config-status.ok{border-color:rgba(0,223,216,.22);color:#84e3dc;background:rgba(0,223,216,.045)}
+.p2-config-status.warn{border-color:rgba(233,185,95,.22);color:#eac987;background:rgba(233,185,95,.045)}
+.p2-config-status.error{border-color:rgba(255,110,110,.25);color:#ffaaaa;background:rgba(255,70,70,.05)}
+.p2-config-status .tag{margin:2px 3px 2px 0}
+.p2-owner-note{margin:8px 0 14px}
+.p2-message{display:block;margin-top:10px;color:#aaa7b4;font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.p2-package-list{display:grid;gap:9px;margin-bottom:18px}
+.p2-package-row{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;padding:13px;border:1px solid var(--line);border-radius:10px;background:#0b0b0e}
+.p2-package-main{flex:1;min-width:0}
+.p2-package-main strong{display:block;font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.p2-package-main p{margin:5px 0 7px;color:#93909d;font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+.p2-package-meta{display:flex;flex-wrap:wrap;gap:6px}
+.p2-package-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.p2-package-editor{border-top:1px solid var(--line);padding-top:18px}
+.p2-package-editor h3{font-size:14px;margin:0 0 4px}
+.p2-package-row .tag{align-self:flex-start}
+@media(max-width:1100px){.pay2s-settings-panel,.pay2s-packages-panel{grid-column:span 12}}
+@media(max-width:600px){
+  .hero-cta-group{width:100%;gap:8px}
+  .hero-cta-group #start{width:auto;flex:1 1 auto;min-width:0;padding-inline:12px;gap:10px}
+  .buy-key-btn{flex:0 0 118px;width:118px;padding:0 9px;gap:7px;font-size:11px}
+  .buy-key-btn svg{width:15px;height:15px}
+  .buy-modal{padding:9px}
+  .buy-modal-panel{padding:17px 13px;border-radius:14px;max-height:92dvh}
+  .buy-key-packages{grid-template-columns:minmax(0,1fr)}
+  .buy-package{padding:14px}
+  .buy-package p{min-height:0}
+  .p2-package-row{flex-direction:column}
+  .p2-package-actions{width:100%;justify-content:flex-start}
+}
+@media(prefers-reduced-motion:reduce){.buy-modal-panel{animation:none}}
+
+/* Keep the purchase dialog above its dimmed backdrop. */
+.buy-modal-backdrop{z-index:0}
+.buy-modal-panel{position:relative;z-index:1}
