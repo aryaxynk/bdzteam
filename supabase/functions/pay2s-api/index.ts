@@ -64,8 +64,12 @@ Deno.serve(async (req: Request) => {
       if (visitorId.length < 8) return json(req, { ok: false, error: "INVALID_VISITOR" }, 400);
       const visitorHash = await sha256("BDZMOD-PAY2S-VISITOR|" + visitorId);
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const now = new Date().toISOString();
+      // Failed attempts and stale pending orders must not block legitimate retries.
+      // Keep the daily cap for paid orders and still-active pending orders only.
       const { count, error: countError } = await sb.from("pay2s_orders").select("id", { count: "exact", head: true })
-        .eq("visitor_hash", visitorHash).gte("created_at", since);
+        .eq("visitor_hash", visitorHash).gte("created_at", since)
+        .or(`status.eq.PAID,and(status.eq.PENDING,expires_at.gt.${now})`);
       if (countError) return json(req, { ok: false, error: "ORDER_LIMIT_CHECK" }, 500);
       if ((count || 0) >= 5) return json(req, { ok: false, error: "ORDER_RATE_LIMIT" }, 429);
       const { data: pack, error: packError } = await sb.from("pay2s_packages")
