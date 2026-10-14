@@ -50,6 +50,21 @@
   var state=document.getElementById('returnStatus'),title=document.getElementById('returnTitle'),intro=document.getElementById('returnIntro');
   var keyBox=document.getElementById('returnKey'),keyCode=document.getElementById('returnKeyCode'),copy=document.getElementById('returnCopy');
   var checkBtn=document.getElementById('returnCheck'),timer=null,busy=false,terminal=false;
+  var redirectAttempted=false;
+  async function confirmSignedRedirect(){
+    if(redirectAttempted||params.get('resultCode')!=='0'||!params.get('m2signature'))return;
+    var signedOrder=params.get('orderId')||'';
+    if(signedOrder!==orderId)return;
+    redirectAttempted=true;
+    var keys=['partnerCode','orderId','requestId','amount','orderInfo','orderType','transId','resultCode','message','payType','responseTime','m2signature'];
+    var payment={};
+    keys.forEach(function(k){payment[k]=params.get(k)||'';});
+    try{
+      var result=await BDZ.edge('pay2s-api',{action:'confirm_redirect',payment:payment});
+      if(result&&result.ok)return;
+      if(result&&result.error==='PAYMENT_SETTLEMENT_UNAVAILABLE')redirectAttempted=false;
+    }catch(_){redirectAttempted=false;}
+  }
   function setState(message,kind){state.textContent=message;state.className='payment-state'+(kind?' '+kind:'');}
   function stop(){terminal=true;if(timer){clearTimeout(timer);timer=null;}if(checkBtn)checkBtn.disabled=false;}
   function showKey(key){
@@ -70,6 +85,7 @@
     try{
       if(!orderId||!viewToken){setState('Không tìm thấy phiên đơn hàng trong tab này. Hãy quay lại tab bạn đã dùng để bắt đầu mua Key.', 'err');stop();return;}
       if(!window.BDZ||typeof BDZ.edge!=='function')throw Error('CONFIG');
+      await confirmSignedRedirect();
       var data=await BDZ.edge('pay2s-api',{action:'order_status',order_id:orderId,view_token:viewToken});
       if(!data||!data.ok)throw Error(data&&data.error||'STATUS_UNAVAILABLE');
       if(data.status==='PAID'&&data.key_code){showKey(data.key_code);return;}
