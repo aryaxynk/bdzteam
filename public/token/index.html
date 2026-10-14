@@ -18,7 +18,7 @@
     </span>
     <span class="token-brand-copy"><strong>BDZMOD</strong><small>QUY TRÌNH NHẬN KEY</small></span>
   </a>
-  <div class="token-header-status"><span class="token-live-dot"></span> TOKEN STATUS</div>
+  <div class="token-header-status"><a href="../my-keys.html">Key của tôi</a> <span class="token-live-dot"></span> TOKEN STATUS</div>
 </header>
 <main class="token-main">
   <section class="token-story" aria-label="Thông tin bảo mật">
@@ -49,13 +49,14 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
         <span id="copyLabel">Sao chép Key</span>
       </button>
+      <a class="btn" href="../my-keys.html" style="margin-top:10px">Xem Key của tôi</a>
     </div>
     <div class="token-footnote"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/></svg><span>Giữ Key riêng tư. Link nhận Key chỉ dùng một lần.</span></div>
   </section>
 </main>
 <footer class="token-footer"><a href="../">← Quay lại BDZMOD</a><span><span class="token-live-dot"></span> SESSION STATUS</span><span>© BDZMOD · Key Service</span></footer>
 <script src="../config.js?v=111"></script>
-<script src="../supabase-api.js?v=111"></script>
+<script src="../supabase-api.js?v=112"></script>
 <script>
 (function(){
   function viErr(err){
@@ -65,6 +66,7 @@
       TOKEN_EXPIRED:'Token đã hết hạn. Vui lòng nhận key lại.',
       TOKEN_CONTEXT_MISMATCH:'Phiên không khớp. Hãy mở link trên cùng thiết bị.',
       TOKEN_INVALID:'Token không hợp lệ.',
+      LIBRARY_TOKEN_INVALID:'Không thể tạo mã bảo vệ thư viện Key. Hãy bật lưu trữ trình duyệt rồi tải lại.',
       CLAIM_UNAVAILABLE:'Không thể cấp key. Thử lại sau.',
       MAINTENANCE:'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
       BANNED:'Bạn đã bị khóa tạm thời. Vui lòng thử lại sau.',
@@ -95,7 +97,8 @@
   (async function(){
     try{
       var v=BDZ.visitorId();
-      var d=await BDZ.edge('web-get-key',{action:'claim',token:t,ip:v,visitor_id:v});
+      var libraryToken=BDZ.libraryToken();
+      var d=await BDZ.edge('web-get-key',{action:'claim',token:t,ip:v,visitor_id:v,library_token:libraryToken});
       if(!d||!d.ok||!d.key||!d.key.key_code) throw Error(viErr(d&&d.error));
       k.textContent=d.key.key_code;
       o.classList.remove('hidden');
