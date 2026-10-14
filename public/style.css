@@ -887,3 +887,7 @@ body.token-page {
   .p2-package-actions{width:100%;justify-content:flex-start}
 }
 @media(prefers-reduced-motion:reduce){.buy-modal-panel{animation:none}}
+
+/* Keep the purchase dialog above its dimmed backdrop. */
+.buy-modal-backdrop{z-index:0}
+.buy-modal-panel{position:relative;z-index:1}
