@@ -65,6 +65,9 @@
       TOKEN_EXPIRED:'Token đã hết hạn. Vui lòng nhận key lại.',
       TOKEN_CONTEXT_MISMATCH:'Phiên không khớp. Hãy mở link trên cùng thiết bị.',
       TOKEN_INVALID:'Token không hợp lệ.',
+      LIBRARY_TOKEN_INVALID:'Không thể xác thực mã kho Key. Tải lại trang rồi thử lại.',
+      CRYPTO_UNAVAILABLE:'Trình duyệt chưa hỗ trợ xác thực an toàn. Hãy cập nhật trình duyệt.',
+      LIBRARY_TOKEN_STORAGE_UNAVAILABLE:'Không thể lưu phiên nhận Key. Hãy bật bộ nhớ trình duyệt rồi thử lại.',
       CLAIM_UNAVAILABLE:'Không thể cấp key. Thử lại sau.',
       MAINTENANCE:'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
       BANNED:'Bạn đã bị khóa tạm thời. Vui lòng thử lại sau.',
@@ -92,10 +95,23 @@
     bad('Token không hợp lệ.');
     return;
   }
+  function libraryToken(){
+    var storageKey='bdz_library_token';
+    var value='';
+    try{value=(localStorage.getItem(storageKey)||'').trim().toLowerCase();}catch(_){ }
+    if(/^[a-f0-9]{64}$/.test(value)) return value;
+    if(!window.crypto||typeof window.crypto.getRandomValues!=='function') throw Error('CRYPTO_UNAVAILABLE');
+    var bytes=new Uint8Array(32);
+    window.crypto.getRandomValues(bytes);
+    value=Array.from(bytes,function(b){return b.toString(16).padStart(2,'0');}).join('');
+    try{localStorage.setItem(storageKey,value);}catch(_){throw Error('LIBRARY_TOKEN_STORAGE_UNAVAILABLE');}
+    return value;
+  }
   (async function(){
     try{
       var v=BDZ.visitorId();
-      var d=await BDZ.edge('web-get-key',{action:'claim',token:t,ip:v,visitor_id:v});
+      var library=libraryToken();
+      var d=await BDZ.edge('web-get-key',{action:'claim',token:t,ip:v,visitor_id:v,library_token:library});
       if(!d||!d.ok||!d.key||!d.key.key_code) throw Error(viErr(d&&d.error));
       k.textContent=d.key.key_code;
       o.classList.remove('hidden');
@@ -111,7 +127,7 @@
         } else window.prompt('Key:', d.key.key_code);
       };
     }catch(e){
-      bad(e.message||'Có lỗi xảy ra.');
+      bad(viErr(e.message||'SERVER_ERROR'));
     }
   })();
 })();
