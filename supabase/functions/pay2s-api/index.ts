@@ -28,14 +28,16 @@ async function hmacSha256(value: string, secret: string) {
 function inspectPay2sUrl(url: string) {
   try {
     const u = new URL(url);
-    const trustedHost = u.hostname === "payment.pay2s.vn" || u.hostname === "sandbox-payment.pay2s.vn";
-    const valid = u.protocol === "https:" && trustedHost && !u.username && !u.password &&
-      (!u.port || u.port === "443") && u.pathname.startsWith("/v2/gateway/pay");
-    return { valid, host: trustedHost ? u.hostname : "untrusted-or-invalid" as string,
-      environment: u.hostname === "payment.pay2s.vn" ? "production" :
-        u.hostname === "sandbox-payment.pay2s.vn" ? "sandbox" : null };
+    const hostEnvironment = u.hostname === "payment.pay2s.vn" ? "production" :
+      u.hostname === "sandbox-payment.pay2s.vn" ? "sandbox" : null;
+    const trustedPath = u.pathname.startsWith("/quicklink/") ||
+      u.pathname.startsWith("/v2/gateway/pay");
+    const valid = u.protocol === "https:" && hostEnvironment !== null &&
+      !u.username && !u.password && (!u.port || u.port === "443") && trustedPath;
+    return { url, valid, host: hostEnvironment ? u.hostname : "untrusted-or-invalid",
+      environment: hostEnvironment, pathValid: trustedPath };
   } catch {
-    return { valid: false, host: "invalid-url", environment: null as string | null };
+    return { url, valid: false, host: "invalid-url", environment: null as string | null, pathValid: false };
   }
 }
 async function getConfig(sb: ReturnType<typeof supabase>) {
@@ -123,7 +125,20 @@ Deno.serve(async (req: Request) => {
       const requestMatches = text(upstreamBody.requestId) === requestId;
       const orderMatches = text(upstreamBody.orderId) === orderId;
       const amountMatches = responseAmount === Number(pack.amount);
-      const paymentLink = inspectPay2sUrl(text(upstreamBody.payUrl));
+
+      // Pay2S Collection Link often returns qrList[].qrUrl instead of payUrl.
+      // Accept either shape while enforcing exact Pay2S host and environment.
+      const qrList = Array.isArray(upstreamBody.qrList)
+        ? upstreamBody.qrList as Array<Record<string, unknown>>
+        : [];
+      const linkCandidates = [
+        text(upstreamBody.payUrl),
+        ...qrList.map(item => text(item?.qrUrl))
+      ].filter(Boolean);
+      const parsedLinks = linkCandidates.map(url => inspectPay2sUrl(url));
+      const paymentLink = parsedLinks.find(link => link.valid && link.environment === cfg.settings.environment)
+        || parsedLinks.find(link => link.valid)
+        || inspectPay2sUrl("");
       const markOrderFailed = async (reason: string) => {
         await sb.from("pay2s_orders").update({ status: "FAILED",
           result_code: Number.isFinite(resultCode) ? resultCode : null,
@@ -138,21 +153,28 @@ Deno.serve(async (req: Request) => {
         });
         return json(req, { ok: false, error: "PAY2S_CREATE_FAILED" }, 502);
       }
-      if (!partnerMatches || !requestMatches || !orderMatches || !amountMatches || !paymentLink.valid) {
+      if (!partnerMatches || !requestMatches || !orderMatches || !amountMatches) {
         const mismatch = [
           !partnerMatches ? "partnerCode" : "",
           !requestMatches ? "requestId" : "",
           !orderMatches ? "orderId" : "",
-          !amountMatches ? "amount" : "",
-          !paymentLink.valid ? "payUrl" : ""
+          !amountMatches ? "amount" : ""
         ].filter(Boolean);
         await markOrderFailed("Pay2S response validation failed: " + mismatch.join(", "));
         console.warn("Pay2S create response validation failed", {
-          httpStatus: upstream.status, resultCode,
-          partnerMatches, requestMatches, orderMatches, amountMatches,
-          payUrlHost: paymentLink.host, configuredEnvironment: cfg.settings.environment
+          httpStatus: upstream.status, resultCode, partnerMatches, requestMatches, orderMatches, amountMatches
         });
         return json(req, { ok: false, error: "PAY2S_RESPONSE_INVALID" }, 502);
+      }
+      if (!paymentLink.valid) {
+        const hasQrUrl = qrList.some(item => Boolean(text(item?.qrUrl)));
+        await markOrderFailed("Pay2S response has no trusted checkout URL: hasPayUrl=" +
+          Boolean(text(upstreamBody.payUrl)) + ", qrListLength=" + qrList.length + ", hasQrUrl=" + hasQrUrl);
+        console.warn("Pay2S create response missing checkout URL", {
+          httpStatus: upstream.status, resultCode, hasPayUrl: Boolean(text(upstreamBody.payUrl)),
+          qrListLength: qrList.length, hasQrUrl
+        });
+        return json(req, { ok: false, error: "PAY2S_LINK_MISSING" }, 502);
       }
       if (paymentLink.environment !== cfg.settings.environment) {
         await markOrderFailed("Pay2S checkout environment mismatch: configured=" +
@@ -164,7 +186,7 @@ Deno.serve(async (req: Request) => {
         });
         return json(req, { ok: false, error: "PAY2S_ENVIRONMENT_MISMATCH" }, 502);
       }
-      return json(req, { ok: true, order_id: orderId, view_token: viewToken, pay_url: text(upstreamBody.payUrl),
+      return json(req, { ok: true, order_id: orderId, view_token: viewToken, pay_url: paymentLink.url,
         amount: Number(pack.amount), package_name: pack.name, expires_at: expiresAt });
     }
     if (action === "order_status") {
