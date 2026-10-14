@@ -217,7 +217,7 @@ Deno.serve(async (req: Request) => {
       const signature = field(payment.m2signature);
 
       if (!/^BDZ[A-F0-9]{32}$/.test(orderId) || !requestId || !partnerCode ||
-          !/^\\d+$/.test(amount) || !/^\\d+$/.test(resultCodeRaw) ||
+          !/^[0-9]+$/.test(amount) || !/^[0-9]+$/.test(resultCodeRaw) ||
           !orderInfo || !orderType || !message || !payType || !responseTime ||
           !/^[a-f0-9]{64}$/i.test(signature))
         return json(req, { ok: false, error: "REDIRECT_FIELDS_INVALID" }, 400);
