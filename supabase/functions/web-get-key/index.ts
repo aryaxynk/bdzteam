@@ -2,15 +2,22 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const cors = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://aryaxynk.github.io",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
+  "Vary": "Origin",
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
   headers: { ...cors, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
 });
 const clean = (v: unknown) => typeof v === "string" ? v.trim() : "";
+const encoder = new TextEncoder();
+const hex = (b: Uint8Array) => Array.from(b, x => x.toString(16).padStart(2, "0")).join("");
+async function sha256(value: string) {
+  return hex(new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value))));
+}
 
 function extractShortUrl(raw: string, parsed: unknown, target: string): string | null {
   const p = parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : null;
@@ -82,9 +89,17 @@ Deno.serve(async (req) => {
 
     if (action === "claim") {
       const token = clean(body?.token);
+      const libraryToken = clean(body?.library_token).toLowerCase();
       if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) return json({ ok: false, error: "TOKEN_INVALID" }, 400);
-      const { data, error } = await sb.rpc("bdz_web_claim", { p_token: token, p_ip: ip, p_visitor_id: visitorId });
-      if (error) return json({ ok: false, error: "CLAIM_UNAVAILABLE" }, 500);
+      if (!/^[a-f0-9]{64}$/.test(libraryToken)) return json({ ok: false, error: "LIBRARY_TOKEN_INVALID" }, 400);
+      const ownerTokenHash = await sha256(libraryToken);
+      const { data, error } = await sb.rpc("bdz_web_claim_key_vault", {
+        p_token: token, p_ip: ip, p_visitor_id: visitorId, p_owner_token_hash: ownerTokenHash
+      });
+      if (error) {
+        console.error("web-get-key claim failed", error instanceof Error ? error.name : "database_error");
+        return json({ ok: false, error: "CLAIM_UNAVAILABLE" }, 500);
+      }
       return json(data || { ok: false, error: "CLAIM_UNAVAILABLE" });
     }
     return json({ ok: false, error: "INVALID_ACTION" }, 400);
