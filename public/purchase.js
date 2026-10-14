@@ -17,7 +17,9 @@
       PACKAGE_UNAVAILABLE:'Gói này vừa được tắt hoặc không còn bán.',
       ORDER_RATE_LIMIT:'Bạn đã tạo quá nhiều đơn gần đây. Hãy thử lại sau.',
       PAY2S_UNAVAILABLE:'Pay2S đang tạm thời không phản hồi. Hãy thử lại sau.',
-      PAY2S_CREATE_FAILED:'Pay2S chưa tạo được liên kết thanh toán. Kiểm tra cấu hình hoặc thử lại sau.'
+      PAY2S_ENVIRONMENT_MISMATCH:'Môi trường Pay2S không khớp: vào Admin > Pay2S và chọn đúng Sandbox hoặc Production theo bộ khóa đang dùng. Không dùng khóa Sandbox để nhận thanh toán thật.',
+      PAY2S_RESPONSE_INVALID:'Pay2S trả phản hồi không khớp với đơn hàng. Hãy kiểm tra Partner Code, cấu hình tài khoản và liên hệ Pay2S nếu lỗi tiếp tục.',
+      PAY2S_CREATE_FAILED:'Pay2S chưa tạo được liên kết thanh toán. Kiểm tra trạng thái API và cấu hình trong Admin > Pay2S rồi thử lại.'
     };
     return m[code]||'Không thể bắt đầu mua Key lúc này. Vui lòng thử lại sau.';
   }
