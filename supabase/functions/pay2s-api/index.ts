@@ -124,8 +124,10 @@ Deno.serve(async (req: Request) => {
           if (error) return json(req, { ok: false, error: "KEY_LIBRARY_UNAVAILABLE" }, 500);
           orderRows = data || [];
         }
-        const keyMap = new Map((keyRows || []).map(row => [String(row.id), row]));
-        const orderMap = new Map(orderRows.map(row => [String(row.order_id), row]));
+        const keyMap = new Map<string, Record<string, unknown>>();
+        for (const row of keyRows || []) keyMap.set(String(row.id), row as unknown as Record<string, unknown>);
+        const orderMap = new Map<string, Record<string, unknown>>();
+        for (const row of orderRows) orderMap.set(String(row.order_id), row);
         const keys = (accessRows || []).flatMap(access => {
           const key = keyMap.get(String(access.key_id));
           if (!key) return [];
