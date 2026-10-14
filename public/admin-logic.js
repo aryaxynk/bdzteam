@@ -1,5 +1,5 @@
 function buildNav(){
-  const tabs=[['dash','Tổng quan'],['keys','Key'],['apikeys','API'],['versions','Version'],['admins','Admin'],['settings','Cài đặt']];
+  const tabs=[['dash','Tổng quan'],['keys','Key'],['apikeys','API'],['versions','Version'],['admins','Admin'],['pay2s','Pay2S'],['settings','Cài đặt']];
   const nav=$('navTabs');
   if(!nav)return;
   if($('pg-bans'))tabs.splice(tabs.length-1,0,['bans','Ban']);
@@ -12,6 +12,7 @@ function buildNav(){
     versions:'<svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></svg>',
     admins:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.3"/><path d="M3 20v-1.4A4.6 4.6 0 0 1 7.6 14h2.8a4.6 4.6 0 0 1 4.6 4.6V20M16 4.8a3.3 3.3 0 0 1 0 6.4M18 14.2a4.4 4.4 0 0 1 3 4.2V20"/></svg>',
     settings:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="m19.4 15 .1.1 1.5 1.2-1.5 2.6-1.8-.7a8 8 0 0 1-1.7 1l-.3 1.9h-3l-.3-1.9a8 8 0 0 1-1.7-1l-1.8.7-1.5-2.6L7 15a8 8 0 0 1 0-2l-1.5-1.2L7 9.2l1.8.7a8 8 0 0 1 1.7-1l.3-1.9h3l.3 1.9a8 8 0 0 1 1.7 1l1.8-.7 1.5 2.6-1.5 1.2a8 8 0 0 1-.1 2Z"/></svg>',
+    pay2s:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3m7-2 2 2-2 2"/></svg>',
     bans:'<svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 9 6 6m0-6-6 6"/></svg>'
   };
   nav.innerHTML=tabs.map(t=>'<button type="button" class="side-item" data-p="'+t[0]+'"><span class="nav-icon" aria-hidden="true">'+(icons[t[0]]||icons.dash)+'</span><span class="side-label">'+t[1]+'</span></button>').join('');
@@ -45,6 +46,7 @@ async function page(name){
     document.querySelectorAll('.tab-lang').forEach(b=>b.onclick=()=>showLang(b.dataset.lang));
   }
   const tasks=[];
+  if(name==='pay2s'&&typeof loadPay2sConfig==='function')tasks.push(loadPay2sConfig());
   if(name==='versions'&&typeof loadVersions==='function')tasks.push(loadVersions());
   if(name==='versions'&&!$('pg-versions'))console.error('pg-versions missing');
   if(name==='bans'&&typeof loadBans==='function')tasks.push(loadBans());
