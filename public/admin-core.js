@@ -17,9 +17,6 @@ function closeModalSmooth(root){
   },180);
 }
 
-
-
-
 function shell(){
 $('root').innerHTML=`<div id="login" class="login-page">
 <a href="./" class="btn sm ghost login-back" id="btnBackLogin"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Trang chủ</a>
@@ -52,7 +49,6 @@ $('root').innerHTML=`<div id="login" class="login-page">
     <img class="logo-img" src="${LOGO}" alt="" referrerpolicy="no-referrer">
     <div class="topbar-brand"><span class="brand">BDZMOD</span></div>
     <span class="grow"></span><span class="topbar-status"><span class="status-pulse"></span> Bảng quản trị BDZMOD</span>
-    
     <button id="refresh" class="btn icon-btn" aria-label="Làm mới" title="Làm mới dữ liệu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M20 12a8 8 0 0 0-14-5L4 9m0 8v-5h5"/><path d="M4 12a8 8 0 0 0 14 5l2-2"/></svg></button>
     <button id="logout" class="btn sm danger">Thoát</button>
   </header>
@@ -83,7 +79,7 @@ $('pages').innerHTML=`<section id="pg-dash" class="view active">
 <div class="bento-dash"><div class="card tile-7"><div class="section-head"><div><h2>Thông số API</h2><p class="hint">Endpoint và định dạng gọi API</p></div></div><pre class="code" id="apiSpec" style="margin:0;min-height:120px;white-space:pre-wrap"></pre></div><div class="card tile-5"><div class="section-head"><div><h2>Mẫu code</h2><p class="hint">Chọn ngôn ngữ để xem ví dụ.</p></div></div><div class="toolbar" style="margin:14px 0 12px"><button class="btn sm tab-lang active" data-lang="java">Java</button><button class="btn sm tab-lang" data-lang="native">Native</button><button class="btn sm tab-lang" data-lang="chung">Chung</button></div><pre class="code" id="apiSample" style="max-height:420px;overflow:auto;margin:0;white-space:pre-wrap"></pre></div></div></section>
 <section id="pg-versions" class="view">
 <header class="md-admin-heading"><div><p class="md-overline">RELEASE MANAGEMENT</p><h1>Version app</h1><p class="hint">Quản lý version được phép sử dụng và đường dẫn cập nhật.</p></div><button id="btnCreateVer" class="btn primary">+ Thêm version</button></header>
-<div class="card"><div class="toolbar"><input id="verQ" class="input" placeholder="Lọc App ID hoặc version…" aria-label="Lọc version" style="max-width:320px"></div><div class="table-wrap versions-table-wrap"><table><thead><tr><th>App ID</th><th>Version</th><th>Link</th><th>Ghi chú</th><th></th></tr></thead><tbody id="verRows"></tbody></table></div><div id="versionCards" class="version-cards"></div></div></section>
+<div class="card"><div class="toolbar"><input id="verQ" class="input" placeholder="Lọc App ID hoặc version…" aria-label="Lọc version" style="max-width:320px"></div><div class="table-wrap versions-table-wrap"><table><thead><tr><th>App ID</th><th>Version</th><th>Trạng thái</th><th>Link</th><th>Ghi chú</th><th></th></tr></thead><tbody id="verRows"></tbody></table></div><div id="versionCards" class="version-cards"></div></div></section>
 <section id="pg-admins" class="view">
 <header class="md-admin-heading"><div><p class="md-overline">TEAM & PERMISSIONS</p><h1>Admin phụ</h1><p class="hint">Tạo tài khoản quản trị và kiểm soát quyền truy cập.</p></div><button id="btnCreateAdmin" class="btn primary">+ Admin phụ</button></header>
 <div class="card"><div class="table-wrap admins-table-wrap"><table><thead><tr><th>User</th><th>Role</th><th>Trạng thái</th><th>Login</th><th></th></tr></thead><tbody id="adminRows"></tbody></table></div><div id="adminCards" class="admin-cards"></div></div></section>
