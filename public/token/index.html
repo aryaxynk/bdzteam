@@ -15,59 +15,88 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        border: 'hsl(240 4% 16%)',
-        background: 'hsl(240 6% 4%)',
-        foreground: 'hsl(0 0% 98%)',
-        card: 'hsl(240 5% 8%)',
-        muted: 'hsl(240 4% 16%)',
-        'muted-foreground': 'hsl(240 5% 64%)',
-        primary: 'hsl(0 0% 98%)',
-        'primary-foreground': 'hsl(240 6% 6%)',
+        border: '#262626',
+        background: '#0a0a0a',
+        foreground: '#fafafa',
+        card: '#171717',
+        muted: '#262626',
+        'muted-foreground': '#a3a3a3',
+        primary: '#fafafa',
+        'primary-foreground': '#0a0a0a'
       },
-      borderRadius: { lg: '0.5rem', md: '0.375rem', sm: '0.25rem' }
+      borderRadius: { lg: '0.5rem', md: '0.375rem', sm: '0.25rem' },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        'pulse-dot': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.45', transform: 'scale(0.85)' }
+        }
+      },
+      animation: {
+        'fade-in': 'fade-in 0.45s ease-in-out both',
+        'pulse-dot': 'pulse-dot 1.8s ease-in-out infinite'
+      }
     }
   }
 }
 </script>
+<style>
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
 </head>
-<body class="min-h-screen overflow-hidden bg-background text-foreground antialiased">
-<div class="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsla(270,60%,40%,0.12),transparent),radial-gradient(ellipse_50%_40%_at_90%_100%,hsla(173,60%,40%,0.06),transparent)]"></div>
+<body class="min-h-screen overflow-hidden bg-background text-foreground antialiased selection:bg-indigo-500/30">
+<div class="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_70%_45%_at_50%_-15%,rgba(99,102,241,0.14),transparent),radial-gradient(ellipse_45%_35%_at_85%_100%,rgba(16,185,129,0.08),transparent)]"></div>
+<div class="pointer-events-none fixed inset-0 bg-neutral-950/20 backdrop-blur-[1px]"></div>
 
 <main class="relative z-10 flex min-h-screen items-center justify-center p-4">
-  <div class="w-full max-w-md rounded-lg border border-border bg-card/60 backdrop-blur-sm">
-    <div class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
-      <a href="../" class="flex items-center gap-2.5 no-underline">
-        <img src="https://263.org.vn/logo?v=20261003" alt="" width="28" height="28" class="h-7 w-7 rounded-md">
+  <div class="w-full max-w-md animate-fade-in rounded-lg border border-neutral-800 bg-neutral-900/25 backdrop-blur-md">
+    <div class="flex items-center justify-between gap-3 border-b border-neutral-800 px-5 py-4">
+      <a href="../" class="group flex items-center gap-2.5 no-underline">
+        <img src="https://263.org.vn/logo?v=20261003" alt="" width="28" height="28" class="h-7 w-7 rounded-md transition-transform duration-300 ease-in-out group-hover:scale-105">
         <span class="leading-tight">
-          <span class="block text-sm font-semibold tracking-tight text-foreground">BDZMOD</span>
-          <span class="block text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Nhận Key</span>
+          <span class="block text-sm font-semibold tracking-tight text-neutral-50">BDZMOD</span>
+          <span class="block text-[10px] font-medium uppercase tracking-widest text-neutral-500">Nhận Key</span>
         </span>
       </a>
-      <a href="../" class="inline-flex h-8 items-center rounded-md border border-border bg-transparent px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground no-underline">← Trang chủ</a>
+      <a href="../" class="inline-flex h-8 items-center rounded-md border border-neutral-800 bg-neutral-900/20 px-3 text-xs font-medium text-neutral-400 transition-all duration-300 ease-in-out hover:border-neutral-700 hover:bg-neutral-800/40 hover:text-neutral-100 no-underline">← Trang chủ</a>
     </div>
 
     <div class="px-5 py-5">
-      <h1 class="text-xl font-semibold tracking-tight text-foreground">Nhận Key</h1>
-      <p id="intro" class="mt-1.5 text-sm text-muted-foreground leading-relaxed">Đang xác nhận phiên…</p>
+      <h1 class="text-xl font-semibold tracking-tight text-neutral-50">Nhận Key</h1>
+      <p id="intro" class="mt-1.5 text-sm leading-relaxed text-neutral-400">Đang xác nhận phiên…</p>
 
-      <div id="status" role="status" aria-live="polite" class="mt-4 rounded-md border border-border bg-muted/30 px-3.5 py-2.5 text-sm text-muted-foreground leading-relaxed">
-        Đang xác minh token…
+      <!-- Status / loader glass panel -->
+      <div id="status" role="status" aria-live="polite" class="mt-4 flex items-center gap-3 rounded-md border border-neutral-800 bg-neutral-900/20 px-3.5 py-3 text-sm leading-relaxed text-neutral-400 transition-all duration-300 ease-in-out">
+        <svg id="statusSpin" class="h-4 w-4 shrink-0 animate-spin text-indigo-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <span id="statusText">Đang xác minh token…</span>
       </div>
 
-      <div id="out" class="mt-4 hidden">
-        <label class="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Key của bạn</label>
-        <code id="key" class="block break-all rounded-md border border-border bg-background/80 px-3.5 py-3 font-mono text-sm leading-relaxed text-foreground"></code>
+      <div id="out" class="mt-4 hidden animate-fade-in">
+        <label class="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Key của bạn</label>
+        <code id="key" class="block break-all rounded-md border border-neutral-800 bg-neutral-950/40 px-3.5 py-3 font-mono text-sm leading-relaxed text-neutral-100"></code>
       </div>
 
-      <button id="copy" type="button" class="mt-4 hidden inline-flex h-10 w-full items-center justify-center rounded-md border border-transparent bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+      <button id="copy" type="button" class="mt-4 hidden inline-flex h-10 w-full items-center justify-center rounded-md border border-transparent bg-neutral-50 px-4 text-sm font-semibold text-neutral-950 transition-all duration-300 ease-in-out hover:bg-white active:scale-[0.98]">
         Sao chép Key
       </button>
     </div>
 
-    <div class="flex items-center justify-between border-t border-border px-5 py-3 text-[11px] text-muted-foreground">
+    <div class="flex items-center justify-between border-t border-neutral-800 px-5 py-3 text-[11px] text-neutral-500">
       <span>Token dùng 1 lần</span>
       <span class="inline-flex items-center gap-1.5">
-        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-dot"></span>
         Online
       </span>
     </div>
@@ -101,14 +130,28 @@ tailwind.config = {
 
   var t = (new URLSearchParams(location.search).get("token") || "").trim();
   var s = document.getElementById("status");
+  var statusText = document.getElementById("statusText");
+  var statusSpin = document.getElementById("statusSpin");
   var i = document.getElementById("intro");
   var o = document.getElementById("out");
   var k = document.getElementById("key");
   var c = document.getElementById("copy");
 
+  function setStatus(type, msg) {
+    statusSpin.classList.add("hidden");
+    statusText.textContent = msg;
+    if (type === "err") {
+      s.className = "mt-4 rounded-md border border-red-500/25 bg-red-500/10 px-3.5 py-3 text-sm leading-relaxed text-red-400 transition-all duration-300 ease-in-out animate-fade-in";
+    } else if (type === "ok") {
+      s.className = "mt-4 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-3 text-sm leading-relaxed text-emerald-400 transition-all duration-300 ease-in-out animate-fade-in";
+    } else {
+      s.className = "mt-4 flex items-center gap-3 rounded-md border border-neutral-800 bg-neutral-900/20 px-3.5 py-3 text-sm leading-relaxed text-neutral-400 transition-all duration-300 ease-in-out";
+      statusSpin.classList.remove("hidden");
+    }
+  }
+
   function bad(msg) {
-    s.className = "mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-sm text-red-400 leading-relaxed";
-    s.textContent = msg;
+    setStatus("err", msg);
     i.textContent = "Phiên không thể hoàn tất.";
   }
 
@@ -148,8 +191,7 @@ tailwind.config = {
       k.textContent = d.key.key_code;
       o.classList.remove("hidden");
       c.classList.remove("hidden");
-      s.className = "mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2.5 text-sm text-emerald-400 leading-relaxed";
-      s.textContent = "Nhận Key thành công";
+      setStatus("ok", "Nhận Key thành công");
       i.textContent = "Key đã được cấp. Hãy sao chép và giữ riêng tư.";
       c.onclick = function () {
         if (navigator.clipboard && navigator.clipboard.writeText) {
