@@ -4,130 +4,292 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <script src="../security-hardening.js?v=121"></script>
 <title>Nhận Key · BDZMOD</title>
-<link rel="stylesheet" href="../style.css?v=125">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
+<style>
+  :root {
+    --bg: #07070a;
+    --card: #121218;
+    --border: #2a2a35;
+    --text: #f0eef6;
+    --muted: #9a96a8;
+    --accent: #00dfd8;
+    --ok: #34d399;
+    --err: #ff8a8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  body {
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(121, 40, 202, 0.25), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0, 223, 216, 0.08), transparent),
+      var(--bg);
+  }
+  .panel {
+    width: min(420px, 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .brand img { width: 28px; height: 28px; border-radius: 8px; }
+  .brand strong { display: block; font-size: 14px; }
+  .brand small {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .back {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  .back:hover { color: var(--text); }
+  .panel-body { padding: 22px 18px 18px; }
+  .title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-bottom: 16px;
+  }
+  .status {
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .status.ok {
+    color: var(--ok);
+    border-color: rgba(52, 211, 153, 0.35);
+    background: rgba(52, 211, 153, 0.08);
+  }
+  .status.err {
+    color: var(--err);
+    border-color: rgba(255, 138, 138, 0.35);
+    background: rgba(255, 70, 70, 0.08);
+  }
+  .key-box {
+    display: none;
+    margin-bottom: 12px;
+  }
+  .key-box.show { display: block; }
+  .key-box label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .key-code {
+    display: block;
+    word-break: break-all;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #09090c;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .btn {
+    width: 100%;
+    min-height: 44px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #041014;
+    background: linear-gradient(135deg, var(--accent), #5eead4);
+  }
+  .btn:hover { opacity: 0.92; }
+  .btn.hidden { display: none; }
+  .panel-foot {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+  .live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .live::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
+  }
+</style>
 </head>
-<body class="token-page">
-<div class="token-aurora" aria-hidden="true"></div>
-<header class="token-topbar">
-  <a href="../" class="token-brand" aria-label="BDZMOD — trang chủ">
-    <span class="token-brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 32 32"><path d="M16 3.5 19 12l8.5 3-8.5 3-3 8.5L13 18l-8.5-3L13 12 16 3.5Z"/><path d="m25 3 .9 3.1L29 7l-3.1.9L25 11l-.9-3.1L21 7l3.1-.9L25 3Z"/></svg>
-    </span>
-    <span class="token-brand-copy"><strong>BDZMOD</strong><small>QUY TRÌNH NHẬN KEY</small></span>
-  </a>
-  <div class="token-header-status"><span class="token-live-dot"></span> TOKEN STATUS</div>
-</header>
-<main class="token-main">
-  <section class="token-story" aria-label="Thông tin bảo mật">
-    <div class="token-eyebrow"><span></span> BDZMOD · TOKEN DÙNG MỘT LẦN</div>
-    <h1>Một phiên xác thực.<br><span>Nhận Key BDZMOD.</span></h1>
-    <p>Hoàn tất các bước xác minh bằng cùng thiết bị. Key sẽ hiển thị tại đây khi hệ thống xác nhận token hợp lệ.</p>
-    <div class="token-feature-list">
-      <div class="token-feature"><span class="token-feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span><strong>Xác thực token</strong><small>Chỉ chấp nhận token hợp lệ, chưa sử dụng</small></span></div>
-      <div class="token-feature"><span class="token-feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m11.7 12.3 8.1-8.1 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg></span><span><strong>Token dùng một lần</strong><small>Giữ Key riêng tư sau khi nhận</small></span></div>
+<body>
+
+<div class="panel" role="main">
+  <div class="panel-head">
+    <a class="brand" href="../">
+      <img src="https://263.org.vn/logo?v=20261003" alt="" width="28" height="28">
+      <span><strong>BDZMOD</strong><small>Nhận Key</small></span>
+    </a>
+    <a class="back" href="../">← Về trang chủ</a>
+  </div>
+
+  <div class="panel-body">
+    <h1 class="title">Nhận Key</h1>
+    <p class="subtitle" id="intro">Đang xác nhận phiên…</p>
+    <div id="status" class="status" role="status" aria-live="polite">Đang xác minh token…</div>
+
+    <div id="out" class="key-box">
+      <label>KEY CỦA BẠN</label>
+      <code id="key" class="key-code"></code>
     </div>
-  </section>
-  <section class="token-card" aria-labelledby="tokenTitle">
-    <div class="token-card-glow" aria-hidden="true"></div>
-    <div class="token-card-head">
-      <span class="token-step"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> NHẬN KEY</span>
-      <span class="token-one-time">DÙNG MỘT LẦN</span>
-    </div>
-    <div class="token-card-symbol" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><circle cx="8.5" cy="15.5" r="4.5"/><path d="m11.7 12.3 8.1-8.1 2 2-2 2 1.4 1.4-2.4 2.4-1.4-1.4-2.8 2.8"/></svg>
-    </div>
-    <h2 id="tokenTitle">Nhận Key</h2>
-    <p class="token-card-sub" id="intro">Đang xác nhận phiên…</p>
-    <div id="status" class="token-status loading-status" role="status" aria-live="polite">Đang xác minh token và thiết bị…</div>
-    <div id="out" class="token-output hidden">
-      <div class="token-key-heading"><span class="token-key-label">KEY CỦA BẠN</span><span>ĐÃ CẤP</span></div>
-      <div id="key" class="token-key-box mono" aria-label="Key đã cấp"></div>
-      <button id="copy" class="btn token-copy" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
-        <span id="copyLabel">Sao chép Key</span>
-      </button>
-    </div>
-    <div class="token-footnote"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 7.9 7 10 4.1-2.1 7-5.4 7-10V6l-7-3Z"/></svg><span>Giữ Key riêng tư. Link nhận Key chỉ dùng một lần.</span></div>
-  </section>
-</main>
-<footer class="token-footer"><a href="../">← Quay lại BDZMOD</a><span><span class="token-live-dot"></span> SESSION STATUS</span><span>© BDZMOD · Key Service</span></footer>
+    <button id="copy" class="btn hidden" type="button">Sao chép Key</button>
+  </div>
+
+  <div class="panel-foot">
+    <span>Token dùng 1 lần</span>
+    <span class="live">Online</span>
+  </div>
+</div>
+
 <script src="../config.js?v=111"></script>
 <script src="../supabase-api.js?v=111"></script>
 <script>
-(function(){
-  function viErr(err){
-    var m={
-      TOKEN_NOT_FOUND:'Token không tồn tại hoặc không hợp lệ.',
-      TOKEN_ALREADY_USED:'Token đã được sử dụng.',
-      TOKEN_EXPIRED:'Token đã hết hạn. Vui lòng nhận key lại.',
-      TOKEN_CONTEXT_MISMATCH:'Phiên không khớp. Hãy mở link trên cùng thiết bị.',
-      TOKEN_INVALID:'Token không hợp lệ.',
-      LIBRARY_TOKEN_INVALID:'Không thể xác thực mã kho Key. Tải lại trang rồi thử lại.',
-      CRYPTO_UNAVAILABLE:'Trình duyệt chưa hỗ trợ xác thực an toàn. Hãy cập nhật trình duyệt.',
-      LIBRARY_TOKEN_STORAGE_UNAVAILABLE:'Không thể lưu phiên nhận Key. Hãy bật bộ nhớ trình duyệt rồi thử lại.',
-      CLAIM_UNAVAILABLE:'Không thể cấp key. Thử lại sau.',
-      MAINTENANCE:'Hệ thống đang bảo trì. Vui lòng thử lại sau.',
-      BANNED:'Bạn đã bị khóa tạm thời. Vui lòng thử lại sau.',
-      SERVER_ERROR:'Lỗi máy chủ. Thử lại sau.'
+(function () {
+  function viErr(err) {
+    var m = {
+      TOKEN_NOT_FOUND: "Token không tồn tại hoặc không hợp lệ.",
+      TOKEN_ALREADY_USED: "Token đã được sử dụng.",
+      TOKEN_EXPIRED: "Token đã hết hạn. Vui lòng nhận key lại.",
+      TOKEN_CONTEXT_MISMATCH: "Phiên không khớp. Mở link trên cùng thiết bị.",
+      TOKEN_INVALID: "Token không hợp lệ.",
+      LIBRARY_TOKEN_INVALID: "Không xác thực được phiên. Tải lại trang.",
+      CRYPTO_UNAVAILABLE: "Trình duyệt chưa hỗ trợ. Hãy cập nhật trình duyệt.",
+      LIBRARY_TOKEN_STORAGE_UNAVAILABLE: "Bật bộ nhớ trình duyệt rồi thử lại.",
+      CLAIM_UNAVAILABLE: "Không thể cấp key. Thử lại sau.",
+      MAINTENANCE: "Hệ thống đang bảo trì.",
+      BANNED: "Bạn đã bị khóa tạm thời.",
+      SERVER_ERROR: "Lỗi máy chủ. Thử lại sau."
     };
-    if(!err) return 'Không thể cấp key.';
-    if(m[err]) return m[err];
-    if(/[àáạảãâăèéêìíòóôơùúýăđ]/i.test(err)) return err;
-    return 'Không thể cấp key. Thử lại sau.';
+    if (!err) return "Không thể cấp key.";
+    if (m[err]) return m[err];
+    if (/[àáạảãâăèéêìíòóôơùúýăđ]/i.test(err)) return err;
+    return "Không thể cấp key. Thử lại sau.";
   }
-  var q=new URLSearchParams(location.search);
-  var t=(q.get('token')||'').trim();
-  var s=document.getElementById('status');
-  var i=document.getElementById('intro');
-  var o=document.getElementById('out');
-  var k=document.getElementById('key');
-  var c=document.getElementById('copy');
-  var copyLabel=document.getElementById('copyLabel');
-  function bad(x){
-    s.className='token-status err';
-    s.textContent=x;
-    i.textContent='Phiên không thể hoàn tất.';
+
+  var t = (new URLSearchParams(location.search).get("token") || "").trim();
+  var s = document.getElementById("status");
+  var i = document.getElementById("intro");
+  var o = document.getElementById("out");
+  var k = document.getElementById("key");
+  var c = document.getElementById("copy");
+
+  function bad(msg) {
+    s.className = "status err";
+    s.textContent = msg;
+    i.textContent = "Phiên không thể hoàn tất.";
   }
-  if(!/^[A-Za-z0-9_-]{20,128}$/.test(t)){
-    bad('Token không hợp lệ.');
+
+  if (!/^[A-Za-z0-9_-]{20,128}$/.test(t)) {
+    bad("Token không hợp lệ.");
     return;
   }
-  function libraryToken(){
-    var storageKey='bdz_library_token';
-    var value='';
-    try{value=(localStorage.getItem(storageKey)||'').trim().toLowerCase();}catch(_){ }
-    if(/^[a-f0-9]{64}$/.test(value)) return value;
-    if(!window.crypto||typeof window.crypto.getRandomValues!=='function') throw Error('CRYPTO_UNAVAILABLE');
-    var bytes=new Uint8Array(32);
+
+  function libraryToken() {
+    var storageKey = "bdz_library_token";
+    var value = "";
+    try { value = (localStorage.getItem(storageKey) || "").trim().toLowerCase(); } catch (_) {}
+    if (/^[a-f0-9]{64}$/.test(value)) return value;
+    if (!window.crypto || typeof window.crypto.getRandomValues !== "function") {
+      throw Error("CRYPTO_UNAVAILABLE");
+    }
+    var bytes = new Uint8Array(32);
     window.crypto.getRandomValues(bytes);
-    value=Array.from(bytes,function(b){return b.toString(16).padStart(2,'0');}).join('');
-    try{localStorage.setItem(storageKey,value);}catch(_){throw Error('LIBRARY_TOKEN_STORAGE_UNAVAILABLE');}
+    value = Array.from(bytes, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+    try { localStorage.setItem(storageKey, value); }
+    catch (_) { throw Error("LIBRARY_TOKEN_STORAGE_UNAVAILABLE"); }
     return value;
   }
-  (async function(){
-    try{
-      var v=BDZ.visitorId();
-      var library=libraryToken();
-      var d=await BDZ.edge('web-get-key',{action:'claim',token:t,ip:v,visitor_id:v,library_token:library});
-      if(!d||!d.ok||!d.key||!d.key.key_code) throw Error(viErr(d&&d.error));
-      k.textContent=d.key.key_code;
-      o.classList.remove('hidden');
-      s.className='token-status okbox done';
-      s.textContent='Nhận Key thành công';
-      i.textContent='Key đã được cấp cho phiên này.';
-      c.onclick=function(){
-        if(navigator.clipboard&&navigator.clipboard.writeText){
-          navigator.clipboard.writeText(d.key.key_code).then(function(){
-            if(copyLabel)copyLabel.textContent='Đã sao chép';
-            c.classList.add('copied');
-          }).catch(function(){ window.prompt('Key:', d.key.key_code); });
-        } else window.prompt('Key:', d.key.key_code);
+
+  (async function () {
+    try {
+      var v = BDZ.visitorId();
+      var library = libraryToken();
+      var d = await BDZ.edge("web-get-key", {
+        action: "claim",
+        token: t,
+        ip: v,
+        visitor_id: v,
+        library_token: library
+      });
+      if (!d || !d.ok || !d.key || !d.key.key_code) throw Error(viErr(d && d.error));
+      k.textContent = d.key.key_code;
+      o.classList.add("show");
+      c.classList.remove("hidden");
+      s.className = "status ok";
+      s.textContent = "Nhận Key thành công";
+      i.textContent = "Key đã được cấp. Hãy sao chép và giữ riêng tư.";
+      c.onclick = function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(d.key.key_code).then(function () {
+            c.textContent = "Đã sao chép";
+          }).catch(function () {
+            window.prompt("Key:", d.key.key_code);
+          });
+        } else {
+          window.prompt("Key:", d.key.key_code);
+        }
       };
-    }catch(e){
-      bad(viErr(e.message||'SERVER_ERROR'));
+    } catch (e) {
+      bad(viErr(e.message || "SERVER_ERROR"));
     }
   })();
 })();
