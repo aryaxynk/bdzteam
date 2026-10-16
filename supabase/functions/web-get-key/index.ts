@@ -60,17 +60,31 @@ Deno.serve(async (req) => {
       if (!data?.ok || !data?.token) return json(data || { ok: false, error: "START_UNAVAILABLE" }, 429);
       const target = "https://aryaxynk.github.io/bdzteam/token/?token=" + encodeURIComponent(String(data.token));
 
-      const { data: cfg, error: cfgError } = await sb
+      // Prefer vuotnhanh, then any other enabled shortener.
+      let cfg: { base_url: string | null; api_token: string | null } | null = null;
+      const { data: preferred } = await sb
         .from("shortener_configs")
         .select("base_url, api_token")
-        .eq("provider", "anonlink")
+        .eq("provider", "vuotnhanh")
         .eq("enabled", true)
         .order("sort_order", { ascending: true })
         .limit(1)
         .maybeSingle();
-      if (cfgError || !cfg?.api_token) return json({ ok: false, error: "SHORTENER_NOT_CONFIGURED" }, 502);
+      if (preferred?.api_token) {
+        cfg = preferred;
+      } else {
+        const { data: anyCfg } = await sb
+          .from("shortener_configs")
+          .select("base_url, api_token")
+          .eq("enabled", true)
+          .order("sort_order", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        cfg = anyCfg;
+      }
+      if (!cfg?.api_token) return json({ ok: false, error: "SHORTENER_NOT_CONFIGURED" }, 502);
 
-      const endpoint = new URL(String(cfg.base_url || "https://anonlink.io/api"));
+      const endpoint = new URL(String(cfg.base_url || "https://vuotnhanh.com/api"));
       endpoint.searchParams.set("api", String(cfg.api_token));
       endpoint.searchParams.set("url", target);
       const upstream = await fetch(endpoint.toString(), {
