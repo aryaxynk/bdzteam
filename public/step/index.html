@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="vi" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<script src="../security-hardening.js?v=121"></script>
+<title>Phiên tiếp theo · BDZMOD</title>
+<link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        border: '#262626', background: '#0a0a0a', foreground: '#fafafa',
+        card: '#171717', muted: '#262626', 'muted-foreground': '#a3a3a3',
+        primary: '#fafafa', 'primary-foreground': '#0a0a0a'
+      },
+      borderRadius: { lg: '0.5rem' },
+      keyframes: {
+        'fade-in': { '0%': { opacity: '0', transform: 'translateY(6px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        'pulse-dot': { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.45' } }
+      },
+      animation: {
+        'fade-in': 'fade-in 0.45s ease-in-out both',
+        'pulse-dot': 'pulse-dot 1.8s ease-in-out infinite'
+      }
+    }
+  }
+}
+</script>
+</head>
+<body class="min-h-screen overflow-hidden bg-background text-foreground antialiased">
+<div class="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_70%_45%_at_50%_-15%,rgba(99,102,241,0.14),transparent),radial-gradient(ellipse_45%_35%_at_85%_100%,rgba(16,185,129,0.08),transparent)]"></div>
+
+<main class="relative z-10 flex min-h-screen items-center justify-center p-4">
+  <div class="w-full max-w-md animate-fade-in rounded-lg border border-neutral-800 bg-neutral-900/25 backdrop-blur-md">
+    <div class="flex items-center justify-between gap-3 border-b border-neutral-800 px-5 py-4">
+      <a href="../" class="flex items-center gap-2.5 no-underline">
+        <img src="https://263.org.vn/logo?v=20261003" alt="" width="28" height="28" class="h-7 w-7 rounded-md">
+        <span class="leading-tight">
+          <span class="block text-sm font-semibold text-neutral-50">BDZMOD</span>
+          <span class="block text-[10px] font-medium uppercase tracking-widest text-neutral-500">Xác minh phiên</span>
+        </span>
+      </a>
+    </div>
+
+    <div class="px-5 py-5">
+      <h1 class="text-xl font-semibold tracking-tight text-neutral-50">Tiếp tục phiên</h1>
+      <p id="intro" class="mt-1.5 text-sm text-neutral-400 leading-relaxed">Đang xác minh…</p>
+
+      <div id="progress" class="mt-4 hidden overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/20">
+        <table class="w-full text-sm">
+          <tbody>
+            <tr class="border-b border-neutral-800">
+              <th class="w-[42%] bg-neutral-900/30 px-3.5 py-2.5 text-left font-medium text-neutral-500">Đã vượt</th>
+              <td id="stepDone" class="px-3.5 py-2.5 font-medium text-neutral-100">—</td>
+            </tr>
+            <tr>
+              <th class="bg-neutral-900/30 px-3.5 py-2.5 text-left font-medium text-neutral-500">Còn lại</th>
+              <td id="stepLeft" class="px-3.5 py-2.5 font-medium text-neutral-100">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="captchaBox" class="mt-4 hidden rounded-lg border border-neutral-800 bg-neutral-900/20 p-3.5">
+        <label class="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Captcha phiên tiếp</label>
+        <div class="flex items-center gap-2">
+          <span id="captchaPrompt" class="min-w-[7rem] rounded-md border border-neutral-800 bg-neutral-950/40 px-3 py-2 font-mono text-sm text-neutral-100">…</span>
+          <input id="captchaAnswer" type="text" inputmode="numeric" autocomplete="off" placeholder="?" class="h-10 w-full rounded-md border border-neutral-800 bg-neutral-950/40 px-3 text-sm text-neutral-100 outline-none focus:border-indigo-500/50">
+          <button type="button" id="captchaRefresh" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-neutral-800 text-neutral-400 hover:bg-neutral-800/40">↻</button>
+        </div>
+      </div>
+
+      <button id="continueBtn" type="button" class="mt-4 hidden inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-neutral-50 px-4 text-sm font-semibold text-neutral-950 transition-all hover:bg-white disabled:opacity-50">
+        <svg id="spin" class="hidden h-4 w-4 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none"><circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+        <span id="btnLabel">Tiếp tục vượt link</span>
+      </button>
+
+      <div id="status" role="status" class="mt-4 rounded-md border border-neutral-800 bg-neutral-900/20 px-3.5 py-2.5 text-sm text-neutral-400">Đang kiểm tra phiên…</div>
+    </div>
+
+    <div class="flex items-center justify-between border-t border-neutral-800 px-5 py-3 text-[11px] text-neutral-500">
+      <span>Mỗi phiên một captcha</span>
+      <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-dot"></span>Online</span>
+    </div>
+  </div>
+</main>
+
+<script src="../config.js?v=111"></script>
+<script src="../supabase-api.js?v=111"></script>
+<script>
+(function () {
+  function viErr(err) {
+    var m = {
+      TOKEN_NOT_FOUND: "Phiên không tồn tại.",
+      TOKEN_ALREADY_USED: "Phiên đã dùng.",
+      TOKEN_EXPIRED: "Phiên hết hạn. Nhận key lại.",
+      TOKEN_CONTEXT_MISMATCH: "Mở link trên cùng thiết bị/IP.",
+      CAPTCHA_INVALID: "Captcha sai hoặc hết hạn.",
+      TOO_FAST: "Quá nhanh. Chờ vài giây rồi thử lại.",
+      STEP_NOT_COMPLETED: "Chưa hoàn tất phiên trước.",
+      SHORTENER_UPSTREAM: "Lỗi dịch vụ rút gọn.",
+      SHORTENER_NOT_CONFIGURED: "API rút gọn chưa cấu hình."
+    };
+    return m[err] || err || "Lỗi phiên.";
+  }
+
+  var token = (new URLSearchParams(location.search).get("token") || "").trim();
+  var captchaId = "";
+  var status = document.getElementById("status");
+  var intro = document.getElementById("intro");
+  var progress = document.getElementById("progress");
+  var captchaBox = document.getElementById("captchaBox");
+  var continueBtn = document.getElementById("continueBtn");
+  var spin = document.getElementById("spin");
+  var btnLabel = document.getElementById("btnLabel");
+
+  function setStatus(type, msg) {
+    status.className = "mt-4 rounded-md border px-3.5 py-2.5 text-sm leading-relaxed";
+    if (type === "err") status.className += " border-red-500/25 bg-red-500/10 text-red-400";
+    else if (type === "ok") status.className += " border-emerald-500/25 bg-emerald-500/10 text-emerald-400";
+    else status.className += " border-neutral-800 bg-neutral-900/20 text-neutral-400";
+    status.textContent = msg;
+  }
+
+  async function loadCaptcha() {
+    captchaId = "";
+    document.getElementById("captchaPrompt").textContent = "…";
+    document.getElementById("captchaAnswer").value = "";
+    var v = BDZ.visitorId();
+    var x = await BDZ.edge("web-get-key", { action: "captcha", ip: v, visitor_id: v });
+    if (!x || !x.ok) throw Error("CAPTCHA");
+    captchaId = x.captcha_id;
+    document.getElementById("captchaPrompt").textContent = x.prompt || "?";
+  }
+
+  document.getElementById("captchaRefresh").onclick = function () {
+    loadCaptcha().catch(function () { setStatus("err", "Không tải captcha."); });
+  };
+
+  if (!/^[A-Za-z0-9_-]{20,80}$/.test(token)) {
+    setStatus("err", "Token không hợp lệ.");
+    intro.textContent = "Phiên không hợp lệ.";
+    return;
+  }
+
+  (async function () {
+    try {
+      var v = BDZ.visitorId();
+      var x = await BDZ.edge("web-get-key", { action: "arrive", token: token, ip: v, visitor_id: v });
+      if (!x || !x.ok) throw Error(viErr(x && x.error));
+
+      if (x.phase === "claim") {
+        setStatus("ok", "Đã hoàn tất mọi phiên. Đang nhận key…");
+        intro.textContent = "Chuyển tới trang nhận key.";
+        location.replace("../token/?token=" + encodeURIComponent(token));
+        return;
+      }
+
+      progress.classList.remove("hidden");
+      document.getElementById("stepDone").textContent = (x.step || 0) + " / " + (x.total_steps || "?");
+      document.getElementById("stepLeft").textContent = Math.max(0, (x.total_steps || 0) - (x.step || 0)) + " phiên";
+      intro.textContent = "Bạn đã vượt phiên " + (x.step || 0) + ". Giải captcha để sang phiên tiếp theo.";
+      captchaBox.classList.remove("hidden");
+      continueBtn.classList.remove("hidden");
+      setStatus("", "Sẵn sàng tiếp tục.");
+      await loadCaptcha();
+    } catch (e) {
+      setStatus("err", e.message || "Lỗi");
+      intro.textContent = "Không xác minh được phiên.";
+    }
+  })();
+
+  continueBtn.onclick = async function () {
+    if (continueBtn.disabled) return;
+    var ans = (document.getElementById("captchaAnswer").value || "").trim();
+    if (!captchaId || !ans) { setStatus("err", "Nhập kết quả captcha."); return; }
+    continueBtn.disabled = true;
+    spin.classList.remove("hidden");
+    btnLabel.textContent = "Đang tạo link…";
+    try {
+      var v = BDZ.visitorId();
+      var x = await BDZ.edge("web-get-key", {
+        action: "continue",
+        token: token,
+        ip: v,
+        visitor_id: v,
+        captcha_id: captchaId,
+        captcha_answer: ans
+      });
+      if (!x || !x.ok) {
+        await loadCaptcha();
+        throw Error(viErr(x && x.error));
+      }
+      if (x.phase === "claim" && x.claimUrl) {
+        location.href = x.claimUrl;
+        return;
+      }
+      if (x.shortenedUrl) {
+        btnLabel.textContent = "Chuyển tiếp…";
+        location.href = x.shortenedUrl;
+        return;
+      }
+      throw Error("Không nhận được link.");
+    } catch (e) {
+      continueBtn.disabled = false;
+      spin.classList.add("hidden");
+      btnLabel.textContent = "Tiếp tục vượt link";
+      setStatus("err", e.message || "Lỗi");
+    }
+  };
+})();
+</script>
+</body>
+</html>
