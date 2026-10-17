@@ -1,0 +1,3 @@
+-- bdz_web_start: unique token per request, cancel prior PENDING for same IP|visitor context.
+-- Applied live via Supabase migration web_start_unique_token_per_ip.
+-- See function public.bdz_web_start for full definition.
