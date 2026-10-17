@@ -20,7 +20,6 @@ async function sha256(value: string) {
   return hex(new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value))));
 }
 
-/** Best-effort real client IP from edge proxy headers. */
 function clientIp(req: Request, bodyIp: string): string {
   const h = req.headers;
   const candidates = [
@@ -45,6 +44,7 @@ function extractShortUrl(raw: string, parsed: unknown, target: string): string |
     clean(p?.short_url),
     clean(p?.shortUrl),
     clean(p?.link),
+    clean(p?.url),
     raw.trim().replace(/^["']|["']$/g, ""),
   ];
   for (const candidate of candidates) {
@@ -59,6 +59,58 @@ function extractShortUrl(raw: string, parsed: unknown, target: string): string |
     }
   }
   return null;
+}
+
+async function callShortener(
+  baseUrl: string,
+  apiToken: string,
+  target: string,
+): Promise<{ ok: true; shortenedUrl: string } | { ok: false; error: string; status?: number }> {
+  try {
+    const endpoint = new URL(baseUrl);
+    endpoint.searchParams.set("api", apiToken);
+    endpoint.searchParams.set("url", target);
+    const upstream = await fetch(endpoint.toString(), {
+      headers: { accept: "application/json, text/plain, */*" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(12000),
+    });
+    const raw = await upstream.text();
+    let parsed: unknown = null;
+    try {
+      parsed = raw ? JSON.parse(raw) : null;
+    } catch {
+      /* text */
+    }
+    if (!upstream.ok) return { ok: false, error: "SHORTENER_UPSTREAM", status: upstream.status };
+    const shortenedUrl = extractShortUrl(raw, parsed, target);
+    if (!shortenedUrl) return { ok: false, error: "SHORTENER_INVALID_RESPONSE" };
+    return { ok: true, shortenedUrl };
+  } catch {
+    return { ok: false, error: "SHORTENER_UPSTREAM" };
+  }
+}
+
+async function shortenWithConfig(
+  sb: ReturnType<typeof createClient>,
+  shortenerId: number,
+  target: string,
+) {
+  const { data: row } = await sb
+    .from("shortener_configs")
+    .select("base_url, api_token")
+    .eq("id", shortenerId)
+    .eq("enabled", true)
+    .maybeSingle();
+  if (!row?.api_token || !row?.base_url) return { ok: false as const, error: "SHORTENER_NOT_CONFIGURED" };
+  return await callShortener(String(row.base_url), String(row.api_token), target);
+}
+
+function stepLandingUrl(token: string, isFinal: boolean) {
+  if (isFinal) {
+    return "https://aryaxynk.github.io/bdzteam/token/?token=" + encodeURIComponent(token);
+  }
+  return "https://aryaxynk.github.io/bdzteam/step/?token=" + encodeURIComponent(token);
 }
 
 Deno.serve(async (req) => {
@@ -79,50 +131,89 @@ Deno.serve(async (req) => {
     const visitorId = clean(body?.visitor_id).slice(0, 256) || "unknown";
     const ip = clientIp(req, clean(body?.ip));
 
+    if (action === "captcha") {
+      const { data, error } = await sb.rpc("bdz_web_captcha_new", { p_ip: ip, p_visitor_id: visitorId });
+      if (error) return json({ ok: false, error: "CAPTCHA_UNAVAILABLE" }, 500);
+      return json(data || { ok: false, error: "CAPTCHA_UNAVAILABLE" });
+    }
+
     if (action === "start") {
-      const { data, error } = await sb.rpc("bdz_web_start", { p_ip: ip, p_visitor_id: visitorId });
+      const captchaId = clean(body?.captcha_id);
+      const captchaAnswer = clean(body?.captcha_answer);
+      const { data, error } = await sb.rpc("bdz_web_start", {
+        p_ip: ip,
+        p_visitor_id: visitorId,
+        p_captcha_id: captchaId || null,
+        p_captcha_answer: captchaAnswer || null,
+      });
       if (error) return json({ ok: false, error: "START_UNAVAILABLE" }, 500);
       if (!data?.ok || !data?.token) return json(data || { ok: false, error: "START_UNAVAILABLE" }, 429);
 
-      const target =
-        "https://aryaxynk.github.io/bdzteam/token/?token=" + encodeURIComponent(String(data.token));
+      const isFinal = !!data.is_final_step;
+      const target = stepLandingUrl(String(data.token), isFinal);
+      const short = await shortenWithConfig(sb, Number(data.shortener_id), target);
+      if (!short.ok) return json({ ok: false, error: short.error }, 502);
 
-      const { data: cfg, error: cfgError } = await sb
-        .from("shortener_configs")
-        .select("base_url, api_token")
-        .eq("provider", "vuotnhanh")
-        .eq("enabled", true)
-        .order("sort_order", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-      if (cfgError || !cfg?.api_token) {
-        return json({ ok: false, error: "SHORTENER_NOT_CONFIGURED" }, 502);
-      }
-
-      const endpoint = new URL(String(cfg.base_url || "https://vuotnhanh.com/api"));
-      endpoint.searchParams.set("api", String(cfg.api_token));
-      endpoint.searchParams.set("url", target);
-
-      const upstream = await fetch(endpoint.toString(), {
-        headers: { accept: "application/json, text/plain, */*" },
-        redirect: "follow",
-        signal: AbortSignal.timeout(12000),
+      return json({
+        ok: true,
+        expires_in_seconds: data.expires_in_seconds || 1800,
+        shortenedUrl: short.shortenedUrl,
+        step: data.step,
+        total_steps: data.total_steps,
       });
-      const raw = await upstream.text();
-      let parsed: unknown = null;
-      try {
-        parsed = raw ? JSON.parse(raw) : null;
-      } catch {
-        /* plain text */
-      }
-      if (!upstream.ok) {
-        return json({ ok: false, error: "SHORTENER_UPSTREAM", status: upstream.status }, 502);
-      }
-      const shortenedUrl = extractShortUrl(raw, parsed, target);
-      if (!shortenedUrl) return json({ ok: false, error: "SHORTENER_INVALID_RESPONSE" }, 502);
+    }
 
-      return json({ ok: true, expires_in_seconds: 900, shortenedUrl });
+    if (action === "arrive") {
+      const token = clean(body?.token);
+      if (!/^[A-Za-z0-9_-]{20,80}$/.test(token)) return json({ ok: false, error: "TOKEN_INVALID" }, 400);
+      const { data, error } = await sb.rpc("bdz_web_step_arrive", {
+        p_token: token,
+        p_ip: ip,
+        p_visitor_id: visitorId,
+      });
+      if (error) return json({ ok: false, error: "ARRIVE_UNAVAILABLE" }, 500);
+      return json(data || { ok: false, error: "ARRIVE_UNAVAILABLE" });
+    }
+
+    if (action === "continue") {
+      const token = clean(body?.token);
+      const captchaId = clean(body?.captcha_id);
+      const captchaAnswer = clean(body?.captcha_answer);
+      if (!/^[A-Za-z0-9_-]{20,80}$/.test(token)) return json({ ok: false, error: "TOKEN_INVALID" }, 400);
+
+      const { data, error } = await sb.rpc("bdz_web_continue", {
+        p_token: token,
+        p_ip: ip,
+        p_visitor_id: visitorId,
+        p_captcha_id: captchaId || null,
+        p_captcha_answer: captchaAnswer || null,
+      });
+      if (error) return json({ ok: false, error: "CONTINUE_UNAVAILABLE" }, 500);
+      if (!data?.ok) return json(data || { ok: false, error: "CONTINUE_UNAVAILABLE" });
+
+      if (data.phase === "claim") {
+        return json({
+          ok: true,
+          phase: "claim",
+          claimUrl: "https://aryaxynk.github.io/bdzteam/token/?token=" + encodeURIComponent(token),
+        });
+      }
+
+      if (data.phase === "shorten" && data.shortener_id) {
+        const isFinal = !!data.is_final_step;
+        const target = stepLandingUrl(token, isFinal);
+        const short = await shortenWithConfig(sb, Number(data.shortener_id), target);
+        if (!short.ok) return json({ ok: false, error: short.error }, 502);
+        return json({
+          ok: true,
+          phase: "shorten",
+          shortenedUrl: short.shortenedUrl,
+          step: data.step,
+          total_steps: data.total_steps,
+        });
+      }
+
+      return json(data);
     }
 
     if (action === "claim") {
