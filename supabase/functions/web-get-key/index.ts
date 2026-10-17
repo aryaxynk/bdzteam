@@ -20,7 +20,23 @@ async function sha256(value: string) {
   return hex(new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value))));
 }
 
-/** Extract shortened URL from VuotNhanh JSON or plain-text response. */
+/** Best-effort real client IP from edge proxy headers. */
+function clientIp(req: Request, bodyIp: string): string {
+  const h = req.headers;
+  const candidates = [
+    h.get("cf-connecting-ip"),
+    h.get("x-real-ip"),
+    (h.get("x-forwarded-for") || "").split(",")[0]?.trim(),
+    h.get("x-client-ip"),
+    bodyIp,
+  ];
+  for (const c of candidates) {
+    const v = clean(c).slice(0, 128);
+    if (v && v !== "unknown") return v;
+  }
+  return "unknown";
+}
+
 function extractShortUrl(raw: string, parsed: unknown, target: string): string | null {
   const p = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
   const candidates = [
@@ -39,7 +55,7 @@ function extractShortUrl(raw: string, parsed: unknown, target: string): string |
         return u.href;
       }
     } catch {
-      /* skip non-URL */
+      /* skip */
     }
   }
   return null;
@@ -59,8 +75,9 @@ Deno.serve(async (req) => {
     const sb = createClient(supabaseUrl, serviceRole, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    const ip = clean(body?.ip).slice(0, 128) || "unknown";
+
     const visitorId = clean(body?.visitor_id).slice(0, 256) || "unknown";
+    const ip = clientIp(req, clean(body?.ip));
 
     if (action === "start") {
       const { data, error } = await sb.rpc("bdz_web_start", { p_ip: ip, p_visitor_id: visitorId });
@@ -97,7 +114,7 @@ Deno.serve(async (req) => {
       try {
         parsed = raw ? JSON.parse(raw) : null;
       } catch {
-        /* plain text URL */
+        /* plain text */
       }
       if (!upstream.ok) {
         return json({ ok: false, error: "SHORTENER_UPSTREAM", status: upstream.status }, 502);
@@ -111,7 +128,7 @@ Deno.serve(async (req) => {
     if (action === "claim") {
       const token = clean(body?.token);
       const libraryToken = clean(body?.library_token).toLowerCase();
-      if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) return json({ ok: false, error: "TOKEN_INVALID" }, 400);
+      if (!/^[A-Za-z0-9_-]{20,80}$/.test(token)) return json({ ok: false, error: "TOKEN_INVALID" }, 400);
       if (!/^[a-f0-9]{64}$/.test(libraryToken)) {
         return json({ ok: false, error: "LIBRARY_TOKEN_INVALID" }, 400);
       }
