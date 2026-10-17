@@ -1,36 +1,61 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const tok=()=>sessionStorage.getItem('bdz_t')||'';
+
 async function loadMonthChart(){
-  if(!tok()||document.hidden||!$('pg-dash')||!$('pg-dash').classList.contains('active')) return;
+  if(!tok()) return;
+  const dash=$('pg-dash');
+  if(!dash) return;
+  // Allow load even if not active yet (just after login)
   try{
     const x=await BDZ.rpc('bdz_admin_chart',{p_token:tok()});
-    if(!x?.ok) return;
+    if(!x||!x.ok) return;
     ensureChartLayout(x);
     drawMonthChart(x.series||[], x);
-  }catch(e){}
+  }catch(e){
+    console.warn('loadMonthChart', e);
+  }
 }
+
 function ensureChartLayout(x){
-  const card=document.querySelector('#pg-dash .card');
-  if(!card) return;
-  if(card.dataset.monthChart==='1'){
-    const t=$('sTodayKeys'); if(t) t.textContent=String(x.today||0);
-    const m=$('sMonthKeys'); if(m) m.textContent=String(x.month_total||0);
-    const lab=$('chartMonthLabel'); if(lab) lab.textContent=x.month_label||'';
+  let card=document.querySelector('#pg-dash .tile-chart')||document.querySelector('#pg-dash .card');
+  if(!card){
+    // DOM not ready — retry shortly
+    setTimeout(()=>{ if(tok()) loadMonthChart(); }, 120);
     return;
   }
-  card.dataset.monthChart='1';
-  card.innerHTML='<div class="section-head"><div><h2>Thống kê theo tháng <span id="chartMonthLabel" style="font-weight:600;color:var(--muted);font-size:14px"></span></h2><p class="hint">Mỗi chấm = 1 ngày · Hover/chạm để xem số key lấy thành công</p></div></div><div style="position:relative;width:100%;margin-bottom:14px"><svg id="chart" viewBox="0 0 640 240" width="100%" height="220" style="display:block"></svg><div id="chartTip" style="display:none;position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12px;box-shadow:var(--shadow);z-index:5;white-space:nowrap"></div></div><div class="chart-mini-stats"><div class="stat chart-mini"><b>Hôm nay</b><strong id="sTodayKeys">0</strong><span class="meta-item">key đã lấy</span></div><div class="stat chart-mini"><b>Cả tháng</b><strong id="sMonthKeys">0</strong><span class="meta-item">key</span></div></div>';
-  $('chartMonthLabel').textContent=x.month_label||'';
-  $('sTodayKeys').textContent=String(x.today||0);
-  $('sMonthKeys').textContent=String(x.month_total||0);
+  if(card.dataset.monthChart!=='1'){
+    card.dataset.monthChart='1';
+    card.innerHTML=
+      '<div class="section-head"><div>'+
+      '<h2>Thống kê theo tháng <span id="chartMonthLabel" style="font-weight:600;color:var(--muted-fg,var(--muted));font-size:14px"></span></h2>'+
+      '<p class="hint">Mỗi chấm = 1 ngày · Hover/chạm để xem số key lấy thành công</p>'+
+      '</div></div>'+
+      '<div style="position:relative;width:100%;margin-bottom:14px">'+
+      '<svg id="chart" viewBox="0 0 640 240" width="100%" height="220" style="display:block"></svg>'+
+      '<div id="chartTip" style="display:none;position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12px;z-index:5;white-space:nowrap"></div>'+
+      '</div>'+
+      '<div class="chart-mini-stats">'+
+      '<div class="stat chart-mini"><b>Hôm nay</b><strong id="sTodayKeys">0</strong><span class="meta-item">key đã lấy</span></div>'+
+      '<div class="stat chart-mini"><b>Cả tháng</b><strong id="sMonthKeys">0</strong><span class="meta-item">key</span></div>'+
+      '</div>';
+  }
+  const lab=$('chartMonthLabel'); if(lab) lab.textContent=x.month_label||'';
+  const t=$('sTodayKeys'); if(t) t.textContent=String(x.today||0);
+  const m=$('sMonthKeys'); if(m) m.textContent=String(x.month_total||0);
 }
-function drawMonthChart(series, meta){
-  const svg=$('chart'); if(!svg) return; svg.dataset.monthOwned='1';
+
+function drawMonthChart(series){
+  const svg=$('chart');
+  if(!svg) return;
+  svg.dataset.monthOwned='1';
   const tip=$('chartTip');
   const W=640, H=240, padL=36, padR=16, padT=24, padB=40;
   const data=(series||[]).map(s=>({day:s.day, keys:Number(s.keys||0)}));
-  if(!data.length){ svg.innerHTML='<text x="320" y="120" text-anchor="middle" fill="currentColor" opacity=".45" font-size="13">Chưa có dữ liệu</text>'; return; }
+  if(!data.length){
+    svg.innerHTML='<text x="320" y="120" text-anchor="middle" fill="currentColor" opacity=".45" font-size="13">Chưa có dữ liệu</text>';
+    return;
+  }
   const n=data.length;
   const maxV=Math.max(1, ...data.map(d=>d.keys));
   const pts=data.map((d,i)=>{
@@ -58,7 +83,7 @@ function drawMonthChart(series, meta){
     const cx=pts[i][0], cy=pts[i][1];
     html+='<circle class="chart-dot" data-i="'+i+'" cx="'+cx+'" cy="'+cy+'" r="5" fill="var(--md-primary)" stroke="var(--card)" stroke-width="2" style="cursor:pointer"/>';
     html+='<circle class="chart-hit" data-i="'+i+'" cx="'+cx+'" cy="'+cy+'" r="14" fill="transparent" style="cursor:pointer"/>';
-    if(i% Math.max(1, Math.floor(n/8))===0 || i===n-1){
+    if(i%Math.max(1,Math.floor(n/8))===0||i===n-1){
       const label=String(data[i].day).slice(8);
       html+='<text x="'+cx+'" y="'+(H-14)+'" text-anchor="middle" font-size="10" fill="currentColor" opacity=".55">'+label+'</text>';
     }
@@ -80,15 +105,26 @@ function drawMonthChart(series, meta){
   }
   function hideTip(){ if(tip) tip.style.display='none'; }
   svg.querySelectorAll('.chart-hit, .chart-dot').forEach(el=>{
-    el.addEventListener('mouseenter', e=>showTip(+el.dataset.i));
+    el.addEventListener('mouseenter',()=>showTip(+el.dataset.i));
     el.addEventListener('mouseleave', hideTip);
-    el.addEventListener('click', e=>showTip(+el.dataset.i));
+    el.addEventListener('click',()=>showTip(+el.dataset.i));
   });
 }
+
+// Public API for admin-logic after login / refresh
+window.loadMonthChart=loadMonthChart;
+window.drawChart=function(series){ drawMonthChart(series||[]); };
+
 setInterval(loadMonthChart, 30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadMonthChart()});
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) loadMonthChart(); });
+document.addEventListener('bdz:admin-ready',()=>{ loadMonthChart(); });
+
+// Boot: wait for shell DOM, then load if already logged in
 (async()=>{
-  for(let i=0;i<40;i++){ if($('pg-dash')&&$('chart')) break; await new Promise(r=>setTimeout(r,100)); }
+  for(let i=0;i<50;i++){
+    if($('pg-dash')) break;
+    await new Promise(r=>setTimeout(r,100));
+  }
   if(tok()) loadMonthChart();
 })();
 })();
