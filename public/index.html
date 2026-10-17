@@ -16,30 +16,14 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        border: '#262626',
-        background: '#0a0a0a',
-        foreground: '#fafafa',
-        card: '#171717',
-        muted: '#262626',
-        'muted-foreground': '#a3a3a3',
-        primary: '#fafafa',
-        'primary-foreground': '#0a0a0a',
-        indigo: { 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5' },
-        emerald: { 400: '#34d399', 500: '#10b981' }
+        border: '#262626', background: '#0a0a0a', foreground: '#fafafa',
+        card: '#171717', muted: '#262626', 'muted-foreground': '#a3a3a3',
+        primary: '#fafafa', 'primary-foreground': '#0a0a0a'
       },
       borderRadius: { lg: '0.5rem', md: '0.375rem', sm: '0.25rem' },
-      transitionTimingFunction: {
-        premium: 'cubic-bezier(0.4, 0, 0.2, 1)'
-      },
       keyframes: {
-        'fade-in': {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' }
-        },
-        'pulse-dot': {
-          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%': { opacity: '0.45', transform: 'scale(0.85)' }
-        }
+        'fade-in': { '0%': { opacity: '0', transform: 'translateY(6px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        'pulse-dot': { '0%, 100%': { opacity: '1', transform: 'scale(1)' }, '50%': { opacity: '0.45', transform: 'scale(0.85)' } }
       },
       animation: {
         'fade-in': 'fade-in 0.45s ease-in-out both',
@@ -49,27 +33,15 @@ tailwind.config = {
   }
 }
 </script>
-<style>
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-</style>
 </head>
 <body class="min-h-screen overflow-hidden bg-background text-foreground antialiased selection:bg-indigo-500/30">
-<!-- Ambient layers — low opacity glass depth -->
 <div class="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_70%_45%_at_50%_-15%,rgba(99,102,241,0.14),transparent),radial-gradient(ellipse_45%_35%_at_85%_100%,rgba(16,185,129,0.08),transparent)]"></div>
-<div class="pointer-events-none fixed inset-0 bg-neutral-950/20 backdrop-blur-[1px]"></div>
 
 <main class="relative z-10 flex min-h-screen items-center justify-center p-4">
   <div class="w-full max-w-md animate-fade-in rounded-lg border border-neutral-800 bg-neutral-900/25 backdrop-blur-md">
-    <!-- Header -->
     <div class="flex items-center justify-between gap-3 border-b border-neutral-800 px-5 py-4">
       <a href="./" class="group flex items-center gap-2.5 no-underline">
-        <img src="https://263.org.vn/logo?v=20261003" alt="" width="28" height="28" class="h-7 w-7 rounded-md transition-transform duration-300 ease-in-out group-hover:scale-105">
+        <img src="https://263.org.vn/logo?v=20261003" alt="" width="28" height="28" class="h-7 w-7 rounded-md">
         <span class="leading-tight">
           <span class="block text-sm font-semibold tracking-tight text-neutral-50">BDZMOD</span>
           <span class="block text-[10px] font-medium uppercase tracking-widest text-neutral-500">Key Service</span>
@@ -78,12 +50,10 @@ tailwind.config = {
       <a href="./admin.html" class="inline-flex h-8 items-center rounded-md border border-neutral-800 bg-neutral-900/20 px-3 text-xs font-medium text-neutral-400 transition-all duration-300 ease-in-out hover:border-neutral-700 hover:bg-neutral-800/40 hover:text-neutral-100 no-underline">Admin</a>
     </div>
 
-    <!-- Body -->
     <div class="px-5 py-5">
       <h1 class="text-xl font-semibold tracking-tight text-neutral-50">Nhận Key</h1>
-      <p class="mt-1.5 text-sm leading-relaxed text-neutral-400">Nhấn Get Key, hoàn tất vượt link, hệ thống sẽ cấp Key cho bạn.</p>
+      <p class="mt-1.5 text-sm leading-relaxed text-neutral-400">Giải captcha, vượt link theo từng phiên API, rồi nhận Key.</p>
 
-      <!-- Info table -->
       <div class="mt-5 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/20">
         <table class="w-full text-sm">
           <tbody>
@@ -99,8 +69,17 @@ tailwind.config = {
         </table>
       </div>
 
-      <!-- Primary button -->
-      <button type="button" id="start" class="group mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-transparent bg-neutral-50 px-4 text-sm font-semibold text-neutral-950 transition-all duration-300 ease-in-out hover:bg-white active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50">
+      <!-- Captcha -->
+      <div class="mt-4 rounded-lg border border-neutral-800 bg-neutral-900/20 p-3.5">
+        <label class="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Xác minh (toán)</label>
+        <div class="flex items-center gap-2">
+          <span id="captchaPrompt" class="min-w-[7rem] rounded-md border border-neutral-800 bg-neutral-950/40 px-3 py-2 font-mono text-sm text-neutral-100">…</span>
+          <input id="captchaAnswer" type="text" inputmode="numeric" autocomplete="off" placeholder="?" class="h-10 w-full rounded-md border border-neutral-800 bg-neutral-950/40 px-3 text-sm text-neutral-100 outline-none transition-colors focus:border-indigo-500/50">
+          <button type="button" id="captchaRefresh" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-neutral-800 text-neutral-400 transition-colors hover:bg-neutral-800/40 hover:text-neutral-100" title="Đổi câu hỏi">↻</button>
+        </div>
+      </div>
+
+      <button type="button" id="start" class="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-transparent bg-neutral-50 px-4 text-sm font-semibold text-neutral-950 transition-all duration-300 ease-in-out hover:bg-white active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50">
         <svg id="startSpin" class="hidden h-4 w-4 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
           <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -108,24 +87,18 @@ tailwind.config = {
         <span id="startLabel">Get Key</span>
       </button>
 
-      <!-- Alert -->
-      <div id="result" role="status" aria-live="polite" class="mt-3 hidden rounded-md border px-3.5 py-2.5 text-sm leading-relaxed transition-all duration-300 ease-in-out"></div>
+      <div id="result" role="status" aria-live="polite" class="mt-3 hidden rounded-md border px-3.5 py-2.5 text-sm leading-relaxed"></div>
 
-      <!-- Steps -->
       <div class="mt-5 border-t border-neutral-800 pt-4 text-xs leading-relaxed text-neutral-500">
-        <p><span class="font-medium text-neutral-300">1.</span> Bấm Get Key → mở link vượt</p>
-        <p><span class="font-medium text-neutral-300">2.</span> Hoàn tất yêu cầu trên trang vượt link</p>
-        <p><span class="font-medium text-neutral-300">3.</span> Quay lại và nhận Key (dùng 1 lần)</p>
+        <p><span class="font-medium text-neutral-300">1.</span> Giải captcha → Get Key</p>
+        <p><span class="font-medium text-neutral-300">2.</span> Vượt từng phiên link (theo API đã bật)</p>
+        <p><span class="font-medium text-neutral-300">3.</span> Nhận Key (dùng 1 lần)</p>
       </div>
     </div>
 
-    <!-- Footer -->
     <div class="flex items-center justify-between border-t border-neutral-800 px-5 py-3 text-[11px] text-neutral-500">
       <span>BDZMOD</span>
-      <span class="inline-flex items-center gap-1.5">
-        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-dot"></span>
-        Online
-      </span>
+      <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-dot"></span>Online</span>
     </div>
   </div>
 </main>
@@ -139,72 +112,90 @@ tailwind.config = {
       MAINTENANCE: "Hệ thống đang bảo trì. Thử lại sau.",
       BANNED: "Bạn đã bị khóa tạm thời.",
       RATE_LIMITED: "Thao tác quá nhiều. Thử lại sau.",
-      NO_KEYS: "Hết key. Quay lại sau.",
-      SHORTENER_NOT_CONFIGURED: "Rút gọn chưa cấu hình.",
+      CAPTCHA_INVALID: "Captcha sai hoặc hết hạn. Thử lại.",
+      SHORTENER_NOT_CONFIGURED: "Chưa cấu hình API rút gọn.",
       SHORTENER_UPSTREAM: "Lỗi dịch vụ rút gọn.",
+      SHORTENER_INVALID_RESPONSE: "Phản hồi rút gọn không hợp lệ.",
       ERR: "Không tạo được phiên. Thử lại."
     };
     return m[err] || m.ERR;
   }
 
+  var captchaId = "";
   var durEl = document.getElementById("durValue");
   var statusEl = document.getElementById("statusValue");
   var btn = document.getElementById("start");
   var label = document.getElementById("startLabel");
   var spin = document.getElementById("startSpin");
   var result = document.getElementById("result");
+  var promptEl = document.getElementById("captchaPrompt");
+  var answerEl = document.getElementById("captchaAnswer");
 
   function setLoading(on, text) {
     btn.disabled = on;
-    if (on) {
-      spin.classList.remove("hidden");
-      label.textContent = text || "Đang xử lý…";
-    } else {
-      spin.classList.add("hidden");
-      label.textContent = text || "Get Key";
-    }
+    if (on) { spin.classList.remove("hidden"); label.textContent = text || "Đang xử lý…"; }
+    else { spin.classList.add("hidden"); label.textContent = text || "Get Key"; }
   }
 
   function showAlert(type, msg) {
-    result.className = "mt-3 rounded-md border px-3.5 py-2.5 text-sm leading-relaxed transition-all duration-300 ease-in-out animate-fade-in";
-    if (type === "err") {
-      result.className += " border-red-500/25 bg-red-500/10 text-red-400";
-    } else if (type === "ok") {
-      result.className += " border-emerald-500/25 bg-emerald-500/10 text-emerald-400";
-    } else {
-      result.className += " border-indigo-500/20 bg-indigo-500/10 text-indigo-300";
-    }
+    result.className = "mt-3 rounded-md border px-3.5 py-2.5 text-sm leading-relaxed animate-fade-in";
+    if (type === "err") result.className += " border-red-500/25 bg-red-500/10 text-red-400";
+    else result.className += " border-neutral-800 bg-neutral-900/30 text-neutral-400";
     result.textContent = msg;
     result.classList.remove("hidden");
   }
 
-  (async function loadDuration() {
+  async function loadCaptcha() {
+    promptEl.textContent = "…";
+    captchaId = "";
+    answerEl.value = "";
     try {
-      if (typeof BDZ === "undefined" || !BDZ.rpc) {
-        durEl.textContent = "5 giờ";
-        return;
-      }
-      var x = await BDZ.rpc("bdz_public_key_info", {});
-      var h = (x && x.duration_hours) || 5;
-      durEl.textContent = h + " giờ";
+      var v = BDZ.visitorId();
+      var x = await BDZ.edge("web-get-key", { action: "captcha", ip: v, visitor_id: v });
+      if (!x || !x.ok) throw Error(x && x.error || "CAPTCHA");
+      captchaId = x.captcha_id;
+      promptEl.textContent = x.prompt || "?";
     } catch (e) {
-      durEl.textContent = "5 giờ";
+      promptEl.textContent = "Lỗi";
+      showAlert("err", "Không tải được captcha.");
     }
+  }
+
+  document.getElementById("captchaRefresh").onclick = loadCaptcha;
+
+  (async function () {
+    try {
+      if (typeof BDZ !== "undefined" && BDZ.rpc) {
+        var x = await BDZ.rpc("bdz_public_key_info", {});
+        durEl.textContent = ((x && x.duration_hours) || 5) + " giờ";
+      } else durEl.textContent = "5 giờ";
+    } catch (_) { durEl.textContent = "5 giờ"; }
+    await loadCaptcha();
   })();
 
   btn.onclick = async function () {
     if (btn.disabled) return;
+    var ans = (answerEl.value || "").trim();
+    if (!captchaId || !ans) { showAlert("err", "Nhập kết quả captcha."); return; }
     setLoading(true, "Đang chuẩn bị…");
-    statusEl.textContent = "Đang tạo link…";
+    statusEl.textContent = "Đang tạo phiên…";
     result.classList.add("hidden");
-    result.textContent = "";
     try {
       if (typeof BDZ === "undefined") throw Error("Chưa tải cấu hình. Refresh trang.");
       var v = BDZ.visitorId();
-      var x = await BDZ.edge("web-get-key", { action: "start", ip: v, visitor_id: v });
-      if (!x || !x.ok || !x.shortenedUrl) throw Error(viErr(x && x.error));
+      var x = await BDZ.edge("web-get-key", {
+        action: "start",
+        ip: v,
+        visitor_id: v,
+        captcha_id: captchaId,
+        captcha_answer: ans
+      });
+      if (!x || !x.ok || !x.shortenedUrl) {
+        await loadCaptcha();
+        throw Error(viErr(x && x.error));
+      }
       setLoading(true, "Đang chuyển tiếp…");
-      statusEl.textContent = "Chuyển hướng…";
+      statusEl.textContent = "Phiên 1/" + (x.total_steps || 1);
       window.location.href = x.shortenedUrl;
     } catch (e) {
       setLoading(false, "Get Key");
