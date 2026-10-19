@@ -11,73 +11,51 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=160">
+<link rel="stylesheet" href="../style.css?v=170">
 <style>
-  .gk-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
-  .gk-card{width:min(420px,100%);border:1px solid var(--line);border-radius:18px;background:var(--bg-elevated);box-shadow:0 24px 64px -28px rgba(0,0,0,.65);animation:fade-in .45s var(--ease) both;overflow:hidden}
-  .gk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
-  .gk-brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none}
-  .gk-brand img{width:32px;height:32px;border-radius:10px}
-  .gk-brand strong{display:block;font-size:14px;font-weight:650;letter-spacing:-.02em}
-  .gk-brand small{display:block;font-size:10px;color:var(--fg-muted);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-top:1px}
-  .gk-body{padding:20px 18px}
-  .gk-body h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.03em}
-  .gk-body .lead{margin:8px 0 0;font-size:13.5px;line-height:1.55;color:var(--fg-secondary)}
-  .gk-info{margin-top:16px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-  .gk-info table{width:100%;border-collapse:collapse;font-size:13px}
-  .gk-info th{width:42%;text-align:left;padding:11px 14px;color:var(--fg-muted);font-weight:500;background:rgba(255,255,255,.02);border-bottom:1px solid var(--line)}
-  .gk-info td{padding:11px 14px;font-weight:550;border-bottom:1px solid var(--line)}
-  .gk-info tr:last-child th,.gk-info tr:last-child td{border-bottom:none}
-  .gk-captcha{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,255,255,.015)}
-  .gk-captcha label{display:block;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:10px}
-  .gk-captcha-row{display:flex;align-items:center;gap:8px}
-  .gk-prompt{min-width:7.2rem;padding:0 12px;min-height:42px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;font-weight:600}
-  .gk-status{margin-top:14px;padding:11px 13px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13px;color:var(--fg-secondary);background:rgba(255,255,255,.02)}
-  .gk-status.err{border-color:rgba(248,113,113,.25);background:var(--danger-soft);color:#fecaca}
-  .gk-status.ok{border-color:rgba(52,211,153,.25);background:var(--ok-soft);color:#6ee7b7}
-  .gk-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--fg-muted)}
-  .gk-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(52,211,153,.18);animation:pulse-dot 1.8s ease-in-out infinite;display:inline-block;margin-right:6px}
+  .wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+  .card-p{width:min(420px,100%);border:1px solid var(--line);border-radius:20px;background:var(--bg-2);padding:28px 24px;box-shadow:0 28px 64px -28px rgba(0,0,0,.65);animation:fade-in .45s var(--ease) both}
+  .card-p h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.03em}
+  .card-p .lead{margin:8px 0 0;font-size:13.5px;color:var(--fg-2);line-height:1.55}
+  .info{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cell{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg)}
+  .cell label{display:block;font-size:10px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);margin-bottom:6px}
+  .cell strong{font-size:15px;font-weight:600}
+  .cap{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.015)}
+  .cap>label{display:block;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3);margin-bottom:10px}
+  .row{display:flex;align-items:center;gap:8px}
+  .prompt{min-width:7rem;min-height:42px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);font-family:ui-monospace,Menlo,monospace;font-size:14px;font-weight:600}
+  .st{margin-top:14px;padding:11px 13px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13px;color:var(--fg-2);background:rgba(255,255,255,.02)}
+  .st.err{border-color:rgba(248,113,113,.25);background:var(--danger-soft);color:#fecaca}
+  .st.ok{border-color:rgba(52,211,153,.25);background:var(--ok-soft);color:#6ee7b7}
+  .top{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .top img{width:28px;height:28px;border-radius:8px}
+  .top strong{font-size:13px;font-weight:650}
 </style>
 </head>
 <body>
-<main class="gk-wrap">
-  <div class="gk-card">
-    <div class="gk-head">
-      <a href="../" class="gk-brand">
-        <img src="https://263.org.vn/logo?v=20261003" alt="">
-        <span><strong>BDZMOD</strong><small>Xác minh phiên</small></span>
-      </a>
+<main class="wrap">
+  <div class="card-p">
+    <div class="top">
+      <img src="https://263.org.vn/logo?v=20261003" alt="">
+      <strong>BDZMOD · Phiên</strong>
     </div>
-    <div class="gk-body">
-      <h1>Tiếp tục phiên</h1>
-      <p id="intro" class="lead">Đang xác minh…</p>
-
-      <div id="progress" class="gk-info hidden">
-        <table>
-          <tr><th>Đã vượt</th><td id="stepDone">—</td></tr>
-          <tr><th>Còn lại</th><td id="stepLeft">—</td></tr>
-        </table>
+    <h1>Tiếp tục phiên</h1>
+    <p id="intro" class="lead">Đang xác minh…</p>
+    <div id="progress" class="info hidden">
+      <div class="cell"><label>Đã vượt</label><strong id="stepDone">—</strong></div>
+      <div class="cell"><label>Còn lại</label><strong id="stepLeft">—</strong></div>
+    </div>
+    <div id="captchaBox" class="cap hidden">
+      <label>Captcha phiên tiếp</label>
+      <div class="row">
+        <span id="captchaPrompt" class="prompt">…</span>
+        <input id="captchaAnswer" class="input" type="text" inputmode="numeric" autocomplete="off" placeholder="?">
+        <button type="button" id="captchaRefresh" class="btn icon-btn">↻</button>
       </div>
-
-      <div id="captchaBox" class="gk-captcha hidden">
-        <label>Captcha phiên tiếp</label>
-        <div class="gk-captcha-row">
-          <span id="captchaPrompt" class="gk-prompt">…</span>
-          <input id="captchaAnswer" class="input" type="text" inputmode="numeric" autocomplete="off" placeholder="?">
-          <button type="button" id="captchaRefresh" class="btn icon-btn" title="Đổi">↻</button>
-        </div>
-      </div>
-
-      <button id="continueBtn" type="button" class="btn primary lg hidden" style="margin-top:14px">
-        <span id="btnLabel">Tiếp tục vượt link</span>
-      </button>
-
-      <div id="status" class="gk-status" role="status">Đang kiểm tra phiên…</div>
     </div>
-    <div class="gk-foot">
-      <span>Mỗi phiên một captcha</span>
-      <span><span class="gk-dot"></span>Online</span>
-    </div>
+    <button id="continueBtn" type="button" class="btn primary lg hidden" style="margin-top:14px"><span id="btnLabel">Tiếp tục vượt link</span></button>
+    <div id="status" class="st" role="status">Đang kiểm tra phiên…</div>
   </div>
 </main>
 <script src="../config.js?v=111"></script>
@@ -85,17 +63,7 @@
 <script>
 (function () {
   function viErr(err) {
-    var m = {
-      TOKEN_NOT_FOUND: "Phiên không tồn tại.",
-      TOKEN_ALREADY_USED: "Phiên đã dùng.",
-      TOKEN_EXPIRED: "Phiên hết hạn. Nhận key lại.",
-      TOKEN_CONTEXT_MISMATCH: "Mở link trên cùng thiết bị/IP.",
-      CAPTCHA_INVALID: "Captcha sai hoặc hết hạn.",
-      TOO_FAST: "Quá nhanh. Chờ vài giây rồi thử lại.",
-      STEP_NOT_COMPLETED: "Chưa hoàn tất phiên trước.",
-      SHORTENER_UPSTREAM: "Lỗi dịch vụ rút gọn.",
-      SHORTENER_NOT_CONFIGURED: "API rút gọn chưa cấu hình."
-    };
+    var m = {TOKEN_NOT_FOUND:"Phiên không tồn tại.",TOKEN_ALREADY_USED:"Phiên đã dùng.",TOKEN_EXPIRED:"Phiên hết hạn. Nhận key lại.",TOKEN_CONTEXT_MISMATCH:"Mở link trên cùng thiết bị/IP.",CAPTCHA_INVALID:"Captcha sai hoặc hết hạn.",TOO_FAST:"Quá nhanh. Chờ vài giây rồi thử lại.",STEP_NOT_COMPLETED:"Chưa hoàn tất phiên trước.",SHORTENER_UPSTREAM:"Lỗi dịch vụ rút gọn.",SHORTENER_NOT_CONFIGURED:"API rút gọn chưa cấu hình."};
     return m[err] || err || "Lỗi phiên.";
   }
   var token = (new URLSearchParams(location.search).get("token") || "").trim();
@@ -106,9 +74,8 @@
   var captchaBox = document.getElementById("captchaBox");
   var continueBtn = document.getElementById("continueBtn");
   var btnLabel = document.getElementById("btnLabel");
-
   function setStatus(type, msg) {
-    status.className = "gk-status" + (type === "err" ? " err" : type === "ok" ? " ok" : "");
+    status.className = "st" + (type === "err" ? " err" : type === "ok" ? " ok" : "");
     status.textContent = msg;
   }
   async function loadCaptcha() {
@@ -125,9 +92,7 @@
     loadCaptcha().catch(function () { setStatus("err", "Không tải captcha."); });
   };
   if (!/^[A-Za-z0-9_-]{20,80}$/.test(token)) {
-    setStatus("err", "Token không hợp lệ.");
-    intro.textContent = "Phiên không hợp lệ.";
-    return;
+    setStatus("err", "Token không hợp lệ."); intro.textContent = "Phiên không hợp lệ."; return;
   }
   (async function () {
     try {
@@ -136,9 +101,7 @@
       if (!x || !x.ok) throw Error(viErr(x && x.error));
       if (x.phase === "claim") {
         setStatus("ok", "Đã hoàn tất mọi phiên. Đang nhận key…");
-        intro.textContent = "Chuyển tới trang nhận key.";
-        location.replace("../token/?token=" + encodeURIComponent(token));
-        return;
+        location.replace("../token/?token=" + encodeURIComponent(token)); return;
       }
       progress.classList.remove("hidden");
       document.getElementById("stepDone").textContent = (x.step || 0) + " / " + (x.total_steps || "?");
