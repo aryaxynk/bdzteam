@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,74 +8,60 @@
 <script src="../security-hardening.js?v=121"></script>
 <title>Nhận Key · BDZMOD</title>
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-  darkMode: 'class',
-  theme: {
-    extend: {
-      colors: {
-        border: '#262626', background: '#0a0a0a', foreground: '#fafafa',
-        card: '#171717', muted: '#262626', 'muted-foreground': '#a3a3a3',
-        primary: '#fafafa', 'primary-foreground': '#0a0a0a'
-      },
-      borderRadius: { lg: '0.5rem' },
-      keyframes: {
-        'fade-in': { '0%': { opacity: '0', transform: 'translateY(6px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-        'pulse-dot': { '0%, 100%': { opacity: '1', transform: 'scale(1)' }, '50%': { opacity: '0.45', transform: 'scale(0.85)' } }
-      },
-      animation: {
-        'fade-in': 'fade-in 0.45s ease-in-out both',
-        'pulse-dot': 'pulse-dot 1.8s ease-in-out infinite'
-      }
-    }
-  }
-}
-</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=160">
+<style>
+  .gk-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
+  .gk-card{width:min(420px,100%);border:1px solid var(--line);border-radius:18px;background:var(--bg-elevated);box-shadow:0 24px 64px -28px rgba(0,0,0,.65);animation:fade-in .45s var(--ease) both;overflow:hidden}
+  .gk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .gk-brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none}
+  .gk-brand img{width:32px;height:32px;border-radius:10px}
+  .gk-brand strong{display:block;font-size:14px;font-weight:650;letter-spacing:-.02em}
+  .gk-brand small{display:block;font-size:10px;color:var(--fg-muted);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-top:1px}
+  .gk-body{padding:20px 18px}
+  .gk-body h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.03em}
+  .gk-body .lead{margin:8px 0 0;font-size:13.5px;line-height:1.55;color:var(--fg-secondary)}
+  .gk-status{margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:rgba(255,255,255,.02);font-size:13px;color:var(--fg-secondary);display:flex;align-items:center;gap:10px}
+  .gk-status.ok{border-color:rgba(52,211,153,.28);background:var(--ok-soft);color:#6ee7b7}
+  .gk-status.err{border-color:rgba(248,113,113,.28);background:var(--danger-soft);color:#fecaca}
+  .gk-key-label{display:block;margin:16px 0 8px;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted)}
+  .gk-key{display:block;break-all;padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.55}
+  .gk-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--fg-muted)}
+  .gk-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(52,211,153,.18);animation:pulse-dot 1.8s ease-in-out infinite;display:inline-block;margin-right:6px}
+  .spin{width:14px;height:14px;border:2px solid rgba(139,92,246,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+</style>
 </head>
-<body class="min-h-screen overflow-hidden bg-background text-foreground antialiased selection:bg-indigo-500/30">
-<div class="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_70%_45%_at_50%_-15%,rgba(99,102,241,0.14),transparent),radial-gradient(ellipse_45%_35%_at_85%_100%,rgba(16,185,129,0.08),transparent)]"></div>
-
-<main class="relative z-10 flex min-h-screen items-center justify-center p-4">
-  <div class="w-full max-w-md animate-fade-in rounded-lg border border-neutral-800 bg-neutral-900/25 backdrop-blur-md">
-    <div class="flex items-center justify-between gap-3 border-b border-neutral-800 px-5 py-4">
-      <a href="../" class="flex items-center gap-2.5 no-underline">
-        <img src="https://263.org.vn/logo?v=20261003" alt="" width="28" height="28" class="h-7 w-7 rounded-md">
-        <span class="leading-tight">
-          <span class="block text-sm font-semibold tracking-tight text-neutral-50">BDZMOD</span>
-          <span class="block text-[10px] font-medium uppercase tracking-widest text-neutral-500">Nhận Key</span>
-        </span>
+<body>
+<main class="gk-wrap">
+  <div class="gk-card">
+    <div class="gk-head">
+      <a href="../" class="gk-brand">
+        <img src="https://263.org.vn/logo?v=20261003" alt="">
+        <span><strong>BDZMOD</strong><small>Nhận Key</small></span>
       </a>
-      <a href="../" class="inline-flex h-8 items-center rounded-md border border-neutral-800 bg-neutral-900/20 px-3 text-xs font-medium text-neutral-400 hover:text-neutral-100 no-underline">← Trang chủ</a>
+      <a href="../" class="btn sm">← Trang chủ</a>
     </div>
-
-    <div class="px-5 py-5">
-      <h1 class="text-xl font-semibold tracking-tight text-neutral-50">Nhận Key</h1>
-      <p id="intro" class="mt-1.5 text-sm leading-relaxed text-neutral-400">Đang xác nhận phiên…</p>
-
-      <div id="status" role="status" aria-live="polite" class="mt-4 flex items-center gap-3 rounded-md border border-neutral-800 bg-neutral-900/20 px-3.5 py-3 text-sm text-neutral-400">
-        <svg id="statusSpin" class="h-4 w-4 shrink-0 animate-spin text-indigo-400" viewBox="0 0 24 24" fill="none">
-          <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
-          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
+    <div class="gk-body">
+      <h1>Nhận Key</h1>
+      <p id="intro" class="lead">Đang xác nhận phiên…</p>
+      <div id="status" class="gk-status" role="status" aria-live="polite">
+        <span class="spin" id="statusSpin"></span>
         <span id="statusText">Đang xác minh token…</span>
       </div>
-
-      <div id="out" class="mt-4 hidden animate-fade-in">
-        <label class="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Key của bạn</label>
-        <code id="key" class="block break-all rounded-md border border-neutral-800 bg-neutral-950/40 px-3.5 py-3 font-mono text-sm text-neutral-100"></code>
+      <div id="out" class="hidden">
+        <label class="gk-key-label">Key của bạn</label>
+        <code id="key" class="gk-key"></code>
+        <button id="copy" type="button" class="btn primary lg" style="margin-top:14px">Sao chép Key</button>
       </div>
-
-      <button id="copy" type="button" class="mt-4 hidden inline-flex h-10 w-full items-center justify-center rounded-md bg-neutral-50 px-4 text-sm font-semibold text-neutral-950 hover:bg-white">Sao chép Key</button>
     </div>
-
-    <div class="flex items-center justify-between border-t border-neutral-800 px-5 py-3 text-[11px] text-neutral-500">
+    <div class="gk-foot">
       <span>Token dùng 1 lần</span>
-      <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-dot"></span>Online</span>
+      <span><span class="gk-dot"></span>Online</span>
     </div>
   </div>
 </main>
-
 <script src="../config.js?v=111"></script>
 <script src="../supabase-api.js?v=111"></script>
 <script>
@@ -101,7 +87,6 @@ tailwind.config = {
     if (/[àáạảãâăèéêìíòóôơùúýăđ]/i.test(err)) return err;
     return "Không thể cấp key. Thử lại sau.";
   }
-
   var t = (new URLSearchParams(location.search).get("token") || "").trim();
   var s = document.getElementById("status");
   var statusText = document.getElementById("statusText");
@@ -112,68 +97,43 @@ tailwind.config = {
   var c = document.getElementById("copy");
 
   function setStatus(type, msg) {
-    statusSpin.classList.add("hidden");
+    statusSpin.style.display = type ? "none" : "inline-block";
     statusText.textContent = msg;
-    if (type === "err") {
-      s.className = "mt-4 rounded-md border border-red-500/25 bg-red-500/10 px-3.5 py-3 text-sm text-red-400";
-    } else if (type === "ok") {
-      s.className = "mt-4 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-3 text-sm text-emerald-400";
-    } else {
-      s.className = "mt-4 flex items-center gap-3 rounded-md border border-neutral-800 bg-neutral-900/20 px-3.5 py-3 text-sm text-neutral-400";
-      statusSpin.classList.remove("hidden");
-    }
+    s.className = "gk-status" + (type === "err" ? " err" : type === "ok" ? " ok" : "");
   }
-
-  function bad(msg) {
-    setStatus("err", msg);
-    i.textContent = "Phiên không thể hoàn tất.";
-  }
-
-  if (!/^[A-Za-z0-9_-]{20,128}$/.test(t)) {
-    bad("Token không hợp lệ.");
-    return;
-  }
+  function bad(msg) { setStatus("err", msg); i.textContent = "Phiên không thể hoàn tất."; }
+  if (!/^[A-Za-z0-9_-]{20,128}$/.test(t)) { bad("Token không hợp lệ."); return; }
 
   function libraryToken() {
-    var storageKey = "bdz_library_token";
-    var value = "";
+    var storageKey = "bdz_library_token", value = "";
     try { value = (localStorage.getItem(storageKey) || "").trim().toLowerCase(); } catch (_) {}
     if (/^[a-f0-9]{64}$/.test(value)) return value;
     if (!window.crypto || typeof window.crypto.getRandomValues !== "function") throw Error("CRYPTO_UNAVAILABLE");
     var bytes = new Uint8Array(32);
     window.crypto.getRandomValues(bytes);
     value = Array.from(bytes, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
-    try { localStorage.setItem(storageKey, value); }
-    catch (_) { throw Error("LIBRARY_TOKEN_STORAGE_UNAVAILABLE"); }
+    try { localStorage.setItem(storageKey, value); } catch (_) { throw Error("LIBRARY_TOKEN_STORAGE_UNAVAILABLE"); }
     return value;
   }
 
   (async function () {
     try {
       var v = BDZ.visitorId();
-      // Mark final shortener step complete before claim
       var arr = await BDZ.edge("web-get-key", { action: "arrive", token: t, ip: v, visitor_id: v });
       if (arr && arr.ok && arr.phase === "continue") {
         location.replace("../step/?token=" + encodeURIComponent(t));
         return;
       }
-      if (arr && !arr.ok && arr.error && arr.error !== "TOKEN_ALREADY_USED") {
-        // if no session (legacy), still try claim
-        if (arr.error !== "TOKEN_NOT_FOUND") throw Error(viErr(arr.error));
+      if (arr && !arr.ok && arr.error && arr.error !== "TOKEN_ALREADY_USED" && arr.error !== "TOKEN_NOT_FOUND") {
+        throw Error(viErr(arr.error));
       }
-
       var library = libraryToken();
       var d = await BDZ.edge("web-get-key", {
-        action: "claim",
-        token: t,
-        ip: v,
-        visitor_id: v,
-        library_token: library
+        action: "claim", token: t, ip: v, visitor_id: v, library_token: library
       });
       if (!d || !d.ok || !d.key || !d.key.key_code) throw Error(viErr(d && d.error));
       k.textContent = d.key.key_code;
       o.classList.remove("hidden");
-      c.classList.remove("hidden");
       setStatus("ok", "Nhận Key thành công");
       i.textContent = "Key đã được cấp. Hãy sao chép và giữ riêng tư.";
       c.onclick = function () {
