@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./style.css?v=180">
+<link rel="stylesheet" href="./style.css?v=190">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 </head>
 <body>
@@ -35,6 +35,27 @@ try{
   console.error(e);
   document.getElementById('root').innerHTML='<p style="padding:24px;font-family:sans-serif">Lỗi tải admin: '+e.message+'</p>';
 }
+/* Pointer-follow radial overlay on cards/stats */
+(function(){
+  function bind(el){
+    if(el._glowBound) return;
+    el._glowBound = true;
+    el.addEventListener('pointermove', function(e){
+      var r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  }
+  function scan(){
+    document.querySelectorAll('.card, .stat, .login-box, .btn.primary').forEach(bind);
+  }
+  document.addEventListener('pointerover', function(e){
+    var t = e.target.closest && e.target.closest('.card, .stat, .login-box, .btn.primary');
+    if(t) bind(t);
+  }, true);
+  setInterval(scan, 1500);
+  setTimeout(scan, 400);
+})();
 </script>
 
 </body>
