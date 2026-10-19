@@ -11,54 +11,38 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=160">
+<link rel="stylesheet" href="../style.css?v=170">
 <style>
-  .gk-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
-  .gk-card{width:min(420px,100%);border:1px solid var(--line);border-radius:18px;background:var(--bg-elevated);box-shadow:0 24px 64px -28px rgba(0,0,0,.65);animation:fade-in .45s var(--ease) both;overflow:hidden}
-  .gk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
-  .gk-brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none}
-  .gk-brand img{width:32px;height:32px;border-radius:10px}
-  .gk-brand strong{display:block;font-size:14px;font-weight:650;letter-spacing:-.02em}
-  .gk-brand small{display:block;font-size:10px;color:var(--fg-muted);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-top:1px}
-  .gk-body{padding:20px 18px}
-  .gk-body h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.03em}
-  .gk-body .lead{margin:8px 0 0;font-size:13.5px;line-height:1.55;color:var(--fg-secondary)}
-  .gk-status{margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:rgba(255,255,255,.02);font-size:13px;color:var(--fg-secondary);display:flex;align-items:center;gap:10px}
-  .gk-status.ok{border-color:rgba(52,211,153,.28);background:var(--ok-soft);color:#6ee7b7}
-  .gk-status.err{border-color:rgba(248,113,113,.28);background:var(--danger-soft);color:#fecaca}
-  .gk-key-label{display:block;margin:16px 0 8px;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted)}
-  .gk-key{display:block;break-all;padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.55}
-  .gk-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--fg-muted)}
-  .gk-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(52,211,153,.18);animation:pulse-dot 1.8s ease-in-out infinite;display:inline-block;margin-right:6px}
-  .spin{width:14px;height:14px;border:2px solid rgba(139,92,246,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+  .wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+  .card-p{width:min(420px,100%);border:1px solid var(--line);border-radius:20px;background:var(--bg-2);padding:28px 24px;box-shadow:0 28px 64px -28px rgba(0,0,0,.65);animation:fade-in .45s var(--ease) both}
+  .card-p h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.03em}
+  .card-p .lead{margin:8px 0 0;font-size:13.5px;color:var(--fg-2);line-height:1.55}
+  .st{margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:rgba(255,255,255,.02);font-size:13px;color:var(--fg-2);display:flex;align-items:center;gap:10px}
+  .st.ok{border-color:rgba(52,211,153,.28);background:var(--ok-soft);color:#6ee7b7}
+  .st.err{border-color:rgba(248,113,113,.28);background:var(--danger-soft);color:#fecaca}
+  .spin{width:14px;height:14px;border:2px solid rgba(245,158,11,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+  .kl{display:block;margin:16px 0 8px;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3)}
+  .kv{display:block;break-all;padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.55}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  .br{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none}
+  .br img{width:28px;height:28px;border-radius:8px}
+  .br strong{font-size:13px;font-weight:650}
 </style>
 </head>
 <body>
-<main class="gk-wrap">
-  <div class="gk-card">
-    <div class="gk-head">
-      <a href="../" class="gk-brand">
-        <img src="https://263.org.vn/logo?v=20261003" alt="">
-        <span><strong>BDZMOD</strong><small>Nhận Key</small></span>
-      </a>
+<main class="wrap">
+  <div class="card-p">
+    <div class="top">
+      <a href="../" class="br"><img src="https://263.org.vn/logo?v=20261003" alt=""><strong>BDZMOD</strong></a>
       <a href="../" class="btn sm">← Trang chủ</a>
     </div>
-    <div class="gk-body">
-      <h1>Nhận Key</h1>
-      <p id="intro" class="lead">Đang xác nhận phiên…</p>
-      <div id="status" class="gk-status" role="status" aria-live="polite">
-        <span class="spin" id="statusSpin"></span>
-        <span id="statusText">Đang xác minh token…</span>
-      </div>
-      <div id="out" class="hidden">
-        <label class="gk-key-label">Key của bạn</label>
-        <code id="key" class="gk-key"></code>
-        <button id="copy" type="button" class="btn primary lg" style="margin-top:14px">Sao chép Key</button>
-      </div>
-    </div>
-    <div class="gk-foot">
-      <span>Token dùng 1 lần</span>
-      <span><span class="gk-dot"></span>Online</span>
+    <h1>Nhận Key</h1>
+    <p id="intro" class="lead">Đang xác nhận phiên…</p>
+    <div id="status" class="st" role="status"><span class="spin" id="statusSpin"></span><span id="statusText">Đang xác minh token…</span></div>
+    <div id="out" class="hidden">
+      <label class="kl">Key của bạn</label>
+      <code id="key" class="kv"></code>
+      <button id="copy" type="button" class="btn primary lg" style="margin-top:14px">Sao chép Key</button>
     </div>
   </div>
 </main>
@@ -67,21 +51,7 @@
 <script>
 (function () {
   function viErr(err) {
-    var m = {
-      TOKEN_NOT_FOUND: "Token không tồn tại hoặc không hợp lệ.",
-      TOKEN_ALREADY_USED: "Token đã được sử dụng.",
-      TOKEN_EXPIRED: "Token đã hết hạn. Vui lòng nhận key lại.",
-      TOKEN_CONTEXT_MISMATCH: "Phiên không khớp. Mở link trên cùng thiết bị.",
-      TOKEN_INVALID: "Token không hợp lệ.",
-      STEPS_INCOMPLETE: "Chưa hoàn tất đủ phiên vượt link.",
-      LIBRARY_TOKEN_INVALID: "Không xác thực được phiên. Tải lại trang.",
-      CRYPTO_UNAVAILABLE: "Trình duyệt chưa hỗ trợ.",
-      LIBRARY_TOKEN_STORAGE_UNAVAILABLE: "Bật bộ nhớ trình duyệt rồi thử lại.",
-      CLAIM_UNAVAILABLE: "Không thể cấp key. Thử lại sau.",
-      MAINTENANCE: "Hệ thống đang bảo trì.",
-      BANNED: "Bạn đã bị khóa tạm thời.",
-      SERVER_ERROR: "Lỗi máy chủ. Thử lại sau."
-    };
+    var m = {TOKEN_NOT_FOUND:"Token không tồn tại hoặc không hợp lệ.",TOKEN_ALREADY_USED:"Token đã được sử dụng.",TOKEN_EXPIRED:"Token đã hết hạn. Vui lòng nhận key lại.",TOKEN_CONTEXT_MISMATCH:"Phiên không khớp. Mở link trên cùng thiết bị.",TOKEN_INVALID:"Token không hợp lệ.",STEPS_INCOMPLETE:"Chưa hoàn tất đủ phiên vượt link.",LIBRARY_TOKEN_INVALID:"Không xác thực được phiên. Tải lại trang.",CRYPTO_UNAVAILABLE:"Trình duyệt chưa hỗ trợ.",LIBRARY_TOKEN_STORAGE_UNAVAILABLE:"Bật bộ nhớ trình duyệt rồi thử lại.",CLAIM_UNAVAILABLE:"Không thể cấp key. Thử lại sau.",MAINTENANCE:"Hệ thống đang bảo trì.",BANNED:"Bạn đã bị khóa tạm thời.",SERVER_ERROR:"Lỗi máy chủ. Thử lại sau."};
     if (!err) return "Không thể cấp key.";
     if (m[err]) return m[err];
     if (/[àáạảãâăèéêìíòóôơùúýăđ]/i.test(err)) return err;
@@ -95,15 +65,13 @@
   var o = document.getElementById("out");
   var k = document.getElementById("key");
   var c = document.getElementById("copy");
-
   function setStatus(type, msg) {
     statusSpin.style.display = type ? "none" : "inline-block";
     statusText.textContent = msg;
-    s.className = "gk-status" + (type === "err" ? " err" : type === "ok" ? " ok" : "");
+    s.className = "st" + (type === "err" ? " err" : type === "ok" ? " ok" : "");
   }
   function bad(msg) { setStatus("err", msg); i.textContent = "Phiên không thể hoàn tất."; }
   if (!/^[A-Za-z0-9_-]{20,128}$/.test(t)) { bad("Token không hợp lệ."); return; }
-
   function libraryToken() {
     var storageKey = "bdz_library_token", value = "";
     try { value = (localStorage.getItem(storageKey) || "").trim().toLowerCase(); } catch (_) {}
@@ -115,22 +83,18 @@
     try { localStorage.setItem(storageKey, value); } catch (_) { throw Error("LIBRARY_TOKEN_STORAGE_UNAVAILABLE"); }
     return value;
   }
-
   (async function () {
     try {
       var v = BDZ.visitorId();
       var arr = await BDZ.edge("web-get-key", { action: "arrive", token: t, ip: v, visitor_id: v });
       if (arr && arr.ok && arr.phase === "continue") {
-        location.replace("../step/?token=" + encodeURIComponent(t));
-        return;
+        location.replace("../step/?token=" + encodeURIComponent(t)); return;
       }
       if (arr && !arr.ok && arr.error && arr.error !== "TOKEN_ALREADY_USED" && arr.error !== "TOKEN_NOT_FOUND") {
         throw Error(viErr(arr.error));
       }
       var library = libraryToken();
-      var d = await BDZ.edge("web-get-key", {
-        action: "claim", token: t, ip: v, visitor_id: v, library_token: library
-      });
+      var d = await BDZ.edge("web-get-key", { action: "claim", token: t, ip: v, visitor_id: v, library_token: library });
       if (!d || !d.ok || !d.key || !d.key.key_code) throw Error(viErr(d && d.error));
       k.textContent = d.key.key_code;
       o.classList.remove("hidden");
@@ -138,14 +102,11 @@
       i.textContent = "Key đã được cấp. Hãy sao chép và giữ riêng tư.";
       c.onclick = function () {
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(d.key.key_code).then(function () {
-            c.textContent = "Đã sao chép";
-          }).catch(function () { window.prompt("Key:", d.key.key_code); });
+          navigator.clipboard.writeText(d.key.key_code).then(function () { c.textContent = "Đã sao chép"; })
+            .catch(function () { window.prompt("Key:", d.key.key_code); });
         } else window.prompt("Key:", d.key.key_code);
       };
-    } catch (e) {
-      bad(viErr(e.message || "SERVER_ERROR"));
-    }
+    } catch (e) { bad(viErr(e.message || "SERVER_ERROR")); }
   })();
 })();
 </script>
