@@ -4,8 +4,8 @@ var tok=()=>sessionStorage.getItem('bdz_t')||'';
 var LOGO='https://263.org.vn/logo?v=20261003';
 var rows=[],admins=[],settings={},perms={can_keys:true,can_create_key:true,can_edit_key:true,can_delete_key:true,can_api_keys:true,can_settings:true,can_admins:true},role='OWNER',timer=null;
 var ST_LABEL={ACTIVE:'Hoạt động',DISABLED:'Tắt',EXPIRED:'Hết hạn',TIME_EXPIRED:'Hết hạn',DEVICE_LIMIT:'Giới hạn máy',LIMIT_REACHED:'Hết lượt',REACTIVATED:'Hoạt động',CREATED:'Mới tạo'};
-function openSide(){const s=$('sideNav'),m=$('sideMask');if(s)s.classList.add('open');if(m)m.classList.add('open');document.body.classList.add('side-open')}
-function closeSide(){const s=$('sideNav'),m=$('sideMask');if(s)s.classList.remove('open');if(m)m.classList.remove('open');document.body.classList.remove('side-open')}
+function openSide(){}
+function closeSide(){}
 function closeModalSmooth(root){
   if(!root)return;
   const overlay=root.querySelector('.modal-bg');
@@ -34,32 +34,31 @@ $('root').innerHTML=`<div id="login" class="login-page">
 </div>
 <main id="app" class="hidden admin-shell">
   <header class="topbar">
-    <button type="button" class="btn icon-btn" id="btnMenu" aria-label="Mở menu">☰</button>
-    <img class="logo-img" src="${LOGO}" alt="" referrerpolicy="no-referrer">
-    <div class="topbar-brand"><span class="brand">BDZMOD Admin</span></div>
-    <span class="grow"></span>
-    <span class="topbar-status"><span class="status-pulse"></span>Online</span>
-    <button id="refresh" class="btn sm" aria-label="Làm mới">Làm mới</button>
-    <button id="logout" class="btn sm danger">Thoát</button>
+    <div class="topbar-row">
+      <img class="logo-img" src="${LOGO}" alt="" referrerpolicy="no-referrer">
+      <div class="topbar-brand"><span class="brand">BDZMOD</span><span class="brand-sub">Admin Console</span></div>
+      <span class="grow"></span>
+      <span class="topbar-status"><span class="status-pulse"></span>Online</span>
+      <a href="./" class="btn sm ghost">← Key page</a>
+      <button id="refresh" class="btn sm" aria-label="Làm mới">Làm mới</button>
+      <button id="logout" class="btn sm danger">Thoát</button>
+    </div>
+    <nav class="side-nav" id="sideNav" aria-label="Điều hướng">
+      <div class="side-tabs" id="navTabs"></div>
+    </nav>
   </header>
-  <div class="side-mask" id="sideMask"></div>
-  <aside class="side-nav" id="sideNav">
-    <div class="side-head"><span>Menu</span><button type="button" class="btn sm ghost" id="btnCloseSide" aria-label="Đóng">✕</button></div>
-    <nav class="side-tabs" id="navTabs" aria-label="Điều hướng quản trị"></nav>
-    <a href="./" class="side-foot-link">← Về trang nhận key</a>
-  </aside>
   <div id="pages"></div>
 </main>
 <div id="modalRoot"></div><div id="menuRoot"></div>`;
 $('pages').innerHTML=`<section id="pg-dash" class="view active">
-<header class="md-admin-heading"><div><h1>Tổng quan</h1><p class="hint">Thống kê key và hoạt động hệ thống.</p></div></header>
+<header class="md-admin-heading"><div><h1>Tổng quan</h1><p class="hint">Hiệu suất key và hoạt động hệ thống.</p></div></header>
 <div class="bento-dash">
-  <div class="stat"><div class="stat-top"><b>Tổng key</b></div><strong id="sTotal">0</strong><p class="stat-caption">Đã tạo</p></div>
+  <div class="stat hero"><div class="stat-top"><b>Tổng key</b></div><strong id="sTotal">0</strong><p class="stat-caption">Toàn bộ key đã tạo</p></div>
   <div class="stat"><div class="stat-top"><b>Hoạt động</b></div><strong id="sActive">0</strong><p class="stat-caption">Đang active</p></div>
   <div class="stat"><div class="stat-top"><b>Thiết bị</b></div><strong id="sDevices">0</strong><p class="stat-caption">Đã liên kết</p></div>
   <div class="stat"><div class="stat-top"><b>IP bind</b></div><strong id="sIp">0</strong><p class="stat-caption">Đã gắn IP</p></div>
   <div class="card tile-chart"><div class="section-head"><div><h2>Hoạt động theo ngày</h2><p class="hint">Thống kê trong tháng</p></div></div><div id="chartMonth"></div><svg id="chart" viewBox="0 0 640 220" width="100%" height="220" style="display:block"></svg></div>
-  <div class="card tile-note"><h2>Ghi chú</h2><p class="hint">Quản lý key tại mục <b>Key</b>. Cài đặt giới hạn/thời hạn tại <b>Cài đặt</b>.</p></div>
+  <div class="card tile-note"><h2>Ghi chú</h2><p class="hint">Quản lý key tại tab <b>Key</b>. Cấu hình API rút gọn và giới hạn tại <b>Cài đặt</b>.</p></div>
 </div></section>
 <section id="pg-keys" class="view">
 <header class="md-admin-heading"><div><h1>Danh sách Key</h1><p class="hint">Tìm, lọc và quản lý key.</p></div><div class="md-heading-actions"><button id="btnBulk" class="btn">Đa nhiệm ▾</button><button id="btnCreateKey" class="btn primary">+ Tạo key</button></div></header>
@@ -74,16 +73,13 @@ $('pages').innerHTML=`<section id="pg-dash" class="view active">
 <header class="md-admin-heading"><div><h1>Admin phụ</h1><p class="hint">Tài khoản quản trị và quyền.</p></div><button id="btnCreateAdmin" class="btn primary">+ Admin phụ</button></header>
 <div class="card"><div class="table-wrap admins-table-wrap"><table><thead><tr><th>User</th><th>Role</th><th>Trạng thái</th><th>Login</th><th></th></tr></thead><tbody id="adminRows"></tbody></table></div><div id="adminCards" class="admin-cards"></div></div></section>
 <section id="pg-settings" class="view">
-<header class="md-admin-heading"><div><h1>Cài đặt</h1><p class="hint">Thời hạn key, giới hạn thiết bị, bind IP/device.</p></div></header>
+<header class="md-admin-heading"><div><h1>Cài đặt</h1><p class="hint">Thời hạn key, giới hạn, bind IP/device, API rút gọn.</p></div></header>
 <div class="card"><div class="grid2"><div class="field"><label for="setDur">Thời hạn (giờ)</label><input id="setDur" class="input" type="number" min="1"></div><div class="field"><label for="setDev">Max devices</label><input id="setDev" class="input" type="number" min="1"></div><div class="field"><label for="setLim">Get / visitor</label><input id="setLim" class="input" type="number" min="1"></div><div class="field"><label for="setIp">Bind IP</label><select id="setIp" class="select"><option value="true">Bật</option><option value="false">Tắt</option></select></div><div class="field"><label for="setBind">Bind device</label><select id="setBind" class="select"><option value="true">Bật</option><option value="false">Tắt</option></select></div></div><button id="saveSet" class="btn primary">Lưu cài đặt</button><span id="saveMsg" role="status"></span></div></section>
 <div id="viewLoader" class="view-loader hidden" role="status" aria-live="polite"><span class="loader-ring" aria-hidden="true"></span><span>Đang tải…</span></div>`;
 if(typeof buildNav==='function')buildNav();
 if($('loginBtn'))$('loginBtn').onclick=function(){if(typeof doLogin==='function')doLogin()};
 if($('logout'))$('logout').onclick=function(){if(typeof doLogout==='function')doLogout()};
 if($('refresh'))$('refresh').onclick=function(){if(typeof load==='function')load(true)};
-if($('btnMenu'))$('btnMenu').onclick=openSide;
-if($('btnCloseSide'))$('btnCloseSide').onclick=closeSide;
-if($('sideMask'))$('sideMask').onclick=closeSide;
 ['u','p'].forEach(id=>{const el=$(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(typeof doLogin==='function')doLogin()}})});
 if($('btnCreateKey'))$('btnCreateKey').onclick=function(){if(!perms.can_create_key)return alert('Không có quyền');if(typeof modalKey==='function')modalKey()};
 if($('btnCreateAdmin'))$('btnCreateAdmin').onclick=function(){if(!perms.can_admins)return alert('Không có quyền');if(typeof modalAdmin==='function')modalAdmin()};
