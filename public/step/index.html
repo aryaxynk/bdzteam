@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,89 +8,78 @@
 <script src="../security-hardening.js?v=121"></script>
 <title>Phiên tiếp theo · BDZMOD</title>
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-  darkMode: 'class',
-  theme: {
-    extend: {
-      colors: {
-        border: '#262626', background: '#0a0a0a', foreground: '#fafafa',
-        card: '#171717', muted: '#262626', 'muted-foreground': '#a3a3a3',
-        primary: '#fafafa', 'primary-foreground': '#0a0a0a'
-      },
-      borderRadius: { lg: '0.5rem' },
-      keyframes: {
-        'fade-in': { '0%': { opacity: '0', transform: 'translateY(6px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-        'pulse-dot': { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.45' } }
-      },
-      animation: {
-        'fade-in': 'fade-in 0.45s ease-in-out both',
-        'pulse-dot': 'pulse-dot 1.8s ease-in-out infinite'
-      }
-    }
-  }
-}
-</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css?v=160">
+<style>
+  .gk-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
+  .gk-card{width:min(420px,100%);border:1px solid var(--line);border-radius:18px;background:var(--bg-elevated);box-shadow:0 24px 64px -28px rgba(0,0,0,.65);animation:fade-in .45s var(--ease) both;overflow:hidden}
+  .gk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .gk-brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none}
+  .gk-brand img{width:32px;height:32px;border-radius:10px}
+  .gk-brand strong{display:block;font-size:14px;font-weight:650;letter-spacing:-.02em}
+  .gk-brand small{display:block;font-size:10px;color:var(--fg-muted);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-top:1px}
+  .gk-body{padding:20px 18px}
+  .gk-body h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.03em}
+  .gk-body .lead{margin:8px 0 0;font-size:13.5px;line-height:1.55;color:var(--fg-secondary)}
+  .gk-info{margin-top:16px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .gk-info table{width:100%;border-collapse:collapse;font-size:13px}
+  .gk-info th{width:42%;text-align:left;padding:11px 14px;color:var(--fg-muted);font-weight:500;background:rgba(255,255,255,.02);border-bottom:1px solid var(--line)}
+  .gk-info td{padding:11px 14px;font-weight:550;border-bottom:1px solid var(--line)}
+  .gk-info tr:last-child th,.gk-info tr:last-child td{border-bottom:none}
+  .gk-captcha{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,255,255,.015)}
+  .gk-captcha label{display:block;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:10px}
+  .gk-captcha-row{display:flex;align-items:center;gap:8px}
+  .gk-prompt{min-width:7.2rem;padding:0 12px;min-height:42px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;font-weight:600}
+  .gk-status{margin-top:14px;padding:11px 13px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13px;color:var(--fg-secondary);background:rgba(255,255,255,.02)}
+  .gk-status.err{border-color:rgba(248,113,113,.25);background:var(--danger-soft);color:#fecaca}
+  .gk-status.ok{border-color:rgba(52,211,153,.25);background:var(--ok-soft);color:#6ee7b7}
+  .gk-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--fg-muted)}
+  .gk-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(52,211,153,.18);animation:pulse-dot 1.8s ease-in-out infinite;display:inline-block;margin-right:6px}
+</style>
 </head>
-<body class="min-h-screen overflow-hidden bg-background text-foreground antialiased">
-<div class="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_70%_45%_at_50%_-15%,rgba(99,102,241,0.14),transparent),radial-gradient(ellipse_45%_35%_at_85%_100%,rgba(16,185,129,0.08),transparent)]"></div>
-
-<main class="relative z-10 flex min-h-screen items-center justify-center p-4">
-  <div class="w-full max-w-md animate-fade-in rounded-lg border border-neutral-800 bg-neutral-900/25 backdrop-blur-md">
-    <div class="flex items-center justify-between gap-3 border-b border-neutral-800 px-5 py-4">
-      <a href="../" class="flex items-center gap-2.5 no-underline">
-        <img src="https://263.org.vn/logo?v=20261003" alt="" width="28" height="28" class="h-7 w-7 rounded-md">
-        <span class="leading-tight">
-          <span class="block text-sm font-semibold text-neutral-50">BDZMOD</span>
-          <span class="block text-[10px] font-medium uppercase tracking-widest text-neutral-500">Xác minh phiên</span>
-        </span>
+<body>
+<main class="gk-wrap">
+  <div class="gk-card">
+    <div class="gk-head">
+      <a href="../" class="gk-brand">
+        <img src="https://263.org.vn/logo?v=20261003" alt="">
+        <span><strong>BDZMOD</strong><small>Xác minh phiên</small></span>
       </a>
     </div>
+    <div class="gk-body">
+      <h1>Tiếp tục phiên</h1>
+      <p id="intro" class="lead">Đang xác minh…</p>
 
-    <div class="px-5 py-5">
-      <h1 class="text-xl font-semibold tracking-tight text-neutral-50">Tiếp tục phiên</h1>
-      <p id="intro" class="mt-1.5 text-sm text-neutral-400 leading-relaxed">Đang xác minh…</p>
-
-      <div id="progress" class="mt-4 hidden overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/20">
-        <table class="w-full text-sm">
-          <tbody>
-            <tr class="border-b border-neutral-800">
-              <th class="w-[42%] bg-neutral-900/30 px-3.5 py-2.5 text-left font-medium text-neutral-500">Đã vượt</th>
-              <td id="stepDone" class="px-3.5 py-2.5 font-medium text-neutral-100">—</td>
-            </tr>
-            <tr>
-              <th class="bg-neutral-900/30 px-3.5 py-2.5 text-left font-medium text-neutral-500">Còn lại</th>
-              <td id="stepLeft" class="px-3.5 py-2.5 font-medium text-neutral-100">—</td>
-            </tr>
-          </tbody>
+      <div id="progress" class="gk-info hidden">
+        <table>
+          <tr><th>Đã vượt</th><td id="stepDone">—</td></tr>
+          <tr><th>Còn lại</th><td id="stepLeft">—</td></tr>
         </table>
       </div>
 
-      <div id="captchaBox" class="mt-4 hidden rounded-lg border border-neutral-800 bg-neutral-900/20 p-3.5">
-        <label class="mb-2 block text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Captcha phiên tiếp</label>
-        <div class="flex items-center gap-2">
-          <span id="captchaPrompt" class="min-w-[7rem] rounded-md border border-neutral-800 bg-neutral-950/40 px-3 py-2 font-mono text-sm text-neutral-100">…</span>
-          <input id="captchaAnswer" type="text" inputmode="numeric" autocomplete="off" placeholder="?" class="h-10 w-full rounded-md border border-neutral-800 bg-neutral-950/40 px-3 text-sm text-neutral-100 outline-none focus:border-indigo-500/50">
-          <button type="button" id="captchaRefresh" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-neutral-800 text-neutral-400 hover:bg-neutral-800/40">↻</button>
+      <div id="captchaBox" class="gk-captcha hidden">
+        <label>Captcha phiên tiếp</label>
+        <div class="gk-captcha-row">
+          <span id="captchaPrompt" class="gk-prompt">…</span>
+          <input id="captchaAnswer" class="input" type="text" inputmode="numeric" autocomplete="off" placeholder="?">
+          <button type="button" id="captchaRefresh" class="btn icon-btn" title="Đổi">↻</button>
         </div>
       </div>
 
-      <button id="continueBtn" type="button" class="mt-4 hidden inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-neutral-50 px-4 text-sm font-semibold text-neutral-950 transition-all hover:bg-white disabled:opacity-50">
-        <svg id="spin" class="hidden h-4 w-4 animate-spin text-indigo-600" viewBox="0 0 24 24" fill="none"><circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+      <button id="continueBtn" type="button" class="btn primary lg hidden" style="margin-top:14px">
         <span id="btnLabel">Tiếp tục vượt link</span>
       </button>
 
-      <div id="status" role="status" class="mt-4 rounded-md border border-neutral-800 bg-neutral-900/20 px-3.5 py-2.5 text-sm text-neutral-400">Đang kiểm tra phiên…</div>
+      <div id="status" class="gk-status" role="status">Đang kiểm tra phiên…</div>
     </div>
-
-    <div class="flex items-center justify-between border-t border-neutral-800 px-5 py-3 text-[11px] text-neutral-500">
+    <div class="gk-foot">
       <span>Mỗi phiên một captcha</span>
-      <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-dot"></span>Online</span>
+      <span><span class="gk-dot"></span>Online</span>
     </div>
   </div>
 </main>
-
 <script src="../config.js?v=111"></script>
 <script src="../supabase-api.js?v=111"></script>
 <script>
@@ -109,7 +98,6 @@ tailwind.config = {
     };
     return m[err] || err || "Lỗi phiên.";
   }
-
   var token = (new URLSearchParams(location.search).get("token") || "").trim();
   var captchaId = "";
   var status = document.getElementById("status");
@@ -117,17 +105,12 @@ tailwind.config = {
   var progress = document.getElementById("progress");
   var captchaBox = document.getElementById("captchaBox");
   var continueBtn = document.getElementById("continueBtn");
-  var spin = document.getElementById("spin");
   var btnLabel = document.getElementById("btnLabel");
 
   function setStatus(type, msg) {
-    status.className = "mt-4 rounded-md border px-3.5 py-2.5 text-sm leading-relaxed";
-    if (type === "err") status.className += " border-red-500/25 bg-red-500/10 text-red-400";
-    else if (type === "ok") status.className += " border-emerald-500/25 bg-emerald-500/10 text-emerald-400";
-    else status.className += " border-neutral-800 bg-neutral-900/20 text-neutral-400";
+    status.className = "gk-status" + (type === "err" ? " err" : type === "ok" ? " ok" : "");
     status.textContent = msg;
   }
-
   async function loadCaptcha() {
     captchaId = "";
     document.getElementById("captchaPrompt").textContent = "…";
@@ -138,30 +121,25 @@ tailwind.config = {
     captchaId = x.captcha_id;
     document.getElementById("captchaPrompt").textContent = x.prompt || "?";
   }
-
   document.getElementById("captchaRefresh").onclick = function () {
     loadCaptcha().catch(function () { setStatus("err", "Không tải captcha."); });
   };
-
   if (!/^[A-Za-z0-9_-]{20,80}$/.test(token)) {
     setStatus("err", "Token không hợp lệ.");
     intro.textContent = "Phiên không hợp lệ.";
     return;
   }
-
   (async function () {
     try {
       var v = BDZ.visitorId();
       var x = await BDZ.edge("web-get-key", { action: "arrive", token: token, ip: v, visitor_id: v });
       if (!x || !x.ok) throw Error(viErr(x && x.error));
-
       if (x.phase === "claim") {
         setStatus("ok", "Đã hoàn tất mọi phiên. Đang nhận key…");
         intro.textContent = "Chuyển tới trang nhận key.";
         location.replace("../token/?token=" + encodeURIComponent(token));
         return;
       }
-
       progress.classList.remove("hidden");
       document.getElementById("stepDone").textContent = (x.step || 0) + " / " + (x.total_steps || "?");
       document.getElementById("stepLeft").textContent = Math.max(0, (x.total_steps || 0) - (x.step || 0)) + " phiên";
@@ -175,41 +153,26 @@ tailwind.config = {
       intro.textContent = "Không xác minh được phiên.";
     }
   })();
-
   continueBtn.onclick = async function () {
     if (continueBtn.disabled) return;
     var ans = (document.getElementById("captchaAnswer").value || "").trim();
     if (!captchaId || !ans) { setStatus("err", "Nhập kết quả captcha."); return; }
     continueBtn.disabled = true;
-    spin.classList.remove("hidden");
+    continueBtn.classList.add("loading");
     btnLabel.textContent = "Đang tạo link…";
     try {
       var v = BDZ.visitorId();
       var x = await BDZ.edge("web-get-key", {
-        action: "continue",
-        token: token,
-        ip: v,
-        visitor_id: v,
-        captcha_id: captchaId,
-        captcha_answer: ans
+        action: "continue", token: token, ip: v, visitor_id: v,
+        captcha_id: captchaId, captcha_answer: ans
       });
-      if (!x || !x.ok) {
-        await loadCaptcha();
-        throw Error(viErr(x && x.error));
-      }
-      if (x.phase === "claim" && x.claimUrl) {
-        location.href = x.claimUrl;
-        return;
-      }
-      if (x.shortenedUrl) {
-        btnLabel.textContent = "Chuyển tiếp…";
-        location.href = x.shortenedUrl;
-        return;
-      }
+      if (!x || !x.ok) { await loadCaptcha(); throw Error(viErr(x && x.error)); }
+      if (x.phase === "claim" && x.claimUrl) { location.href = x.claimUrl; return; }
+      if (x.shortenedUrl) { btnLabel.textContent = "Chuyển tiếp…"; location.href = x.shortenedUrl; return; }
       throw Error("Không nhận được link.");
     } catch (e) {
       continueBtn.disabled = false;
-      spin.classList.add("hidden");
+      continueBtn.classList.remove("loading");
       btnLabel.textContent = "Tiếp tục vượt link";
       setStatus("err", e.message || "Lỗi");
     }
