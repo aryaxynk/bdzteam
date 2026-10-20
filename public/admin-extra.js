@@ -4,7 +4,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'
 const tok=()=>sessionStorage.getItem('bdz_t')||'';
 let bans=[];
 let fraudFlags=[];
-let banSub='getkey'; // getkey | apk
+let banSub='getkey';
 
 function shortHash(h){
   if(!h) return '—';
@@ -23,9 +23,7 @@ function injectBanTab(){
   b.className='side-item'; b.dataset.p='bans'; b.textContent='Ban';
   b.onclick=()=>{
     if(typeof page==='function') page('bans');
-    else {
-      document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-bans'));
-    }
+    else document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='pg-bans'));
     switchBanSub(banSub||'getkey');
   };
   const setBtn=[...nav.querySelectorAll('.side-item, .tab')].find(t=>t.dataset.p==='settings');
@@ -68,15 +66,7 @@ function injectBanTab(){
       <table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Lý do</th>
-            <th>Device</th>
-            <th>IP</th>
-            <th>Key</th>
-            <th>Ver</th>
-            <th>TT</th>
-            <th>Thời gian</th>
-            <th></th>
+            <th>ID</th><th>Lý do</th><th>Device</th><th>IP</th><th>Key</th><th>Ver</th><th>TT</th><th>Thời gian</th><th></th>
           </tr>
         </thead>
         <tbody id="fraudRows"></tbody>
@@ -141,13 +131,27 @@ function renderBans(){
       '<td style="font-size:12px">'+fmtTime(b.banned_until)+'</td>'+
       '<td><span class="tag '+(b.active?'off':'on')+'">'+(b.active?'BAN':'OFF')+'</span></td>'+
       '<td style="font-size:12px">'+esc(b.note||'')+'</td>'+
-      '<td>'+(b.active?'<button class="btn sm" data-unban="'+b.id+'">Unban</button>':'—')+'</td>'+
+      '<td style="white-space:nowrap">'+
+        (b.active?'<button class="btn sm" data-unban="'+b.id+'">Unban</button> ':'')+
+        '<button class="btn sm danger" data-delban="'+b.id+'">Xóa</button>'+
+      '</td>'+
     '</tr>'
   ).join('')||'<tr><td colspan="6" style="color:var(--fg-3)">Không có ban</td></tr>';
+
   document.querySelectorAll('[data-unban]').forEach(btn=>{
     btn.onclick=async()=>{
       try{
         const x=await BDZ.rpc('bdz_admin_bans',{p_token:tok(),p_action:'unban',p_payload:{id:+btn.dataset.unban}});
+        if(!x||!x.ok) throw Error(x&&x.error||'Lỗi');
+        loadBans();
+      }catch(e){ alert(e.message); }
+    };
+  });
+  document.querySelectorAll('[data-delban]').forEach(btn=>{
+    btn.onclick=async()=>{
+      if(!confirm('Xóa hẳn log ban #'+btn.dataset.delban+'?')) return;
+      try{
+        const x=await BDZ.rpc('bdz_admin_bans',{p_token:tok(),p_action:'delete',p_payload:{id:+btn.dataset.delban}});
         if(!x||!x.ok) throw Error(x&&x.error||'Lỗi');
         loadBans();
       }catch(e){ alert(e.message); }
@@ -215,7 +219,8 @@ function renderFraudFlags(){
       '<td style="font-size:11px">'+fmtTime(f.created_at)+'</td>'+
       '<td style="white-space:nowrap">'+
         '<button class="btn sm" data-fdetail="'+f.id+'">Chi tiết</button> '+
-        (f.active?'<button class="btn sm" data-funban="'+f.id+'">Unban</button>':'')+
+        (f.active?'<button class="btn sm" data-funban="'+f.id+'">Unban</button> ':'')+
+        '<button class="btn sm danger" data-fdel="'+f.id+'">Xóa</button>'+
       '</td>'+
     '</tr>';
   }).join('');
@@ -228,6 +233,16 @@ function renderFraudFlags(){
       if(!confirm('Unban device này? App sẽ được phép chạy lại.')) return;
       try{
         const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'unban',p_payload:{id:+btn.dataset.funban}});
+        if(!x||!x.ok) throw Error(x&&x.error||'Lỗi');
+        loadFraudFlags();
+      }catch(e){ alert(e.message); }
+    };
+  });
+  document.querySelectorAll('[data-fdel]').forEach(btn=>{
+    btn.onclick=async()=>{
+      if(!confirm('Xóa hẳn log fraud #'+btn.dataset.fdel+' (flag + report)?')) return;
+      try{
+        const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'delete',p_payload:{id:+btn.dataset.fdel}});
         if(!x||!x.ok) throw Error(x&&x.error||'Lỗi');
         loadFraudFlags();
       }catch(e){ alert(e.message); }
@@ -264,6 +279,7 @@ async function modalFraudDetail(id){
   <div class="modal-actions">
     <button class="btn" id="mClose">Đóng</button>
     ${f.active?'<button class="btn primary" id="mUnban">Unban</button>':''}
+    <button class="btn danger" id="mDel">Xóa log</button>
   </div>
 </div></div>`;
     $('mClose').onclick=()=>closeModalSmooth(root);
@@ -272,6 +288,17 @@ async function modalFraudDetail(id){
         try{
           const u=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'unban',p_payload:{id:f.id}});
           if(!u||!u.ok) throw Error(u&&u.error||'Lỗi');
+          closeModalSmooth(root);
+          loadFraudFlags();
+        }catch(e){ alert(e.message); }
+      };
+    }
+    if($('mDel')){
+      $('mDel').onclick=async()=>{
+        if(!confirm('Xóa hẳn log fraud #'+f.id+'?')) return;
+        try{
+          const d=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'delete',p_payload:{id:f.id}});
+          if(!d||!d.ok) throw Error(d&&d.error||'Lỗi');
           closeModalSmooth(root);
           loadFraudFlags();
         }catch(e){ alert(e.message); }
