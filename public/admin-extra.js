@@ -4,7 +4,9 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'
 const tok=()=>sessionStorage.getItem('bdz_t')||'';
 let bans=[];
 let fraudFlags=[];
+let apkSessions=[];
 let banSub='getkey';
+let apkView='sessions'; // sessions | flags
 
 function shortHash(h){
   if(!h) return '—';
@@ -34,11 +36,11 @@ function injectBanTab(){
     sec.id='pg-bans'; sec.className='view';
     sec.innerHTML=`
 <header class="md-admin-heading">
-  <div><h1>Ban</h1><p class="hint">Get Key (web) và APK (report gian lận từ app).</p></div>
+  <div><h1>Ban</h1><p class="hint">Get Key (web) và APK (session check-in từ app).</p></div>
 </header>
 <div class="toolbar" style="gap:6px;margin-bottom:14px">
-  <button type="button" class="btn sm ban-sub active" data-sub="getkey" id="banSubGetkey">Get Key</button>
-  <button type="button" class="btn sm ban-sub" data-sub="apk" id="banSubApk">APK</button>
+  <button type="button" class="btn sm ban-sub active" data-sub="getkey">Get Key</button>
+  <button type="button" class="btn sm ban-sub" data-sub="apk">APK</button>
 </div>
 
 <div id="banPaneGetkey">
@@ -57,16 +59,37 @@ function injectBanTab(){
 </div>
 
 <div id="banPaneApk" class="hidden">
-  <div class="card">
+  <div class="toolbar" style="gap:6px;margin-bottom:12px">
+    <button type="button" class="btn sm apk-view active" data-av="sessions">Session log</button>
+    <button type="button" class="btn sm apk-view" data-av="flags">Ban vĩnh viễn</button>
+    <button type="button" class="btn sm" id="btnFraudRefresh">Làm mới</button>
+  </div>
+
+  <div id="apkPaneSessions" class="card">
     <div class="section-head">
-      <div><h2>Ban APK (Fraud)</h2><p class="hint">Report từ app: crack / bypass / spam… — gắn cờ device và KILL logic.</p></div>
-      <button type="button" class="btn sm" id="btnFraudRefresh">Làm mới</button>
+      <div><h2>Session APK</h2><p class="hint">Mỗi lần mở app / nhập key / main — thiếu key = auto KILL + ban.</p></div>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>ID</th><th>Lý do</th><th>Device</th><th>IP</th><th>Key</th><th>Ver</th><th>TT</th><th>Thời gian</th><th></th>
+            <th>ID</th><th>Phase</th><th>Key?</th><th>Key</th><th>Device</th><th>IP</th><th>KQ</th><th>Ver</th><th>Thời gian</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="sessionRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="apkPaneFlags" class="card hidden">
+    <div class="section-head">
+      <div><h2>Ban APK (vĩnh viễn)</h2><p class="hint">Device/IP bị gắn cờ — mọi check-in sau đều KILL.</p></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Lý do</th><th>Device</th><th>IP</th><th>TT</th><th>Note</th><th>Thời gian</th><th></th>
           </tr>
         </thead>
         <tbody id="fraudRows"></tbody>
@@ -77,9 +100,14 @@ function injectBanTab(){
     ($('pages')||document.body).appendChild(sec);
 
     if($('btnBan')) $('btnBan').onclick=modalBan;
-    if($('btnFraudRefresh')) $('btnFraudRefresh').onclick=()=>loadFraudFlags();
+    if($('btnFraudRefresh')) $('btnFraudRefresh').onclick=()=>{
+      if(apkView==='sessions') loadApkSessions(); else loadFraudFlags();
+    };
     document.querySelectorAll('.ban-sub').forEach(btn=>{
       btn.onclick=()=>switchBanSub(btn.dataset.sub);
+    });
+    document.querySelectorAll('.apk-view').forEach(btn=>{
+      btn.onclick=()=>switchApkView(btn.dataset.av);
     });
   }
 }
@@ -94,6 +122,19 @@ function switchBanSub(sub){
   if(gk) gk.classList.toggle('hidden', banSub!=='getkey');
   if(apk) apk.classList.toggle('hidden', banSub!=='apk');
   if(banSub==='getkey') loadBans();
+  else switchApkView(apkView||'sessions');
+}
+
+function switchApkView(v){
+  apkView=v==='flags'?'flags':'sessions';
+  document.querySelectorAll('.apk-view').forEach(b=>{
+    b.classList.toggle('active', b.dataset.av===apkView);
+  });
+  const s=$('apkPaneSessions');
+  const f=$('apkPaneFlags');
+  if(s) s.classList.toggle('hidden', apkView!=='sessions');
+  if(f) f.classList.toggle('hidden', apkView!=='flags');
+  if(apkView==='sessions') loadApkSessions();
   else loadFraudFlags();
 }
 
@@ -186,51 +227,109 @@ function modalBan(){
   };
 }
 
+/* ——— APK sessions ——— */
+async function loadApkSessions(){
+  try{
+    const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'sessions'});
+    if(!x||!x.ok){
+      if($('sessionRows')) $('sessionRows').innerHTML='<tr><td colspan="10" style="color:var(--fg-3)">—</td></tr>';
+      return;
+    }
+    apkSessions=x.sessions||[];
+    renderApkSessions();
+  }catch(e){
+    if($('sessionRows')) $('sessionRows').innerHTML='<tr><td colspan="10" style="color:var(--fg-3)">Lỗi tải</td></tr>';
+  }
+}
+function renderApkSessions(){
+  if(!$('sessionRows')) return;
+  if(!apkSessions.length){
+    $('sessionRows').innerHTML='<tr><td colspan="10" style="color:var(--fg-3)">Chưa có session</td></tr>';
+    return;
+  }
+  $('sessionRows').innerHTML=apkSessions.map(s=>{
+    const act=s.result_action||'';
+    const tag=act==='KILL'?'off':(act==='DENY'?'off':'on');
+    const noKey=!s.has_key;
+    return '<tr'+(noKey?' style="background:rgba(239,68,68,.08)"':'')+'>'+
+      '<td>'+s.id+'</td>'+
+      '<td>'+esc(s.phase||'')+'</td>'+
+      '<td>'+(s.has_key?'<span class="tag on">Có</span>':'<span class="tag off">THIẾU</span>')+'</td>'+
+      '<td class="mono" style="font-size:12px">'+esc(s.key_code||'—')+'</td>'+
+      '<td class="mono" style="font-size:11px" title="'+esc(s.device_hash||'')+'">'+esc(shortHash(s.device_hash))+'</td>'+
+      '<td style="font-size:12px">'+esc(s.ip_raw||shortHash(s.ip_hash))+'</td>'+
+      '<td><span class="tag '+tag+'">'+esc(act)+'</span> <span style="font-size:11px;color:var(--fg-3)">'+esc(s.result_reason||'')+'</span></td>'+
+      '<td style="font-size:12px">'+esc(s.app_version||'—')+'</td>'+
+      '<td style="font-size:11px">'+fmtTime(s.created_at)+'</td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="btn sm" data-sban="'+s.id+'">Ban</button> '+
+        '<button class="btn sm danger" data-sdel="'+s.id+'">Xóa</button>'+
+      '</td>'+
+    '</tr>';
+  }).join('');
+
+  document.querySelectorAll('[data-sban]').forEach(btn=>{
+    btn.onclick=async()=>{
+      if(!confirm('Ban vĩnh viễn device của session #'+btn.dataset.sban+'?')) return;
+      try{
+        const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'ban',p_payload:{session_id:+btn.dataset.sban,reason:'manual',note:'admin from session'}});
+        if(!x||!x.ok) throw Error(x&&x.error||'Lỗi');
+        alert('Đã ban');
+        loadFraudFlags();
+      }catch(e){ alert(e.message); }
+    };
+  });
+  document.querySelectorAll('[data-sdel]').forEach(btn=>{
+    btn.onclick=async()=>{
+      if(!confirm('Xóa log session #'+btn.dataset.sdel+'?')) return;
+      try{
+        const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'delete_session',p_payload:{id:+btn.dataset.sdel}});
+        if(!x||!x.ok) throw Error(x&&x.error||'Lỗi');
+        loadApkSessions();
+      }catch(e){ alert(e.message); }
+    };
+  });
+}
+
 /* ——— APK fraud flags ——— */
 async function loadFraudFlags(){
   try{
     const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'list'});
     if(!x||!x.ok){
-      if($('fraudRows')) $('fraudRows').innerHTML='<tr><td colspan="9" style="color:var(--fg-3)">—</td></tr>';
+      if($('fraudRows')) $('fraudRows').innerHTML='<tr><td colspan="8" style="color:var(--fg-3)">—</td></tr>';
       return;
     }
     fraudFlags=x.flags||[];
     renderFraudFlags();
   }catch(e){
-    if($('fraudRows')) $('fraudRows').innerHTML='<tr><td colspan="9" style="color:var(--fg-3)">Lỗi tải</td></tr>';
+    if($('fraudRows')) $('fraudRows').innerHTML='<tr><td colspan="8" style="color:var(--fg-3)">Lỗi tải</td></tr>';
   }
 }
 function renderFraudFlags(){
   if(!$('fraudRows')) return;
   if(!fraudFlags.length){
-    $('fraudRows').innerHTML='<tr><td colspan="9" style="color:var(--fg-3)">Chưa có report APK</td></tr>';
+    $('fraudRows').innerHTML='<tr><td colspan="8" style="color:var(--fg-3)">Chưa có ban APK</td></tr>';
     return;
   }
   $('fraudRows').innerHTML=fraudFlags.map(f=>{
-    const ipShow=f.ip_raw||shortHash(f.ip_hash);
     return '<tr>'+
       '<td>'+f.id+'</td>'+
       '<td><span class="tag off">'+esc(f.reason||'fraud')+'</span></td>'+
       '<td class="mono" style="font-size:11px" title="'+esc(f.device_hash||'')+'">'+esc(shortHash(f.device_hash))+'</td>'+
-      '<td style="font-size:12px">'+esc(ipShow||'—')+'</td>'+
-      '<td class="mono" style="font-size:12px">'+esc(f.key_code||'—')+'</td>'+
-      '<td style="font-size:12px">'+esc(f.app_version||'—')+'</td>'+
+      '<td style="font-size:12px">'+esc(f.ip_raw||shortHash(f.ip_hash))+'</td>'+
       '<td><span class="tag '+(f.active?'off':'on')+'">'+(f.active?(f.kill_app?'KILL':'FLAG'):'OFF')+'</span></td>'+
+      '<td style="font-size:12px">'+esc(f.note||'')+'</td>'+
       '<td style="font-size:11px">'+fmtTime(f.created_at)+'</td>'+
       '<td style="white-space:nowrap">'+
-        '<button class="btn sm" data-fdetail="'+f.id+'">Chi tiết</button> '+
         (f.active?'<button class="btn sm" data-funban="'+f.id+'">Unban</button> ':'')+
         '<button class="btn sm danger" data-fdel="'+f.id+'">Xóa</button>'+
       '</td>'+
     '</tr>';
   }).join('');
 
-  document.querySelectorAll('[data-fdetail]').forEach(btn=>{
-    btn.onclick=()=>modalFraudDetail(+btn.dataset.fdetail);
-  });
   document.querySelectorAll('[data-funban]').forEach(btn=>{
     btn.onclick=async()=>{
-      if(!confirm('Unban device này? App sẽ được phép chạy lại.')) return;
+      if(!confirm('Unban device này?')) return;
       try{
         const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'unban',p_payload:{id:+btn.dataset.funban}});
         if(!x||!x.ok) throw Error(x&&x.error||'Lỗi');
@@ -240,7 +339,7 @@ function renderFraudFlags(){
   });
   document.querySelectorAll('[data-fdel]').forEach(btn=>{
     btn.onclick=async()=>{
-      if(!confirm('Xóa hẳn log fraud #'+btn.dataset.fdel+' (flag + report)?')) return;
+      if(!confirm('Xóa hẳn ban #'+btn.dataset.fdel+'?')) return;
       try{
         const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'delete',p_payload:{id:+btn.dataset.fdel}});
         if(!x||!x.ok) throw Error(x&&x.error||'Lỗi');
@@ -248,66 +347,6 @@ function renderFraudFlags(){
       }catch(e){ alert(e.message); }
     };
   });
-}
-
-async function modalFraudDetail(id){
-  const root=$('modalRoot'); if(!root) return;
-  root.innerHTML='<div class="modal-bg"><div class="modal" style="width:min(520px,100%)"><h3>Chi tiết report #'+id+'</h3><p class="hint">Đang tải…</p></div></div>';
-  try{
-    const x=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'detail',p_payload:{id}});
-    if(!x||!x.ok) throw Error(x.error||'NOT_FOUND');
-    const f=x.flag||{};
-    const r=x.report||{};
-    const detailStr=r.detail ? JSON.stringify(r.detail,null,2) : '—';
-    root.innerHTML=`
-<div class="modal-bg"><div class="modal" style="width:min(520px,100%)">
-  <h3>Report APK #${esc(String(f.id||id))}</h3>
-  <div class="grid2" style="margin-top:12px">
-    <div class="field"><label>Lý do</label><div><span class="tag off">${esc(f.reason||'')}</span></div></div>
-    <div class="field"><label>Trạng thái</label><div><span class="tag ${f.active?'off':'on'}">${f.active?(f.kill_app?'KILL':'FLAG'):'OFF'}</span></div></div>
-    <div class="field"><label>Device hash</label><div class="mono" style="font-size:11px;word-break:break-all">${esc(f.device_hash||'—')}</div></div>
-    <div class="field"><label>IP hash</label><div class="mono" style="font-size:11px;word-break:break-all">${esc(f.ip_hash||'—')}</div></div>
-    <div class="field"><label>IP raw</label><div>${esc(r.ip_raw||'—')}</div></div>
-    <div class="field"><label>App version</label><div>${esc(r.app_version||'—')}</div></div>
-    <div class="field"><label>Key code</label><div class="mono">${esc(r.key_code||'—')}</div></div>
-    <div class="field"><label>Thời gian</label><div style="font-size:12px">${fmtTime(f.created_at)}</div></div>
-  </div>
-  <div class="field" style="margin-top:8px"><label>Detail (JSON)</label>
-    <pre class="code" style="max-height:160px;overflow:auto;margin:0;font-size:11px">${esc(detailStr)}</pre>
-  </div>
-  <div class="field"><label>Note</label><div style="font-size:13px">${esc(f.note||'—')}</div></div>
-  <div class="modal-actions">
-    <button class="btn" id="mClose">Đóng</button>
-    ${f.active?'<button class="btn primary" id="mUnban">Unban</button>':''}
-    <button class="btn danger" id="mDel">Xóa log</button>
-  </div>
-</div></div>`;
-    $('mClose').onclick=()=>closeModalSmooth(root);
-    if($('mUnban')){
-      $('mUnban').onclick=async()=>{
-        try{
-          const u=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'unban',p_payload:{id:f.id}});
-          if(!u||!u.ok) throw Error(u&&u.error||'Lỗi');
-          closeModalSmooth(root);
-          loadFraudFlags();
-        }catch(e){ alert(e.message); }
-      };
-    }
-    if($('mDel')){
-      $('mDel').onclick=async()=>{
-        if(!confirm('Xóa hẳn log fraud #'+f.id+'?')) return;
-        try{
-          const d=await BDZ.rpc('bdz_admin_fraud',{p_token:tok(),p_action:'delete',p_payload:{id:f.id}});
-          if(!d||!d.ok) throw Error(d&&d.error||'Lỗi');
-          closeModalSmooth(root);
-          loadFraudFlags();
-        }catch(e){ alert(e.message); }
-      };
-    }
-  }catch(e){
-    root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>Lỗi</h3><p class="err">${esc(e.message)}</p><div class="modal-actions"><button class="btn" id="mClose">Đóng</button></div></div></div>`;
-    $('mClose').onclick=()=>closeModalSmooth(root);
-  }
 }
 
 window.saveSettings=async function(){
@@ -330,6 +369,7 @@ window.saveSettings=async function(){
 
 window.loadBans=loadBans;
 window.loadFraudFlags=loadFraudFlags;
+window.loadApkSessions=loadApkSessions;
 
 async function bootExtra(){
   for(let i=0;i<50;i++){
