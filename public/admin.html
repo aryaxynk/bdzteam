@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./style.css?v=210">
+<link rel="stylesheet" href="./style.css?v=220">
 <link rel="icon" type="image/png" href="https://263.org.vn/logo?v=20261003">
 </head>
 <body>
@@ -22,7 +22,7 @@
 <script src="./admin-core.js?v=140"></script>
 <script src="./admin-logic.js?v=120"></script>
 <script src="./admin-logic2.js?v=112"></script>
-<script src="./admin-versions.js?v=113"></script>
+<script src="./admin-versions.js?v=114"></script>
 <script src="./admin-extra.js?v=142"></script>
 <script src="./admin-shorteners.js?v=101"></script>
 <script src="./chart-month.js?v=114"></script>
@@ -34,47 +34,6 @@ try{
   console.error(e);
   document.getElementById('root').innerHTML='<p style="padding:24px;font-family:sans-serif">Lỗi tải admin: '+e.message+'</p>';
 }
-(function(){
-  function bind(el){
-    if(el._glowBound) return;
-    el._glowBound = true;
-    el.addEventListener('pointermove', function(e){
-      var r = el.getBoundingClientRect();
-      el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-      el.style.setProperty('--my', (e.clientY - r.top) + 'px');
-    });
-  }
-  function scan(){
-    document.querySelectorAll('.card, .stat, .login-box, .btn.primary, .gk-card, .panel').forEach(bind);
-  }
-  document.addEventListener('pointerover', function(e){
-    var t = e.target.closest && e.target.closest('.card, .stat, .login-box, .btn.primary, .gk-card, .panel');
-    if(t) bind(t);
-  }, true);
-  setInterval(scan, 1500);
-  setTimeout(scan, 400);
-  function observeFu(){
-    var els = document.querySelectorAll('.fu:not(.in)');
-    if(!els.length) return;
-    if(!('IntersectionObserver' in window)){
-      els.forEach(function(el){ el.classList.add('in'); });
-      return;
-    }
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(en){
-        if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
-    els.forEach(function(el){ io.observe(el); });
-  }
-  setInterval(function(){
-    document.querySelectorAll('.card, .stat, .section-head').forEach(function(el){
-      if(!el.classList.contains('fu')) el.classList.add('fu');
-    });
-    observeFu();
-  }, 800);
-  setTimeout(observeFu, 500);
-})();
 </script>
 </body>
 </html>
