@@ -12,52 +12,51 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./style.css?v=220">
+<link rel="stylesheet" href="./style.css?v=230">
 </head>
 <body>
 <main class="gk-page">
-  <div class="gk-card" id="mainPanel">
-    <div class="gk-head fu in">
-      <div class="gk-brand">
-        <img src="https://263.org.vn/logo?v=20261003" alt="">
-        <span><strong>BDZMOD</strong><small>Key Service</small></span>
+  <div class="gk-stack" id="mainPanel">
+    <section class="gk-card is-hero fu in">
+      <div class="gk-head">
+        <div class="gk-brand">
+          <img src="https://263.org.vn/logo?v=20261003" alt="">
+          <span><strong>BDZMOD</strong><small>Key Service</small></span>
+        </div>
+        <span class="tag on"><span class="dot" style="margin-right:6px"></span>Online</span>
       </div>
-      <span class="tag on"><span class="dot" style="margin-right:6px"></span>Online</span>
-    </div>
-    <h1 class="fu in d1">Nhận Key</h1>
-    <p class="sub fu in d2">Giải captcha, vượt phiên link, nhận key dùng một lần.</p>
-    <div class="gk-bento">
-      <div class="gk-cell fu in d2"><label>Thời hạn</label><strong id="durValue">…</strong></div>
-      <div class="gk-cell fu in d3"><label>Trạng thái</label><strong id="statusValue">Sẵn sàng</strong></div>
-    </div>
-    <div class="gk-cap fu in d3">
-      <label>Xác minh (toán)</label>
-      <div class="gk-cap-row">
-        <span id="captchaPrompt" class="gk-prompt">…</span>
-        <input id="captchaAnswer" class="input" type="text" inputmode="numeric" autocomplete="off" placeholder="?">
-        <button type="button" id="captchaRefresh" class="btn icon-btn" title="Đổi câu hỏi">↻</button>
+      <h1 class="fu in d1">Nhận Key</h1>
+      <p class="sub fu in d2">Giải captcha, vượt phiên link, nhận key dùng một lần.</p>
+    </section>
+    <section class="gk-card fu in d2">
+      <div class="gk-bento">
+        <div class="gk-cell"><label>Thời hạn</label><strong id="durValue">…</strong></div>
+        <div class="gk-cell"><label>Trạng thái</label><strong id="statusValue">Sẵn sàng</strong></div>
       </div>
-    </div>
-    <button type="button" id="start" class="btn primary lg fu in d4"><span id="startLabel">Get Key</span></button>
-    <div id="result" class="hidden" role="status" aria-live="polite"></div>
-    <div class="gk-meta fu in d5">
+    </section>
+    <section class="gk-card is-action fu in d3">
+      <div class="gk-cap">
+        <label>Xác minh (toán)</label>
+        <div class="gk-cap-row">
+          <span id="captchaPrompt" class="gk-prompt">…</span>
+          <input id="captchaAnswer" class="input" type="text" inputmode="numeric" autocomplete="off" placeholder="?">
+          <button type="button" id="captchaRefresh" class="btn icon-btn" title="Đổi câu hỏi">↻</button>
+        </div>
+      </div>
+      <button type="button" id="start" class="btn primary lg" style="margin-top:14px"><span id="startLabel">Get Key</span></button>
+      <div id="result" class="hidden" role="status" aria-live="polite"></div>
+    </section>
+    <div class="gk-meta fu in d4">
       <span>Token 1 lần</span><span>·</span><span>Bảo vệ phiên</span>
+      <span style="flex:1"></span>
+      <a class="admin-link" href="./admin.html">Admin →</a>
     </div>
-    <a class="admin-link fu in d5" href="./admin.html">Đăng nhập Admin →</a>
   </div>
 </main>
 <script src="./config.js?v=111"></script>
 <script src="./supabase-api.js?v=111"></script>
 <script>
 (function () {
-  var panel = document.getElementById("mainPanel");
-  if (panel) {
-    panel.addEventListener("pointermove", function (e) {
-      var r = panel.getBoundingClientRect();
-      panel.style.setProperty("--mx", (e.clientX - r.left) + "px");
-      panel.style.setProperty("--my", (e.clientY - r.top) + "px");
-    });
-  }
   function viErr(err) {
     var m = {
       MAINTENANCE: "Hệ thống đang bảo trì. Thử lại sau.", BANNED: "Bạn đã bị khóa tạm thời.",
