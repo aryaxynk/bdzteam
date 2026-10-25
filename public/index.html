@@ -12,169 +12,40 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./style.css?v=200">
-<style>
-  .split { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
-  .split-left {
-    position: relative; display: flex; flex-direction: column; justify-content: space-between;
-    padding: 40px 48px; border-right: 1px solid var(--line);
-    background:
-      radial-gradient(ellipse 90% 70% at 20% 30%, rgba(240, 192, 20, 0.12), transparent 60%),
-      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(240, 192, 20, 0.06), transparent 55%),
-      var(--bg-2);
-    overflow: hidden;
-  }
-  .split-left::after {
-    content: "BDZ"; position: absolute; right: -4%; bottom: -6%;
-    font-size: clamp(120px, 22vw, 220px); font-weight: 700; letter-spacing: -0.06em; line-height: 0.85;
-    color: rgba(240, 192, 20, 0.06); pointer-events: none; user-select: none;
-    animation: watermark-float 12s ease-in-out infinite alternate;
-  }
-  @keyframes watermark-float {
-    from { transform: translate(0, 0); opacity: 0.7; }
-    to { transform: translate(-2%, -3%); opacity: 1; }
-  }
-  .split-brand {
-    display: flex; align-items: center; gap: 14px; position: relative; z-index: 1;
-    animation: slide-right 0.6s var(--ease-out) both;
-  }
-  .split-brand img { width: 44px; height: 44px; border-radius: 0; transition: transform 0.4s var(--ease); }
-  .split-brand:hover img { transform: scale(1.06); }
-  .split-brand strong { display: block; font-size: 18px; font-weight: 650; letter-spacing: -0.03em; }
-  .split-brand small {
-    display: block; margin-top: 3px; font-size: 11px; color: var(--fg-3);
-    letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600;
-  }
-  .split-hero { position: relative; z-index: 1; max-width: 360px; animation: slide-up 0.65s 0.1s var(--ease-out) both; }
-  .split-hero h1 { margin: 0; font-size: clamp(32px, 4.5vw, 44px); font-weight: 650; letter-spacing: -0.04em; line-height: 1.1; }
-  .split-hero p { margin: 16px 0 0; font-size: 15px; line-height: 1.6; color: var(--fg-2); }
-  .split-meta {
-    position: relative; z-index: 1; display: flex; gap: 20px; flex-wrap: wrap;
-    font-size: 12px; color: var(--fg-3);
-  }
-  .split-meta span { display: inline-flex; align-items: center; gap: 7px; }
-  .dot {
-    width: 8px; height: 8px; border-radius: 0; background: var(--ok);
-    box-shadow: 0 0 0 3px rgba(45, 212, 160, 0.18); animation: pulse-dot 1.8s ease-in-out infinite;
-  }
-  .split-right { display: grid; place-items: center; padding: 32px 24px; }
-  .panel {
-    position: relative; overflow: hidden; isolation: isolate;
-    width: min(400px, 100%); border: 1px solid var(--line); border-radius: 0;
-    background: var(--bg-2); padding: 28px 24px;
-    box-shadow: 0 28px 64px -28px rgba(0,0,0,0.65);
-    animation: fade-in-scale 0.55s 0.12s var(--ease-out) both;
-    transition: transform 0.35s var(--ease), border-color 0.3s var(--ease), box-shadow 0.35s var(--ease);
-  }
-  .panel::before {
-    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255,255,255,0.14) 50%, transparent 60%, transparent 100%);
-    transform: translateX(-120%) skewX(-12deg); transition: transform 0.65s var(--ease-out); opacity: 0;
-  }
-  .panel:hover::before { transform: translateX(120%) skewX(-12deg); opacity: 1; }
-  .panel::after {
-    content: ""; position: absolute; inset: -1px; z-index: 0; pointer-events: none; border-radius: 0;
-    background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 40%), rgba(240, 192, 20, 0.18), transparent 42%);
-    opacity: 0; transition: opacity 0.35s var(--ease);
-  }
-  .panel:hover::after { opacity: 1; }
-  .panel > * { position: relative; z-index: 1; }
-  .panel:hover {
-    transform: translateY(-5px);
-    border-color: rgba(240, 192, 20, 0.35);
-    box-shadow: 0 32px 72px -20px rgba(0,0,0,0.8), 0 0 40px rgba(240, 192, 20, 0.1);
-  }
-  .panel h2 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.03em; }
-  .panel .sub { margin: 8px 0 0; font-size: 13px; color: var(--fg-3); line-height: 1.5; }
-  .info-grid { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .info-cell {
-    border: 1px solid var(--line); border-radius: 0; padding: 12px 14px; background: var(--bg);
-    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
-  }
-  .info-cell:hover {
-    border-color: rgba(240, 192, 20, 0.4);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px -8px rgba(240, 192, 20, 0.2);
-  }
-  .info-cell label {
-    display: block; font-size: 10px; font-weight: 650; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--fg-3); margin-bottom: 6px;
-  }
-  .info-cell strong { font-size: 15px; font-weight: 600; }
-  .cap-box {
-    margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 0;
-    background: rgba(255,255,255,0.015);
-  }
-  .cap-box:focus-within {
-    border-color: rgba(240, 192, 20, 0.5);
-    box-shadow: 0 0 0 3px rgba(240, 192, 20, 0.12);
-  }
-  .cap-box > label {
-    display: block; font-size: 10px; font-weight: 650; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--fg-3); margin-bottom: 10px;
-  }
-  .cap-row { display: flex; align-items: center; gap: 8px; }
-  .cap-prompt {
-    min-width: 7rem; min-height: 42px; padding: 0 12px; display: inline-flex;
-    align-items: center; justify-content: center; border: 1px solid var(--line);
-    border-radius: 0; background: var(--bg);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; font-weight: 600;
-  }
-  #result { margin-top: 12px; padding: 11px 13px; border-radius: 0; font-size: 13px; line-height: 1.5; }
-  #result.err { border: 1px solid rgba(255,92,106,0.25); background: var(--danger-soft); color: #fecaca; }
-  .admin-link {
-    display: inline-flex; margin-top: 16px; font-size: 12px; color: var(--fg-3);
-    transition: color 0.25s var(--ease), transform 0.25s var(--ease);
-  }
-  .admin-link:hover { color: var(--accent-2); transform: translateX(4px); }
-  @media (max-width: 860px) {
-    .split { grid-template-columns: 1fr; }
-    .split-left { min-height: auto; padding: 28px 24px; border-right: none; border-bottom: 1px solid var(--line); }
-    .split-left::after { font-size: 100px; }
-    .split-hero { max-width: none; }
-    .split-hero h1 { font-size: 28px; }
-    .split-right { padding: 24px 16px 40px; }
-  }
-</style>
+<link rel="stylesheet" href="./style.css?v=210">
 </head>
 <body>
-<div class="split">
-  <aside class="split-left">
-    <div class="split-brand">
-      <img src="https://263.org.vn/logo?v=20261003" alt="">
-      <span><strong>BDZMOD</strong><small>Key Service</small></span>
-    </div>
-    <div class="split-hero">
-      <h1>Nhận Key<br>nhanh & an toàn</h1>
-      <p>Giải captcha, vượt từng phiên link theo API đã cấu hình, rồi nhận key dùng một lần.</p>
-    </div>
-    <div class="split-meta">
-      <span><span class="dot"></span>Hệ thống online</span>
-      <span>Token 1 lần · bảo vệ phiên</span>
-    </div>
-  </aside>
-  <main class="split-right">
-    <div class="panel" id="mainPanel">
-      <h2>Bắt đầu</h2>
-      <p class="sub">Xác minh và nhận key ngay.</p>
-      <div class="info-grid">
-        <div class="info-cell"><label>Thời hạn</label><strong id="durValue">…</strong></div>
-        <div class="info-cell"><label>Trạng thái</label><strong id="statusValue">Sẵn sàng</strong></div>
+<main class="gk-page">
+  <div class="gk-card" id="mainPanel">
+    <div class="gk-head fu in">
+      <div class="gk-brand">
+        <img src="https://263.org.vn/logo?v=20261003" alt="">
+        <span><strong>BDZMOD</strong><small>Key Service</small></span>
       </div>
-      <div class="cap-box">
-        <label>Xác minh (toán)</label>
-        <div class="cap-row">
-          <span id="captchaPrompt" class="cap-prompt">…</span>
-          <input id="captchaAnswer" class="input" type="text" inputmode="numeric" autocomplete="off" placeholder="?">
-          <button type="button" id="captchaRefresh" class="btn icon-btn" title="Đổi câu hỏi">↻</button>
-        </div>
-      </div>
-      <button type="button" id="start" class="btn primary lg" style="margin-top:18px"><span id="startLabel">Get Key</span></button>
-      <div id="result" class="hidden" role="status" aria-live="polite"></div>
-      <a class="admin-link" href="./admin.html">Đăng nhập Admin →</a>
+      <span class="tag on"><span class="dot" style="margin-right:6px"></span>Online</span>
     </div>
-  </main>
-</div>
+    <h1 class="fu in d1">Nhận Key</h1>
+    <p class="sub fu in d2">Giải captcha, vượt phiên link, nhận key dùng một lần.</p>
+    <div class="gk-bento">
+      <div class="gk-cell fu in d2"><label>Thời hạn</label><strong id="durValue">…</strong></div>
+      <div class="gk-cell fu in d3"><label>Trạng thái</label><strong id="statusValue">Sẵn sàng</strong></div>
+    </div>
+    <div class="gk-cap fu in d3">
+      <label>Xác minh (toán)</label>
+      <div class="gk-cap-row">
+        <span id="captchaPrompt" class="gk-prompt">…</span>
+        <input id="captchaAnswer" class="input" type="text" inputmode="numeric" autocomplete="off" placeholder="?">
+        <button type="button" id="captchaRefresh" class="btn icon-btn" title="Đổi câu hỏi">↻</button>
+      </div>
+    </div>
+    <button type="button" id="start" class="btn primary lg fu in d4"><span id="startLabel">Get Key</span></button>
+    <div id="result" class="hidden" role="status" aria-live="polite"></div>
+    <div class="gk-meta fu in d5">
+      <span>Token 1 lần</span><span>·</span><span>Bảo vệ phiên</span>
+    </div>
+    <a class="admin-link fu in d5" href="./admin.html">Đăng nhập Admin →</a>
+  </div>
+</main>
 <script src="./config.js?v=111"></script>
 <script src="./supabase-api.js?v=111"></script>
 <script>
