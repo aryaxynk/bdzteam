@@ -11,39 +11,27 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=200">
-<style>
-  .wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
-  .card-p{width:min(420px,100%);border:1px solid var(--line);border-radius:0;background:var(--bg-2);padding:28px 24px;box-shadow:0 28px 64px -28px rgba(0,0,0,.65);animation:fade-in-scale .55s var(--ease-out) both;transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
-  .card-p:hover{transform:translateY(-3px);box-shadow:0 32px 72px -24px rgba(0,0,0,.75)}
-  .card-p h1{margin:0;font-size:22px;font-weight:650;letter-spacing:-.03em;animation:slide-up .45s .08s var(--ease-out) both}
-  .card-p .lead{margin:8px 0 0;font-size:13.5px;color:var(--fg-2);line-height:1.55;animation:slide-up .45s .12s var(--ease-out) both}
-  .st{margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:0;background:rgba(255,255,255,.02);font-size:13px;color:var(--fg-2);display:flex;align-items:center;gap:10px;animation:slide-up .4s .16s var(--ease-out) both}
-  .st.ok{border-color:rgba(45,212,160,.28);background:var(--ok-soft);color:#6ee7b7}
-  .st.err{border-color:rgba(255,92,106,.28);background:var(--danger-soft);color:#fecaca}
-  .spin{width:14px;height:14px;border:2px solid rgba(240,192,20,.2);border-top-color:var(--accent);border-radius:0;animation:spin .65s linear infinite;flex-shrink:0}
-  .kl{display:block;margin:16px 0 8px;font-size:10px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3)}
-  .kv{display:block;break-all;padding:14px;border:1px solid var(--line);border-radius:0;background:var(--bg);font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.55}
-  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-  .br{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none}
-  .br img{width:28px;height:28px;border-radius:0;transition:transform .35s var(--ease)}
-  .br:hover img{transform:scale(1.05)}
-  .br strong{font-size:13px;font-weight:650}
-</style>
+<link rel="stylesheet" href="../style.css?v=210">
 </head>
 <body>
-<main class="wrap">
-  <div class="card-p">
-    <div class="top">
-      <a href="../" class="br"><img src="https://263.org.vn/logo?v=20261003" alt=""><strong>BDZMOD</strong></a>
+<main class="gk-page">
+  <div class="gk-card">
+    <div class="gk-head">
+      <a href="../" class="gk-brand" style="color:inherit;text-decoration:none">
+        <img src="https://263.org.vn/logo?v=20261003" alt="">
+        <span><strong>BDZMOD</strong><small>Key Service</small></span>
+      </a>
       <a href="../" class="btn sm">← Trang chủ</a>
     </div>
     <h1>Nhận Key</h1>
-    <p id="intro" class="lead">Đang xác nhận phiên…</p>
-    <div id="status" class="st" role="status"><span class="spin" id="statusSpin"></span><span id="statusText">Đang xác minh token…</span></div>
-    <div id="out" class="hidden">
-      <label class="kl">Key của bạn</label>
-      <code id="key" class="kv"></code>
+    <p id="intro" class="sub">Đang xác nhận phiên…</p>
+    <div id="status" class="err" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border-color:var(--line);color:var(--fg-2)" role="status">
+      <span class="loader-ring" id="statusSpin"></span>
+      <span id="statusText">Đang xác minh token…</span>
+    </div>
+    <div id="out" class="hidden" style="margin-top:16px">
+      <label style="display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3);font-weight:650;margin-bottom:8px">Key của bạn</label>
+      <code id="key" class="mono" style="display:block;padding:14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.25);font-size:13px;line-height:1.55;word-break:break-all"></code>
       <button id="copy" type="button" class="btn primary lg" style="margin-top:14px">Sao chép Key</button>
     </div>
   </div>
@@ -70,7 +58,8 @@
   function setStatus(type, msg) {
     statusSpin.style.display = type ? "none" : "inline-block";
     statusText.textContent = msg;
-    s.className = "st" + (type === "err" ? " err" : type === "ok" ? " ok" : "");
+    if (type === "err") { s.style.borderColor = "rgba(255,92,106,.28)"; s.style.background = "var(--danger-soft)"; s.style.color = "#fecaca"; }
+    else if (type === "ok") { s.style.borderColor = "rgba(45,212,160,.28)"; s.style.background = "var(--ok-soft)"; s.style.color = "#6ee7b7"; }
   }
   function bad(msg) { setStatus("err", msg); i.textContent = "Phiên không thể hoàn tất."; }
   if (!/^[A-Za-z0-9_-]{20,128}$/.test(t)) { bad("Token không hợp lệ."); return; }
