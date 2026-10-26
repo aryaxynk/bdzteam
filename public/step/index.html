@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=210">
+<link rel="stylesheet" href="../style.css?v=250">
 </head>
 <body>
 <main class="gk-page">
@@ -37,7 +37,7 @@
       </div>
     </div>
     <button id="continueBtn" type="button" class="btn primary lg hidden" style="margin-top:4px"><span id="btnLabel">Tiếp tục vượt link</span></button>
-    <div id="status" class="err" style="margin-top:14px;background:rgba(255,255,255,.03);border-color:var(--line);color:var(--fg-2)" role="status">Đang kiểm tra phiên…</div>
+    <div id="status" class="err" style="margin-top:14px" role="status">Đang kiểm tra phiên…</div>
   </div>
 </main>
 <script src="../config.js?v=111"></script>
@@ -58,9 +58,9 @@
   var btnLabel = document.getElementById("btnLabel");
   function setStatus(type, msg) {
     status.textContent = msg;
-    if (type === "err") { status.style.borderColor = "rgba(255,92,106,.25)"; status.style.background = "var(--danger-soft)"; status.style.color = "#fecaca"; }
-    else if (type === "ok") { status.style.borderColor = "rgba(45,212,160,.25)"; status.style.background = "var(--ok-soft)"; status.style.color = "#6ee7b7"; }
-    else { status.style.borderColor = "var(--line)"; status.style.background = "rgba(255,255,255,.03)"; status.style.color = "var(--fg-2)"; }
+    if (type === "err") { status.style.borderColor = "var(--line)"; status.style.background = "var(--danger-soft)"; status.style.color = "var(--fg)"; }
+    else if (type === "ok") { status.style.borderColor = "var(--line)"; status.style.background = "var(--ok-soft)"; status.style.color = "var(--ok)"; }
+    else { status.style.borderColor = "var(--line)"; status.style.background = "var(--bg-3)"; status.style.color = "var(--fg)"; }
   }
   async function loadCaptcha() {
     captchaId = "";
