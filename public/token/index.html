@@ -11,13 +11,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css?v=210">
+<link rel="stylesheet" href="../style.css?v=250">
 </head>
 <body>
 <main class="gk-page">
   <div class="gk-card">
     <div class="gk-head">
-      <a href="../" class="gk-brand" style="color:inherit;text-decoration:none">
+      <a href="../" class="gk-brand">
         <img src="https://263.org.vn/logo?v=20261003" alt="">
         <span><strong>BDZMOD</strong><small>Key Service</small></span>
       </a>
@@ -25,13 +25,13 @@
     </div>
     <h1>Nhận Key</h1>
     <p id="intro" class="sub">Đang xác nhận phiên…</p>
-    <div id="status" class="err" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border-color:var(--line);color:var(--fg-2)" role="status">
+    <div id="status" class="err" style="display:flex;align-items:center;gap:10px" role="status">
       <span class="loader-ring" id="statusSpin"></span>
       <span id="statusText">Đang xác minh token…</span>
     </div>
     <div id="out" class="hidden" style="margin-top:16px">
-      <label style="display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3);font-weight:650;margin-bottom:8px">Key của bạn</label>
-      <code id="key" class="mono" style="display:block;padding:14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.25);font-size:13px;line-height:1.55;word-break:break-all"></code>
+      <label style="display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3);font-weight:800;margin-bottom:8px">Key của bạn</label>
+      <code id="key" class="mono code" style="display:block;word-break:break-all"></code>
       <button id="copy" type="button" class="btn primary lg" style="margin-top:14px">Sao chép Key</button>
     </div>
   </div>
@@ -58,8 +58,8 @@
   function setStatus(type, msg) {
     statusSpin.style.display = type ? "none" : "inline-block";
     statusText.textContent = msg;
-    if (type === "err") { s.style.borderColor = "rgba(255,92,106,.28)"; s.style.background = "var(--danger-soft)"; s.style.color = "#fecaca"; }
-    else if (type === "ok") { s.style.borderColor = "rgba(45,212,160,.28)"; s.style.background = "var(--ok-soft)"; s.style.color = "#6ee7b7"; }
+    if (type === "err") { s.style.borderColor = "var(--line)"; s.style.background = "var(--danger-soft)"; s.style.color = "var(--fg)"; }
+    else if (type === "ok") { s.style.borderColor = "var(--line)"; s.style.background = "var(--ok-soft)"; s.style.color = "var(--ok)"; }
   }
   function bad(msg) { setStatus("err", msg); i.textContent = "Phiên không thể hoàn tất."; }
   if (!/^[A-Za-z0-9_-]{20,128}$/.test(t)) { bad("Token không hợp lệ."); return; }
