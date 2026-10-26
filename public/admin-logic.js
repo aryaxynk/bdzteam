@@ -102,7 +102,6 @@ async function load(full){
         loadChart(),
         typeof loadVersions==='function'?loadVersions():Promise.resolve()
       ]);
-      // Ensure chart paints after DOM from buildNav/page settles
       requestAnimationFrame(()=>{ loadChart(); });
       document.dispatchEvent(new CustomEvent('bdz:admin-ready'));
     } else {
@@ -130,19 +129,86 @@ async function loadChart(){
     if(x?.ok&&typeof drawChart==='function') drawChart(x.series||[]);
   }catch(e){ console.warn('loadChart', e); }
 }
-/** Restore session if token still in sessionStorage */
 async function tryRestoreSession(){
   if(!tok()) return;
   if(!$('app')||!$('login')) return;
   showApp();
   await load(true);
 }
-// After shell() builds DOM
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',()=>setTimeout(tryRestoreSession,50));
 } else {
   setTimeout(tryRestoreSession,50);
 }
 function selectedIds(){return [...document.querySelectorAll('.kchk:checked')].map(c=>+c.value)}
-function openBulkMenu(e){e.stopPropagation();const r=e.currentTarget.getBoundingClientRect();$('menuRoot').innerHTML=`<div class="menu" style="position:fixed;top:${r.bottom+4}px;left:${r.left}px;z-index:200"><button class="menu-item" data-b="enable">Bật đã chọn</button><button class="menu-item" data-b="disable">Tắt đã chọn</button><button class="menu-item" data-b="del">Xóa đã chọn</button><button class="menu-item danger" data-b="delall">Xóa tất cả</button></div>`;document.querySelectorAll('.menu-item').forEach(b=>b.onclick=async ev=>{ev.stopPropagation();$('menuRoot').innerHTML='';const act=b.dataset.b;try{if(act==='delall'){if(!confirm('Xóa TẤT CẢ key?'))return;await BDZ.rpc('bdz_admin_keys_bulk',{p_token:tok(),p_action:'delete_all'})}else{const ids=selectedIds();if(!ids.length)return alert('Chọn key');if(act==='del'){if(!confirm('Xóa '+ids.length+' key?'))return;await BDZ.rpc('bdz_admin_keys_bulk',{p_token:tok(),p_action:'delete_selected',p_ids:ids})}if(act==='enable')await BDZ.rpc('bdz_admin_keys_bulk',{p_token:tok(),p_action:'enable_selected',p_ids:ids});if(act==='disable')await BDZ.rpc('bdz_admin_keys_bulk',{p_token:tok(),p_action:'disable_selected',p_ids:ids})}load()}catch(err){alert(err.message)}})}
-function openRowMenu(e,id,kind){e.stopPropagation();const r=e.currentTarget.getBoundingClientRect();const items=kind==='key'?`<button class="menu-item" data-a="edit">Sửa</button><button class="menu-item" data-a="toggle">Bật/Tắt</button><button class="menu-item" data-a="device">Reset device/IP</button><button class="menu-item danger" data-a="del">Xóa</button>`:`<button class="menu-item" data-a="edit">Sửa</button><button class="menu-item" data-a="perms">Phân quyền</button>`;$('menuRoot').innerHTML=`<div class="menu" style="position:fixed;top:${r.bottom+4}px;left:${Math.min(r.left,window.innerWidth-160)}px;z-index:200">${items}</div>`;document.querySelectorAll('.menu-item').forEach(b=>b.onclick=async ev=>{ev.stopPropagation();$('menuRoot').innerHTML='';const a=b.dataset.a;try{if(kind==='key'){const k=rows.find(x=>x.id===id);if(!k)return;if(a==='edit'){if(!perms.can_edit_key)return alert('Không có quyền');return modalKey(k)}if(a==='toggle')await rpcAction('status',{id,status:['ACTIVE','REACTIVATED'].includes(k.status)?'DISABLED':'ACTIVE'});if(a==='device'){if(!confirm('Reset?'))return;await rpcAction('reset_device',{id})}if(a==='del'){if(!perms.can_delete_key)return alert('Không có quyền');if(!confirm('Xóa?'))return;await rpcAction('delete',{id})}load()}else{const u=admins.find(x=>x.id===id);if(!u)return;if(a==='edit')modalAdmin(u);if(a==='perms')modalPerms(u)}}catch(err){alert(err.message)}})}
+function openBulkMenu(e){
+  e.stopPropagation();
+  const root=$('menuRoot'); if(!root) return;
+  root.innerHTML=`<div class="modal-bg menu-sheet-bg" id="menuSheetBg">
+    <div class="modal menu-sheet" role="dialog" aria-modal="true">
+      <div class="menu-sheet-head"><h3>Đa nhiệm</h3><button type="button" class="btn sm icon-btn" id="menuClose" aria-label="Đóng">✕</button></div>
+      <div class="menu-sheet-body">
+        <button class="menu-item" data-b="enable">Bật đã chọn</button>
+        <button class="menu-item" data-b="disable">Tắt đã chọn</button>
+        <button class="menu-item" data-b="del">Xóa đã chọn</button>
+        <button class="menu-item danger" data-b="delall">Xóa tất cả</button>
+      </div>
+    </div>
+  </div>`;
+  const close=()=>{root.innerHTML=''};
+  $('menuClose').onclick=close;
+  $('menuSheetBg').onclick=ev=>{if(ev.target.id==='menuSheetBg')close()};
+  root.querySelectorAll('.menu-item').forEach(b=>b.onclick=async ev=>{
+    ev.stopPropagation(); close();
+    const act=b.dataset.b;
+    try{
+      if(act==='delall'){if(!confirm('Xóa TẤT CẢ key?'))return;await BDZ.rpc('bdz_admin_keys_bulk',{p_token:tok(),p_action:'delete_all'})}
+      else{
+        const ids=selectedIds(); if(!ids.length)return alert('Chọn key');
+        if(act==='del'){if(!confirm('Xóa '+ids.length+' key?'))return;await BDZ.rpc('bdz_admin_keys_bulk',{p_token:tok(),p_action:'delete_selected',p_ids:ids})}
+        if(act==='enable')await BDZ.rpc('bdz_admin_keys_bulk',{p_token:tok(),p_action:'enable_selected',p_ids:ids});
+        if(act==='disable')await BDZ.rpc('bdz_admin_keys_bulk',{p_token:tok(),p_action:'disable_selected',p_ids:ids});
+      }
+      load();
+    }catch(err){alert(err.message)}
+  });
+}
+function openRowMenu(e,id,kind){
+  e.stopPropagation();
+  const root=$('menuRoot'); if(!root) return;
+  const title=kind==='key'?'Tùy chọn Key':'Tùy chọn Admin';
+  const items=kind==='key'
+    ?`<button class="menu-item" data-a="edit">Sửa</button>
+       <button class="menu-item" data-a="toggle">Bật/Tắt</button>
+       <button class="menu-item" data-a="device">Reset device/IP</button>
+       <button class="menu-item danger" data-a="del">Xóa</button>`
+    :`<button class="menu-item" data-a="edit">Sửa</button>
+       <button class="menu-item" data-a="perms">Phân quyền</button>`;
+  root.innerHTML=`<div class="modal-bg menu-sheet-bg" id="menuSheetBg">
+    <div class="modal menu-sheet" role="dialog" aria-modal="true">
+      <div class="menu-sheet-head"><h3>${title}</h3><button type="button" class="btn sm icon-btn" id="menuClose" aria-label="Đóng">✕</button></div>
+      <div class="menu-sheet-body">${items}</div>
+    </div>
+  </div>`;
+  const close=()=>{root.innerHTML=''};
+  $('menuClose').onclick=close;
+  $('menuSheetBg').onclick=ev=>{if(ev.target.id==='menuSheetBg')close()};
+  root.querySelectorAll('.menu-item').forEach(b=>b.onclick=async ev=>{
+    ev.stopPropagation(); close();
+    const a=b.dataset.a;
+    try{
+      if(kind==='key'){
+        const k=rows.find(x=>x.id===id); if(!k)return;
+        if(a==='edit'){if(!perms.can_edit_key)return alert('Không có quyền');return modalKey(k)}
+        if(a==='toggle')await rpcAction('status',{id,status:['ACTIVE','REACTIVATED'].includes(k.status)?'DISABLED':'ACTIVE'});
+        if(a==='device'){if(!confirm('Reset device/IP?'))return;await rpcAction('reset_device',{id})}
+        if(a==='del'){if(!perms.can_delete_key)return alert('Không có quyền');if(!confirm('Xóa key này?'))return;await rpcAction('delete',{id})}
+        load();
+      }else{
+        const u=admins.find(x=>x.id===id); if(!u)return;
+        if(a==='edit')modalAdmin(u);
+        if(a==='perms')modalPerms(u);
+      }
+    }catch(err){alert(err.message)}
+  });
+}
