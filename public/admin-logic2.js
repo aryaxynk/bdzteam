@@ -1,1 +1,98 @@
-PLACEHOLDER
+function renderKeys(){
+  const qEl=$('q'),fEl=$('filter');
+  if(!qEl||!$('keyRows'))return;
+  const q=qEl.value.trim().toLowerCase(),f=fEl?fEl.value:'';
+  const r=rows.filter(k=>(!q||String(k.key_code).toLowerCase().includes(q))&&(!f||k.status===f));
+  const empty='<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Không có key</td></tr>';
+  $('keyRows').innerHTML=r.map(k=>{
+    const used=(k.devices_used!=null?k.devices_used:((k.device_id_hash||k.activated_device_id_hash)?1:0));
+    const badge=k.created_by_name?`<span class="tag tag-admin" title="Admin tạo">Admin: ${esc(k.created_by_name)}</span>`:'';
+    const st=ST_LABEL[k.status]||k.status;
+    const on=['ACTIVE','REACTIVATED'].includes(k.status)?'on':'off';
+    return `<tr>
+      <td><input type="checkbox" class="kchk" value="${k.id}"></td>
+      <td><div class="key-cell"><span class="mono key-code">${esc(k.key_code)}</span>${badge}</div></td>
+      <td><span class="tag ${on}">${esc(st)}</span></td>
+      <td class="nowrap">${used}/${k.max_devices||1}</td>
+      <td class="nowrap muted-sm">${k.expires_at?new Date(k.expires_at).toLocaleString('vi-VN'):'—'}</td>
+      <td><button type="button" class="btn sm icon-btn" data-menu="key" data-id="${k.id}" aria-label="Tùy chọn key"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button></td>
+    </tr>`;
+  }).join('')||empty;
+  $('keyRows').querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>openRowMenu(e,+b.dataset.id,'key'));
+  const cards=$('keyCards');
+  if(cards){
+    cards.innerHTML=r.length?r.map(k=>{
+      const used=(k.devices_used!=null?k.devices_used:((k.device_id_hash||k.activated_device_id_hash)?1:0));
+      const badge=k.created_by_name?`<span class="tag tag-admin">Admin: ${esc(k.created_by_name)}</span>`:'';
+      const st=ST_LABEL[k.status]||k.status;
+      const on=['ACTIVE','REACTIVATED'].includes(k.status)?'on':'off';
+      const exp=k.expires_at?new Date(k.expires_at).toLocaleString('vi-VN'):'—';
+      return `<article class="key-card">
+        <div class="key-card-top">
+          <label class="key-check"><input type="checkbox" class="kchk" value="${k.id}"></label>
+          <div class="key-card-main">
+            <span class="mono key-code">${esc(k.key_code)}</span>
+            ${badge}
+          </div>
+          <button type="button" class="btn sm icon-btn" data-menu="key" data-id="${k.id}" aria-label="Tùy chọn key"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button>
+        </div>
+        <div class="key-card-meta">
+          <span class="tag ${on}">${esc(st)}</span>
+          <span class="meta-item">Device ${used}/${k.max_devices||1}</span>
+          <span class="meta-item">${esc(exp)}</span>
+        </div>
+      </article>`;
+    }).join(''):'<p class="shop-empty" style="padding:20px">Không có key</p>';
+    cards.querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>openRowMenu(e,+b.dataset.id,'key'));
+  }
+}
+async function loadAdmins(){try{const x=await BDZ.rpc('bdz_admin_admins',{p_token:tok(),p_action:'list'});admins=(x&&x.rows)||(x&&x.admins)||[];renderAdmins()}catch(e){console.warn(e)}}
+function renderAdmins(){
+  const t=$('adminRows');if(!t)return;
+  t.innerHTML=admins.length?admins.map(u=>`<tr>
+    <td>${esc(u.username)}</td>
+    <td>${esc(u.role||'')}</td>
+    <td><span class="tag ${u.enabled!==false?'on':'off'}">${u.enabled!==false?'Bật':'Tắt'}</span></td>
+    <td class="muted-sm">${u.last_login?new Date(u.last_login).toLocaleString('vi-VN'):'—'}</td>
+    <td><button type="button" class="btn sm icon-btn" data-menu="admin" data-id="${u.id}" aria-label="Tùy chọn admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg></button></td>
+  </tr>`).join(''):'<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px">Chưa có admin phụ</td></tr>';
+  t.querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>openRowMenu(e,+b.dataset.id,'admin'));
+  const cards=$('adminCards');
+  if(cards){
+    cards.innerHTML=admins.length?admins.map(u=>`<article class="admin-card">
+      <div class="admin-card-top">
+        <div class="admin-card-main">
+          <strong>${esc(u.username)}</strong>
+          <span class="meta-item">${esc(u.role||'ADMIN')}</span>
+        </div>
+        <button type="button" class="btn sm icon-btn" data-menu="admin" data-id="${u.id}" aria-label="Tùy chọn admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></button>
+      </div>
+      <div class="admin-card-meta">
+        <span class="tag ${u.enabled!==false?'on':'off'}">${u.enabled!==false?'Bật':'Tắt'}</span>
+        <span class="meta-item">${u.last_login?new Date(u.last_login).toLocaleString('vi-VN'):'Chưa login'}</span>
+      </div>
+    </article>`).join(''):'<p class="shop-empty" style="padding:16px">Chưa có admin phụ</p>';
+    cards.querySelectorAll('[data-menu]').forEach(b=>b.onclick=e=>openRowMenu(e,+b.dataset.id,'admin'));
+  }
+}
+function modalAdmin(u){const edit=!!u;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa admin':'Tạo admin phụ'}</h3><div class="field"><label>Username</label><input id="maUser" class="input" value="${esc(u&&u.username||'')}"></div><div class="field"><label>Password ${edit?'(để trống = giữ)':''}</label><input id="maPass" class="input" type="password"></div><div class="modal-actions"><button class="btn ghost" id="maCancel">Hủy</button><button class="btn primary" id="maSave">Lưu</button></div></div></div>`;$('maCancel').onclick=()=>closeModalSmooth(root);$('maSave').onclick=async()=>{try{const payload={username:($('maUser').value||'').trim(),password:$('maPass').value||''};if(edit)payload.id=u.id;const x=await BDZ.rpc('bdz_admin_admins',{p_token:tok(),p_action:edit?'update':'create',p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');closeModalSmooth(root);loadAdmins()}catch(e){alert(e.message)}}}
+async function modalPerms(u){
+  if(String(role).toUpperCase()!=='OWNER'){alert('Chỉ OWNER được thay đổi phân quyền.');return}
+  const root=$('modalRoot');if(!root)return;
+  const labels=[['can_keys','Xem và quản lý danh sách key'],['can_create_key','Tạo key'],['can_edit_key','Sửa key'],['can_delete_key','Xóa key'],['can_api_keys','Quản lý API key'],['can_settings','Thay đổi cài đặt hệ thống'],['can_admins','Quản lý tài khoản admin']];
+  const defaults={can_keys:true,can_create_key:true,can_edit_key:true,can_delete_key:false,can_api_keys:false,can_settings:false,can_admins:false};
+  try{
+    const x=await BDZ.rpc('bdz_admin_perms',{p_token:tok(),p_action:'get',p_admin_id:u.id});
+    if(!x||!x.ok)throw Error(x&&x.error||'Không tải được phân quyền');
+    const current=x.perms||{};
+    root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>Phân quyền: ${esc(u.username||('Admin #'+u.id))}</h3><p class="hint">Chỉ OWNER có thể lưu thay đổi quyền.</p><div class="perm-list">${labels.map(([key,label])=>`<label style="display:flex;align-items:center;gap:10px;margin:12px 0"><input type="checkbox" id="perm-${key}" ${(current[key]===undefined?defaults[key]:current[key]===true)?'checked':''}><span>${label}</span></label>`).join('')}</div><div class="modal-actions"><button class="btn ghost" id="mpCancel">Hủy</button><button class="btn primary" id="mpSave">Lưu quyền</button></div></div></div>`;
+    $('mpCancel').onclick=()=>closeModalSmooth(root);
+    $('mpSave').onclick=async()=>{const btn=$('mpSave');if(btn)btn.disabled=true;try{const payload={};labels.forEach(([key])=>{payload[key]=!!$('perm-'+key)?.checked});const saved=await BDZ.rpc('bdz_admin_perms',{p_token:tok(),p_action:'set',p_admin_id:u.id,p_payload:payload});if(!saved||!saved.ok)throw Error(saved&&saved.error||'Không lưu được phân quyền');closeModalSmooth(root);await loadAdmins()}catch(err){alert(err.message||'Không lưu được phân quyền');if(btn)btn.disabled=false}};
+  }catch(err){alert(err.message||'Không tải được phân quyền')}
+}
+function modalKey(k){const edit=!!k;const root=$('modalRoot');if(!root)return;root.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${edit?'Sửa key':'Tạo key'}</h3><div class="field"><label>Key code</label><input id="mkCode" class="input" value="${esc(k&&k.key_code||'')}" ${edit?'readonly':''}></div><div class="grid2"><div class="field"><label>Max devices</label><input id="mkDev" class="input" type="number" min="1" value="${k&&k.max_devices||1}"></div><div class="field"><label>Thời hạn (giờ)</label><input id="mkDur" class="input" type="number" min="1" value="${k&&k.duration_hours||settings.default_duration_hours||settings.duration_hours||5}"></div></div><div class="modal-actions"><button class="btn ghost" id="mkCancel">Hủy</button><button class="btn primary" id="mkSave">Lưu</button></div></div></div>`;$('mkCancel').onclick=()=>closeModalSmooth(root);$('mkSave').onclick=async()=>{try{const payload={key_code:($('mkCode').value||'').trim(),max_devices:+$('mkDev').value||1,duration_hours:+$('mkDur').value||5};if(edit)payload.id=k.id;const action=edit?'update':'create';const x=await BDZ.rpc('bdz_admin_key_action',{p_token:tok(),p_action:action,p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');closeModalSmooth(root);if(typeof load==='function')load(true)}catch(e){alert(e.message)}}}
+async function loadSettings(){try{const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'get'});if(!x||!x.ok)return;settings=x.settings||x||{};const s=settings;const dur=s.default_duration_hours??s.duration_hours??s.key_duration_hours??5;const dev=s.default_max_devices??s.max_devices??1;const lim=s.get_key_limit_per_visitor??s.get_limit??s.max_gets_per_visitor??3;const bindIp=s.bind_ip_on_activate??s.bind_ip;const bindDev=s.bind_device_on_activate??s.bind_device;const maint=!!s.maintenance_mode;if($('setDur'))$('setDur').value=dur;if($('setDev'))$('setDev').value=dev;if($('setLim'))$('setLim').value=lim;if($('setIp'))$('setIp').value=String(bindIp!==false);if($('setBind'))$('setBind').value=String(bindDev!==false);if($('setMaint'))$('setMaint').value=String(maint);settings.duration_hours=dur;settings.max_devices=dev}catch(e){console.warn(e)}}
+async function saveSettings(){const msg=$('saveMsg');if(msg)msg.textContent='Đang lưu…';try{const payload={default_duration_hours:+($('setDur')&&$('setDur').value||5),default_max_devices:+($('setDev')&&$('setDev').value||1),default_max_checks:0,get_key_limit_per_visitor:+($('setLim')&&$('setLim').value||3),bind_ip_on_activate:($('setIp')&&$('setIp').value)==='true',bind_device_on_activate:($('setBind')&&$('setBind').value)==='true',maintenance_mode:($('setMaint')?$('setMaint').value==='true':false)};const x=await BDZ.rpc('bdz_admin_settings',{p_token:tok(),p_action:'update',p_payload:payload});if(!x||!x.ok)throw Error(x&&x.error||'Lỗi');if(msg)msg.textContent='Đã lưu';setTimeout(()=>{if(msg)msg.textContent=''},1500)}catch(e){if(msg)msg.textContent=e.message||'Lỗi'}}
+function showLang(lang){document.querySelectorAll('.tab-lang').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));const s=$('apiSample');const p=$('apiSpec');if(s)s.textContent=SAMPLES[lang]||'';if(p)p.textContent=API_SPEC}
+const SAMPLES={java:`// Java check key — POST /functions/v1/check-key`,native:`// Native C++ check key`,chung:`// curl check key`};
+const API_SPEC=`API KEY SYSTEM — BDZ\nPOST check-key / check-version / web-get-key`;
