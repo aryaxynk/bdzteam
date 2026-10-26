@@ -6,7 +6,6 @@ async function loadMonthChart(){
   if(!tok()) return;
   const dash=$('pg-dash');
   if(!dash) return;
-  // Allow load even if not active yet (just after login)
   try{
     const x=await BDZ.rpc('bdz_admin_chart',{p_token:tok()});
     if(!x||!x.ok) return;
@@ -20,7 +19,6 @@ async function loadMonthChart(){
 function ensureChartLayout(x){
   let card=document.querySelector('#pg-dash .tile-chart')||document.querySelector('#pg-dash .card');
   if(!card){
-    // DOM not ready — retry shortly
     setTimeout(()=>{ if(tok()) loadMonthChart(); }, 120);
     return;
   }
@@ -33,11 +31,11 @@ function ensureChartLayout(x){
       '</div></div>'+
       '<div style="position:relative;width:100%;margin-bottom:14px">'+
       '<svg id="chart" viewBox="0 0 640 240" width="100%" height="220" style="display:block"></svg>'+
-      '<div id="chartTip" style="display:none;position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12px;z-index:5;white-space:nowrap"></div>'+
+      '<div id="chartTip" style="display:none;position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);padding:6px 10px;font-size:12px;z-index:5;white-space:nowrap"></div>'+
       '</div>'+
       '<div class="chart-mini-stats">'+
-      '<div class="stat chart-mini"><b>Hôm nay</b><strong id="sTodayKeys">0</strong><span class="meta-item">key đã lấy</span></div>'+
-      '<div class="stat chart-mini"><b>Cả tháng</b><strong id="sMonthKeys">0</strong><span class="meta-item">key</span></div>'+
+      '<div class="stat chart-mini"><div class="label">Hôm nay</div><div class="value" id="sTodayKeys">0</div><p class="stat-caption">key đã lấy</p></div>'+
+      '<div class="stat chart-mini"><div class="label">Cả tháng</div><div class="value" id="sMonthKeys">0</div><p class="stat-caption">key trong tháng</p></div>'+
       '</div>';
   }
   const lab=$('chartMonthLabel'); if(lab) lab.textContent=x.month_label||'';
@@ -111,7 +109,6 @@ function drawMonthChart(series){
   });
 }
 
-// Public API for admin-logic after login / refresh
 window.loadMonthChart=loadMonthChart;
 window.drawChart=function(series){ drawMonthChart(series||[]); };
 
@@ -119,7 +116,6 @@ setInterval(loadMonthChart, 30000);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) loadMonthChart(); });
 document.addEventListener('bdz:admin-ready',()=>{ loadMonthChart(); });
 
-// Boot: wait for shell DOM, then load if already logged in
 (async()=>{
   for(let i=0;i<50;i++){
     if($('pg-dash')) break;
